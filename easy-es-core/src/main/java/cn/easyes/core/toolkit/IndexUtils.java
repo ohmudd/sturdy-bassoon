@@ -394,8 +394,9 @@ public class IndexUtils {
                                 info.put(BaseEsConstants.SEARCH_ANALYZER, indexParam.getSearchAnalyzer().toLowerCase()));
 
                 // 设置是否对text类型进行聚合处理
-                Optional.ofNullable(indexParam.getFieldData())
-                        .ifPresent(fieldData -> info.put(FIELD_DATA, indexParam.getFieldData()));
+                if (!indexParam.isFieldData()) {
+                    info.put(FIELD_DATA, true);
+                }
             }
 
             // 设置权重
@@ -534,7 +535,9 @@ public class IndexUtils {
                 EsIndexParam esIndexParam = new EsIndexParam();
                 String esFieldType = IndexUtils.getEsFieldType(field.getFieldType(), field.getColumnType());
                 esIndexParam.setFieldType(esFieldType);
-                esIndexParam.setFieldData(field.isFieldData());
+                if (field.isFieldData()) {
+                    esIndexParam.setFieldData(field.isFieldData());
+                }
                 esIndexParam.setFieldName(field.getMappingColumn());
                 esIndexParam.setDateFormat(field.getDateFormat());
                 if (FieldType.NESTED.equals(field.getFieldType())) {
