@@ -2,6 +2,7 @@ package com.xpc.easyes.core.conditions.interfaces;
 
 import com.xpc.easyes.core.enums.Analyzer;
 import com.xpc.easyes.core.enums.FieldType;
+import org.elasticsearch.common.settings.Settings;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -28,6 +29,14 @@ public interface Index<Children, R> extends Serializable {
      * @return 泛型
      */
     Children settings(Integer shards, Integer replicas);
+
+    /**
+     * 用户手动指定的settings
+     *
+     * @param settings
+     * @return 泛型
+     */
+    Children settings(Settings settings);
 
     /**
      * 用户自行指定mapping

@@ -95,13 +95,15 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         Optional.ofNullable(wrapper.shardsNum).ifPresent(createIndexParam::setShardsNum);
         Optional.ofNullable(wrapper.replicasNum).ifPresent(createIndexParam::setReplicasNum);
 
-        // 设置mapping信息
-        if (Objects.isNull(wrapper.mapping)) {
-            List<EsIndexParam> indexParamList = wrapper.esIndexParamList;
-            createIndexParam.setEsIndexParamList(indexParamList);
-        } else {
-            createIndexParam.setMapping(wrapper.mapping);
-        }
+        // 设置用户自定义的settings
+        Optional.ofNullable(wrapper.settings).ifPresent(createIndexParam::setSettings);
+
+        // 通过wrapper指定的mapping参数封装
+        List<EsIndexParam> indexParamList = wrapper.esIndexParamList;
+        createIndexParam.setEsIndexParamList(indexParamList);
+
+        // 设置用户自定义的mapping信息
+        Optional.ofNullable(wrapper.mapping).ifPresent(createIndexParam::setMapping);
 
         // 设置别名
         Optional.ofNullable(wrapper.aliasName).ifPresent(createIndexParam::setAliasName);
