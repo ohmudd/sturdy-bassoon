@@ -54,7 +54,8 @@
     - [Es Native query](/en/origin-query.md)
     - [Print DSL](/en/source.md)
     - [Pagination](/en/page.md)
-    - [Nested and Parent child](/en/nested.md)
+    - [Nested](/en/nested.md)
+    - [Parent child](/en/parent-child.md)
   - High-level grammar
   	- [Field Filtering](/en/filter.md)
   	- [Sort](/en/sort.md)
