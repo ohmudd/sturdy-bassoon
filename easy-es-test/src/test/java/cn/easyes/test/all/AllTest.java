@@ -14,6 +14,7 @@ import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.unit.DistanceUnit;
@@ -26,9 +27,7 @@ import org.elasticsearch.search.aggregations.metrics.ParsedAvg;
 import org.elasticsearch.search.aggregations.metrics.ParsedMax;
 import org.elasticsearch.search.aggregations.metrics.ParsedMin;
 import org.elasticsearch.search.aggregations.metrics.ParsedSum;
-import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.search.sort.*;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -741,7 +740,14 @@ public class AllTest {
     @Order(6)
     public void testGeoDistance() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.geoDistance(Document::getLocation, 168.8, DistanceUnit.KILOMETERS, new GeoPoint(41.0, 116.0));
+        GeoPoint geoPoint = new GeoPoint(41.0, 116.0);
+        wrapper.geoDistance(Document::getLocation, 168.8, DistanceUnit.KILOMETERS, geoPoint);
+        GeoDistanceSortBuilder geoDistanceSortBuilder = SortBuilders.geoDistanceSort(FieldUtils.val(Document::getLocation),geoPoint)
+                .unit(DistanceUnit.KILOMETERS)
+                .geoDistance(GeoDistance.ARC)
+                .order(SortOrder.DESC);
+
+        wrapper.sort(geoDistanceSortBuilder);
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(4, documents.size());
     }

@@ -1,9 +1,6 @@
 package cn.easyes.test.entity;
 
-import cn.easyes.annotation.HighLight;
-import cn.easyes.annotation.IndexField;
-import cn.easyes.annotation.IndexId;
-import cn.easyes.annotation.IndexName;
+import cn.easyes.annotation.*;
 import cn.easyes.common.constants.Analyzer;
 import cn.easyes.common.enums.FieldStrategy;
 import cn.easyes.common.enums.FieldType;
@@ -36,13 +33,13 @@ public class Document {
     /**
      * 文档内容,指定了类型及存储/查询分词器
      */
-    @HighLight(mappingField = "highlightContent",fragmentSize = 2)
+    @HighLight(mappingField = "highlightContent", fragmentSize = 2)
     @IndexField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_SMART)
     private String content;
     /**
      * 作者 加@TableField注解,并指明strategy = FieldStrategy.NOT_EMPTY 表示更新的时候的策略为 创建者不为空字符串时才更新
      */
-    @IndexField(strategy = FieldStrategy.NOT_EMPTY, fieldType = FieldType.KEYWORD_TEXT,analyzer = Analyzer.IK_SMART)
+    @IndexField(strategy = FieldStrategy.NOT_EMPTY, fieldType = FieldType.KEYWORD_TEXT, analyzer = Analyzer.IK_SMART)
     private String creator;
     /**
      * 创建时间
@@ -93,4 +90,14 @@ public class Document {
      */
     @IndexField(fieldType = FieldType.JOIN, parentName = "document", childName = "comment")
     private JoinField joinField;
+    /**
+     * es返回的得分字段,字段名字随便取,只要加了@Score注解即可
+     */
+    @Score(decimalPlaces = 2)
+    private Float score;
+    /**
+     * es返回的距离,字段名字随便取,距离单位以用户在序器中指定的为准,不指定es默认为:米
+     */
+    @Distance(decimalPlaces = 1)
+    private Double distance;
 }
