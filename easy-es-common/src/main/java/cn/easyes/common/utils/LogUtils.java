@@ -20,6 +20,10 @@ public class LogUtils {
      * logger
      */
     private final static Logger log = Logger.getLogger(LOGGER_NAME);
+    /**
+     * 占位符
+     */
+    private final static String placeholder = "{}";
 
     /**
      * 打印info级别日志
@@ -28,6 +32,16 @@ public class LogUtils {
      */
     public static void info(String... params) {
         log.info(String.join(",", params));
+    }
+
+    /**
+     * 打印info级别日志
+     *
+     * @param format 带有占位符的日志
+     * @param args   占位符替换的内容
+     */
+    public static void formatInfo(String format, Object... args) {
+        log.info(String.join(",", getParams(format, args)));
     }
 
     /**
@@ -40,6 +54,16 @@ public class LogUtils {
     }
 
     /**
+     * 打印warn级别日志
+     *
+     * @param format 带有占位符的日志
+     * @param args   占位符替换的内容
+     */
+    public static void formatWarn(String format, Object... args) {
+        log.warning(String.join(",", getParams(format, args)));
+    }
+
+    /**
      * 打印server(error)级别日志
      *
      * @param params 参数
@@ -48,5 +72,21 @@ public class LogUtils {
         log.severe(String.join(",", params));
     }
 
+    /**
+     * 打印server(error)级别日志
+     *
+     * @param format 带有占位符的日志
+     * @param args   占位符替换的内容
+     */
+    public static void formatError(String format, Object... args) {
+        log.severe(String.join(",", getParams(format, args)));
+    }
+
+    private static String getParams(String format, Object... args) {
+        for (Object arg : args) {
+            format = format.replace(placeholder, arg.toString());
+        }
+        return format;
+    }
 
 }
