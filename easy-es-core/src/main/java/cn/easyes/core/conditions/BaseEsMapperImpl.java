@@ -182,6 +182,23 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         return response;
     }
 
+    private SearchResponse search(LambdaEsQueryWrapper<T> wrapper, List<Object> searchAfter) {
+        // 构建es restHighLevel 查询参数
+        SearchRequest searchRequest = new SearchRequest(getIndexName(wrapper.indexName));
+        SearchSourceBuilder searchSourceBuilder = WrapperProcessor.buildSearchSourceBuilder(wrapper, entityClass);
+        searchSourceBuilder.searchAfter(searchAfter.toArray());
+        searchRequest.source(searchSourceBuilder);
+        printDSL(searchRequest);
+        // 执行查询
+        SearchResponse response;
+        try {
+            response = client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw ExceptionUtils.eee("search exception", e);
+        }
+        return response;
+    }
+
     @Override
     public SearchResponse search(SearchRequest searchRequest, RequestOptions requestOptions) throws IOException {
         printDSL(searchRequest);
@@ -227,6 +244,35 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
                 .collect(Collectors.toList());
         long count = parseCount(response, Objects.nonNull(wrapper.distinctField));
         return PageHelper.getPageInfo(dataList, count, pageNum, pageSize);
+    }
+
+    @Override
+    public SAPageInfo<T> searchAfterPage(LambdaEsQueryWrapper<T> wrapper, List<Object> searchAfter, Integer pageSize) {
+        // 兼容分页参数
+        pageSize = pageSize == null || pageSize <= BaseEsConstants.ZERO ? BaseEsConstants.PAGE_SIZE : pageSize;
+
+        //searchAfter必须要进行排序，不排序无法进行分页
+        if (CollectionUtils.isEmpty(wrapper.sortParamList)) {
+            throw ExceptionUtils.eee("sortParamList cannot be empty");
+        }
+
+        wrapper.size(pageSize);
+
+        // 请求es获取数据
+        SearchResponse response =
+                CollectionUtils.isEmpty(searchAfter) ? getSearchResponse(wrapper) : getSearchResponse(wrapper, searchAfter);
+
+        // 解析数据
+        SearchHit[] searchHits = parseSearchHitArray(response);
+        List<T> dataList = Arrays.stream(searchHits).map(searchHit -> parseOne(searchHit, wrapper))
+                .collect(Collectors.toList());
+        Object[] nextSearchAfter = Arrays.stream(searchHits)
+                .map(SearchHit::getSortValues)
+                .reduce((first, second) -> second)
+                .orElse(null);
+        long count = parseCount(response, Objects.nonNull(wrapper.distinctField));
+        return PageHelper.getSAPageInfo(dataList, count, searchAfter,
+                nextSearchAfter == null ? null : Arrays.asList(nextSearchAfter), pageSize);
     }
 
     @Override
@@ -754,6 +800,16 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      */
     private SearchResponse getSearchResponse(LambdaEsQueryWrapper<T> wrapper) {
         return search(wrapper);
+    }
+
+    /**
+     * 获取es搜索响应体
+     *
+     * @param wrapper 条件
+     * @return 搜索响应体
+     */
+    private SearchResponse getSearchResponse(LambdaEsQueryWrapper<T> wrapper, List<Object> searchAfter) {
+        return search(wrapper, searchAfter);
     }
 
     /**
