@@ -63,7 +63,7 @@ public class Document {
     /**
      * 自定义字段名称
      */
-    @IndexField(value = "wu-la", fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_SMART)
+    @IndexField(value = "wu-la", fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_SMART,fieldData = true)
     private String customField;
 
     /**

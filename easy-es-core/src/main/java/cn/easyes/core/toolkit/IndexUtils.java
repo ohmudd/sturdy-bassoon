@@ -6,10 +6,7 @@ import cn.easyes.common.enums.FieldType;
 import cn.easyes.common.enums.JdkDataTypeEnum;
 import cn.easyes.common.enums.ProcessIndexStrategyEnum;
 import cn.easyes.common.params.DefaultChildClass;
-import cn.easyes.common.utils.CollectionUtils;
-import cn.easyes.common.utils.ExceptionUtils;
-import cn.easyes.common.utils.LogUtils;
-import cn.easyes.common.utils.StringUtils;
+import cn.easyes.common.utils.*;
 import cn.easyes.core.biz.*;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.config.GlobalConfig;
@@ -394,9 +391,7 @@ public class IndexUtils {
                                 info.put(BaseEsConstants.SEARCH_ANALYZER, indexParam.getSearchAnalyzer().toLowerCase()));
 
                 // 设置是否对text类型进行聚合处理
-                if (!indexParam.isFieldData()) {
-                    info.put(FIELD_DATA, true);
-                }
+                MyOptional.of(indexParam.isFieldData()).ifTrue(isFieldData -> info.put(FIELD_DATA, isFieldData));
             }
 
             // 设置权重
