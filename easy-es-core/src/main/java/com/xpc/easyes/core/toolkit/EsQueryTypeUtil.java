@@ -3,6 +3,7 @@ package com.xpc.easyes.core.toolkit;
 import org.elasticsearch.index.query.*;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import static com.xpc.easyes.core.constants.BaseEsConstants.WILDCARD_SIGN;
@@ -31,13 +32,25 @@ public class EsQueryTypeUtil {
             // 封装精确查询参数
             TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery(field, value).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, termQueryBuilder);
-        } else if (Objects.equals(queryType,TERMS_QUERY.getType())){
+        } else if (Objects.equals(queryType, TERMS_QUERY.getType())) {
             // 此处处理由or转入shouldList的in参数
             TermsQueryBuilder termsQueryBuilder = QueryBuilders.termsQuery(field, value).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, termsQueryBuilder);
-        }
-        else if (Objects.equals(queryType, MATCH_QUERY.getType())) {
-            // 封装模糊分词查询参数
+        } else if (Objects.equals(queryType, MATCH_PHASE.getType())) {
+            // 封装模糊分词查询参数(分词必须按原关键词顺序)
+            MatchPhraseQueryBuilder matchPhraseQueryBuilder = QueryBuilders.matchPhraseQuery(field, value).boost(boost);
+            setQueryBuilder(boolQueryBuilder, attachType, matchPhraseQueryBuilder);
+        } else if (Objects.equals(queryType, MATCH_PHRASE_PREFIX.getType())) {
+            MatchPhrasePrefixQueryBuilder matchPhrasePrefixQueryBuilder = QueryBuilders.matchPhrasePrefixQuery(field, value).boost(boost);
+            setQueryBuilder(boolQueryBuilder, attachType, matchPhrasePrefixQueryBuilder);
+        } else if (Objects.equals(queryType, PREFIX_QUERY.getType())) {
+            PrefixQueryBuilder prefixQueryBuilder = QueryBuilders.prefixQuery(field, value.toString()).boost(boost);
+            setQueryBuilder(boolQueryBuilder, attachType, prefixQueryBuilder);
+        } else if (Objects.equals(queryType, QUERY_STRING_QUERY.getType())) {
+            QueryStringQueryBuilder queryStringQueryBuilder = QueryBuilders.queryStringQuery(value.toString()).boost(boost);
+            setQueryBuilder(boolQueryBuilder, attachType, queryStringQueryBuilder);
+        } else if (Objects.equals(queryType, MATCH_QUERY.getType())) {
+            // 封装模糊分词查询参数(可无序)
             MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery(field, value).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, matchQueryBuilder);
         } else if (Objects.equals(queryType, RANGE_QUERY.getType())) {
@@ -85,6 +98,13 @@ public class EsQueryTypeUtil {
         if (Objects.equals(queryType, TERMS_QUERY.getType())) {
             TermsQueryBuilder termsQueryBuilder = QueryBuilders.termsQuery(field, values).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, termsQueryBuilder);
+        }
+    }
+
+    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType, List<String> fields, Object value, Float boost) {
+        if (Objects.equals(queryType, MUST.getType())) {
+            MultiMatchQueryBuilder multiMatchQueryBuilder = QueryBuilders.multiMatchQuery(value, fields.toArray(new String[0])).boost(boost);
+            setQueryBuilder(boolQueryBuilder, attachType, multiMatchQueryBuilder);
         }
     }
 

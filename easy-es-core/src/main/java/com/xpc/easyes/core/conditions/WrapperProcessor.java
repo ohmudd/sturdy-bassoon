@@ -46,6 +46,9 @@ public class WrapperProcessor {
         // 初始化boolQueryBuilder 参数
         BoolQueryBuilder boolQueryBuilder = initBoolQueryBuilder(wrapper.baseEsParamList, entityClass);
 
+        // 初始化全表扫描查询参数
+        Optional.ofNullable(wrapper.matchAllQuery).ifPresent(p -> boolQueryBuilder.must(QueryBuilders.matchAllQuery()));
+
         // 初始化searchSourceBuilder 参数
         SearchSourceBuilder searchSourceBuilder = initSearchSourceBuilder(wrapper, entityClass);
 
@@ -296,6 +299,10 @@ public class WrapperProcessor {
                         EsAttachTypeEnum.MUST.getType(), fieldValueModel.getOriginalAttachType(),
                         entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
                         fieldValueModel.getBoost()));
+        // 多字段情形
+        baseEsParam.getMustMultiFieldList().forEach(fieldValueModel ->
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), EsAttachTypeEnum.MUST.getType(),
+                        getRealFields(fieldValueModel.getFields(), entityInfo.getMappingColumnMap()), fieldValueModel.getValue(), fieldValueModel.getBoost()));
 
         baseEsParam.getFilterList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
@@ -309,6 +316,11 @@ public class WrapperProcessor {
                         entityInfo.getMappingColumn(fieldValueModel.getField()),
                         fieldValueModel.getValue() == null ? fieldValueModel.getValues() : fieldValueModel.getValue(),
                         fieldValueModel.getBoost()));
+
+        // 多字段情形
+        baseEsParam.getMustMultiFieldList().forEach(fieldValueModel ->
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), EsAttachTypeEnum.SHOULD.getType(),
+                        getRealFields(fieldValueModel.getFields(), entityInfo.getMappingColumnMap()), fieldValueModel.getValue(), fieldValueModel.getBoost()));
 
         baseEsParam.getMustNotList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
@@ -633,4 +645,17 @@ public class WrapperProcessor {
                 .collect(Collectors.toList())
                 .toArray(new String[]{});
     }
+
+    /**
+     * 获取实际字段名数组
+     *
+     * @param fields           原字段名数组
+     * @param mappingColumnMap 字段映射关系map
+     * @return 实际字段数组
+     */
+    private static List<String> getRealFields(List<String> fields, Map<String, String> mappingColumnMap) {
+        return Arrays.stream(getRealFields(fields.toArray(new String[0]), mappingColumnMap, GlobalConfigCache.getGlobalConfig().getDbConfig()))
+                .collect(Collectors.toList());
+    }
+
 }

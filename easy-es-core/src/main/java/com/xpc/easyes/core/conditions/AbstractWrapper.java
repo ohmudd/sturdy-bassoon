@@ -23,8 +23,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.xpc.easyes.core.enums.BaseEsParamTypeEnum.*;
-import static com.xpc.easyes.core.enums.EsAttachTypeEnum.MUST;
-import static com.xpc.easyes.core.enums.EsAttachTypeEnum.MUST_NOT;
+import static com.xpc.easyes.core.enums.EsAttachTypeEnum.*;
 import static com.xpc.easyes.core.enums.EsQueryTypeEnum.*;
 
 /**
@@ -73,6 +72,10 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * 排序参数列表
      */
     protected List<OrderByParam> orderByParams;
+    /**
+     * 是否查询全部文档
+     */
+    protected Boolean matchAllQuery;
     /**
      * 实体对象
      */
@@ -135,6 +138,48 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
+    public Children matchPhase(boolean condition, R column, Object val, Float boost) {
+        return doIt(condition, MATCH_PHASE, MUST, FieldUtils.getFieldName(column), val, boost);
+    }
+
+    @Override
+    public Children matchAllQuery(boolean condition) {
+        if (condition) {
+            this.matchAllQuery = true;
+        }
+        return typedThis;
+    }
+
+    @Override
+    public Children matchPhrasePrefixQuery(boolean condition, R column, Object val, Float boost) {
+        return doIt(condition, MATCH_PHRASE_PREFIX, MUST, FieldUtils.getFieldName(column), val, boost);
+    }
+
+    @Override
+    public Children multiMatchQuery(boolean condition, Object val, Float boost, R... columns) {
+        if (ArrayUtils.isEmpty(columns)) {
+            return typedThis;
+        }
+        return doIt(condition, MULTI_MATCH_QUERY, MUST_MULTI_FIELDS, val, boost, columns);
+    }
+
+    @Override
+    public Children queryStringQuery(boolean condition, String queryString, Float boost) {
+        if (StringUtils.isBlank(queryString)) {
+            throw ExceptionUtils.eee("queryString can't be blank");
+        }
+        return doIt(condition, QUERY_STRING_QUERY, MUST, null, queryString, boost);
+    }
+
+    @Override
+    public Children prefixQuery(boolean condition, R column, String prefix, Float boost) {
+        if (StringUtils.isBlank(prefix)) {
+            throw ExceptionUtils.eee("prefix can't be blank");
+        }
+        return doIt(condition, PREFIX_QUERY, MUST, FieldUtils.getFieldName(column), prefix, boost);
+    }
+
+    @Override
     public Children notMatch(boolean condition, R column, Object val, Float boost) {
         return doIt(condition, MATCH_QUERY, MUST_NOT, FieldUtils.getFieldName(column), val, boost);
     }
@@ -191,12 +236,12 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children likeLeft(boolean condition, R column, Object val, Float boost) {
-        return doIt(condition, WILDCARD_QUERY, EsAttachTypeEnum.LIKE_LEFT, FieldUtils.getFieldName(column), val, boost);
+        return doIt(condition, WILDCARD_QUERY, LIKE_LEFT, FieldUtils.getFieldName(column), val, boost);
     }
 
     @Override
     public Children likeRight(boolean condition, R column, Object val, Float boost) {
-        return doIt(condition, WILDCARD_QUERY, EsAttachTypeEnum.LIKE_RIGHT, FieldUtils.getFieldName(column), val, boost);
+        return doIt(condition, WILDCARD_QUERY, LIKE_RIGHT, FieldUtils.getFieldName(column), val, boost);
     }
 
     @Override
@@ -558,6 +603,36 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     /**
+     * 针对multiMatchQuery
+     *
+     * @param condition      条件
+     * @param queryTypeEnum  查询类型
+     * @param attachTypeEnum 连接类型
+     * @param val            值
+     * @param boost          权重
+     * @param columns        字段列表
+     * @return 泛型
+     */
+    private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum, Object val, float boost, R... columns) {
+        if (condition) {
+            BaseEsParam baseEsParam = new BaseEsParam();
+            List<String> fields = Arrays.stream(columns).map(FieldUtils::getFieldName).collect(Collectors.toList());
+            BaseEsParam.FieldValueModel model =
+                    BaseEsParam.FieldValueModel
+                            .builder()
+                            .fields(fields)
+                            .value(val)
+                            .boost(boost)
+                            .esQueryType(queryTypeEnum.getType())
+                            .originalAttachType(attachTypeEnum.getType())
+                            .build();
+            setModel(baseEsParam, model, attachTypeEnum);
+            baseEsParamList.add(baseEsParam);
+        }
+        return typedThis;
+    }
+
+    /**
      * geoBoundingBox
      *
      * @param condition   条件
@@ -748,6 +823,8 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
             case LIKE_RIGHT:
                 baseEsParam.getLikeRightList().add(model);
                 break;
+            case MUST_MULTI_FIELDS:
+                baseEsParam.getMustMultiFieldList().add(model);
             default:
                 throw new UnsupportedOperationException("不支持的连接类型,请参见EsAttachTypeEnum");
         }

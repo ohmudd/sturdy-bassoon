@@ -94,6 +94,42 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
+    public Children matchPhase(boolean condition, R column, Object val, Float boost) {
+        getWrapper().matchPhase(condition, column, val, boost);
+        return typedThis;
+    }
+
+    @Override
+    public Children matchAllQuery(boolean condition) {
+        getWrapper().matchAllQuery(condition);
+        return typedThis;
+    }
+
+    @Override
+    public Children matchPhrasePrefixQuery(boolean condition, R column, Object val, Float boost) {
+        getWrapper().matchPhrasePrefixQuery(condition, column, val, boost);
+        return typedThis;
+    }
+
+    @Override
+    public Children multiMatchQuery(boolean condition, Object val, Float boost, R... columns) {
+        getWrapper().multiMatchQuery(condition, val, boost, columns);
+        return typedThis;
+    }
+
+    @Override
+    public Children queryStringQuery(boolean condition, String queryString, Float boost) {
+        getWrapper().queryStringQuery(condition, queryString, boost);
+        return typedThis;
+    }
+
+    @Override
+    public Children prefixQuery(boolean condition, R column, String prefix, Float boost) {
+        getWrapper().prefixQuery(condition, column, prefix, boost);
+        return typedThis;
+    }
+
+    @Override
     public Children notMatch(boolean condition, R column, Object val, Float boost) {
         getWrapper().notMatch(condition, column, val, boost);
         return typedThis;
