@@ -144,21 +144,6 @@ compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Vers
 
 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-# 捐赠 | Donate
----
-
-[捐赠记录,感谢你们的支持！](https://easy-es.cn/pages/b52ac5/)
-
-> 您的支持是鼓励我们前行的动力，无论金额多少都足够表达您这份心意。
-
-> 如果您愿意捐赠本项目,推荐直接在右下方通过Gitee直接捐赠.
-
-> 如果您想支持我们,奈何囊中羞涩,没事,您可以花30秒借花献佛,点击下方链接进入注册,则该赞助商会代您捐赠一笔小钱给我们社区的秃头猛男们买包辣条,您可以通过微信留言"俺请秃头猛男们吃了包辣条",并提供注册截图,我们将备注您为赞助商,优先答疑.
-
-<a href="http://apifox.cn/a103easyse">
-  <img alt="ad" src="https://iknow.hs.net/26b955ca-c481-43a9-8494-e9cadae9889d.png">
-</a>
-
 # 关注我 | About Me
 ---
 
@@ -169,3 +154,21 @@ QQ | 微信:252645816
 # 知识星球 | Planet Of Knowledge
 ---
 <img alt="zsxq" src="https://iknow.hs.net/9038b7ab-c0d9-4a87-9492-e839907a8978.png">
+
+# 捐赠 | Donate
+---
+
+[捐赠记录,感谢你们的支持！](https://easy-es.cn/pages/b52ac5/)
+
+> 您的支持是鼓励我们前行的动力，无论金额多少都足够表达您这份心意。
+
+> 如果您愿意捐赠本项目,推荐直接在右下方通过Gitee直接捐赠.
+
+# 赞助商 | Sponsor
+---
+
+> 如果您想支持我们,奈何囊中羞涩,没事,您可以花30秒借花献佛,点击下方链接进入注册,则该赞助商会代您捐赠一笔小钱给我们社区的秃头猛男们买包辣条,您可以通过微信留言"俺请秃头猛男们吃了包辣条",并提供注册截图,我们将备注您为赞助商,优先答疑.
+
+<a href="http://apifox.cn/a103easyse">
+  <img alt="ad" src="https://iknow.hs.net/26b955ca-c481-43a9-8494-e9cadae9889d.png">
+</a>
