@@ -27,7 +27,7 @@ public class EsVersionUtil {
      */
     public static String getJarVersion(RestHighLevelClient restHighLevelClient) {
         String version = restHighLevelClient.getClass().getPackage().getImplementationVersion();
-        LogUtils.formatError("elasticsearch jar version:{}", version);
+        LogUtils.formatInfo("elasticsearch jar version:%s", version);
         return version;
     }
 
@@ -38,28 +38,33 @@ public class EsVersionUtil {
      * @return client version
      */
     public static String getClientVersion(RestHighLevelClient restHighLevelClient) {
-        MainResponse info = null;
+        MainResponse info;
         try {
             info = restHighLevelClient.info(RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         String version = info.getVersion().getNumber();
-        LogUtils.formatError("elasticsearch client version:{}", version);
+        LogUtils.formatInfo("elasticsearch client version:%s", version);
         return version;
     }
 
+    /**
+     * 校验es client版本及jar包版本
+     *
+     * @param restHighLevelClient es高级客户端
+     */
     public static void verify(RestHighLevelClient restHighLevelClient) {
         String jarVersion = getJarVersion(restHighLevelClient);
         if (!jarVersion.startsWith(supportedVersion)) {
-            throw ExceptionUtils.eee("the supported version of elasticsearch jar is:{}.xx", supportedVersion);
+            throw ExceptionUtils.eee("Easy-Es supported elasticsearch jar version is:%s.xx", supportedVersion);
         }
         String clientVersion = getClientVersion(restHighLevelClient);
         if (!clientVersion.startsWith(supportedVersion)) {
-            throw ExceptionUtils.eee("the supported version of elasticsearch client is:{}.xx", supportedVersion);
+            throw ExceptionUtils.eee("Easy-Es supported elasticsearch client version is:%s.xx", supportedVersion);
         }
         if (!jarVersion.equals(clientVersion)) {
-            LogUtils.formatError("elasticsearch clientVersion:{} not equals jarVersion:{}", clientVersion, jarVersion);
+            LogUtils.formatError("elasticsearch clientVersion:%s not equals jarVersion:%s", clientVersion, jarVersion);
         }
     }
 }
