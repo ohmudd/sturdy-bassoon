@@ -190,8 +190,8 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
-    public Children matchPhase(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, MATCH_PHASE, MUST, column, val, boost);
+    public Children matchPhrase(boolean condition, String column, Object val, Float boost) {
+        return doIt(condition, MATCH_PHRASE, MUST, column, val, boost);
     }
 
     @Override

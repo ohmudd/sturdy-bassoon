@@ -63,7 +63,7 @@ public class EsQueryTypeUtil {
             Collection<?> values = Objects.isNull(value) ? model.getValues() : (Collection<?>) value;
             TermsQueryBuilder termsQueryBuilder = QueryBuilders.termsQuery(field, values).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, termsQueryBuilder);
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.MATCH_PHASE.getType())) {
+        } else if (Objects.equals(queryType, EsQueryTypeEnum.MATCH_PHRASE.getType())) {
             // 封装模糊分词查询参数(分词必须按原关键词顺序)
             MatchPhraseQueryBuilder matchPhraseQueryBuilder = QueryBuilders.matchPhraseQuery(field, value).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, matchPhraseQueryBuilder);

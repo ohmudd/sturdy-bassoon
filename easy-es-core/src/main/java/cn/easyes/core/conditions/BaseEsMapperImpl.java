@@ -518,6 +518,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         SearchRequest searchRequest = new SearchRequest(getIndexName(indexName));
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder.query(QueryBuilders.termsQuery(DEFAULT_ES_ID_NAME, stringIdList));
+        sourceBuilder.size(idList.size());
         searchRequest.source(sourceBuilder);
 
         // 请求es获取数据

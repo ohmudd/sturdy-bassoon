@@ -113,7 +113,7 @@ public class SelectTest {
         // 会对输入做分词，但是需要结果中也包含所有的分词，而且顺序要求一样,否则就无法查询出结果
         // 例如es中数据是 技术过硬,如果搜索关键词为过硬技术就无法查询出结果
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.matchPhase(Document::getContent, "技术");
+        wrapper.matchPhrase(Document::getContent, "技术");
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents);
     }
