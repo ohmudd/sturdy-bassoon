@@ -8,7 +8,7 @@ easy-es:
   global-config:
     process-index-mode: smoothly
     async-process-index-blocking: true
-    print-dsl: false
+    print-dsl: true
     db-config:
       map-underscore-to-camel-case: true
       #      table-prefix: dev_
@@ -17,6 +17,3 @@ easy-es:
       refresh-policy: immediate
       enable-track-total-hits: true
       enable-must2-filter: false
-logging:
-  level:
-   tracer: trace
