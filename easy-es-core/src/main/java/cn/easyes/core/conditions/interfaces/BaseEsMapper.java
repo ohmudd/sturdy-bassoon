@@ -57,7 +57,7 @@ public interface BaseEsMapper<T> {
      * 创建索引,根据当前mapper对应实体类信息及其注解配置生成索引信息 可指定索引名进行创建 适用于定时任务按日期创建索引场景
      *
      * @param indexName 指定的索引名,会覆盖注解上指定的索引名
-     * @return
+     * @return 是否创建成功
      */
     Boolean createIndex(String indexName);
 

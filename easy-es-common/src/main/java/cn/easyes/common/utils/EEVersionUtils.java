@@ -25,6 +25,7 @@ public class EEVersionUtils {
      *      <li>如果获取EE本身版本需要打包后获取,在test包测试用例中无法获取</li>
      * </ul>
      *
+     * @param <T>         泛型
      * @param objectClass T.getClass()
      * @return classVersion
      */
