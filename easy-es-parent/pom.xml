@@ -186,6 +186,7 @@
                         </executions>
                     </plugin>
 
+                    <!--maven发布到中央仓库 gpg 证书，自建仓库，可以注释该插件-->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
