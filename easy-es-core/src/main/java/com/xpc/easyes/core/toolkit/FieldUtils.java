@@ -157,6 +157,28 @@ public class FieldUtils {
     public static String getRealField(String field, Map<String, String> mappingColumnMap, GlobalConfig.DbConfig dbConfig) {
         String customField = mappingColumnMap.get(field);
         if (Objects.nonNull(customField)) {
+            return EntityInfoHelper.getDEFAULT_ID_NAME().equals(customField) ? EntityInfoHelper.getDEFAULT_ES_ID_NAME() : customField;
+        } else {
+            if (dbConfig.isMapUnderscoreToCamelCase()) {
+                return StringUtils.camelToUnderline(field);
+            } else {
+                return field;
+            }
+        }
+    }
+
+
+    /**
+     * 获取实际字段名 不转换id
+     *
+     * @param field            原字段名
+     * @param mappingColumnMap 字段映射关系map
+     * @param dbConfig         配置
+     * @return 实际字段名
+     */
+    public static String getRealFieldNotConvertId(String field, Map<String, String> mappingColumnMap, GlobalConfig.DbConfig dbConfig) {
+        String customField = mappingColumnMap.get(field);
+        if (Objects.nonNull(customField)) {
             return customField;
         } else {
             if (dbConfig.isMapUnderscoreToCamelCase()) {

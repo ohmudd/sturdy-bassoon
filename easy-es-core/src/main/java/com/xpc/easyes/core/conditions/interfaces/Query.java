@@ -102,4 +102,18 @@ public interface Query<Children, T, R> extends Serializable {
      */
     Children index(boolean condition, String indexName);
 
+
+    default Children enableMust2Filter(boolean enable) {
+        return enableMust2Filter(true, enable);
+    }
+
+    /**
+     * must 条件转filter 默认不转换
+     *
+     * @param condition 条件
+     * @param enable    是否开启 true开启 false 不开启 默认不开转换
+     * @return 泛型
+     */
+    Children enableMust2Filter(boolean condition, boolean enable);
+
 }
