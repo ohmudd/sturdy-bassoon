@@ -1150,7 +1150,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     private void printCountDSL(CountRequest countRequest) {
         if (GlobalConfigCache.getGlobalConfig().isPrintDsl() && Objects.nonNull(countRequest)) {
             Optional.ofNullable(countRequest.query())
-                    .ifPresent(source -> LogUtils.info(BaseEsConstants.COUNT_DSL_PREFIX + source));
+                    .ifPresent(source -> LogUtils.info(BaseEsConstants.COUNT_DSL_PREFIX
+                            + "\nindex-name: " + org.springframework.util.StringUtils.arrayToCommaDelimitedString(countRequest.indices())
+                            + "\nDSL：" + source));
         }
     }
 
@@ -1162,7 +1164,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     private void printDSL(SearchRequest searchRequest) {
         if (GlobalConfigCache.getGlobalConfig().isPrintDsl() && Objects.nonNull(searchRequest)) {
             Optional.ofNullable(searchRequest.source())
-                    .ifPresent(source -> LogUtils.info(BaseEsConstants.DSL_PREFIX + source));
+                    .ifPresent(source -> LogUtils.info(BaseEsConstants.DSL_PREFIX
+                            + "\nindex-name: " + org.springframework.util.StringUtils.arrayToCommaDelimitedString(searchRequest.indices())
+                            + "\nDSL：" + source));
         }
     }
 
