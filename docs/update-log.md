@@ -59,9 +59,13 @@
 ~~1.修复一处非String类型在NOT_EMPTY字段策略下,执行Insert时未赋值的情况~~
 
 ~~[v0.9.12](https://gitee.com/dromara/easy-es/releases/V0.9.12)~~
+
 ~~[v0.9.13](https://gitee.com/dromara/easy-es/releases/V0.9.13)~~
+
 ~~[v0.9.14](https://gitee.com/dromara/easy-es/releases/V0.9.14)~~
+
 ~~[v0.9.15](https://gitee.com/dromara/easy-es/releases/V0.9.15)~~
+
 ~~[v0.9.16](https://gitee.com/dromara/easy-es/releases/V0.9.16)~~
 
 
