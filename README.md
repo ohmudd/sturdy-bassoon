@@ -160,6 +160,6 @@ compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Vers
 
 QQ | 微信:252645816
 
-# 知识星球
+# 知识星球 | Planet Of Knowledge
 ---
 <img alt="zsxq" src="https://iknow.hs.net/9038b7ab-c0d9-4a87-9492-e839907a8978.png">
