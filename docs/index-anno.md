@@ -1,6 +1,6 @@
 索引如果用户不配置,也不指定注解,则采用模型名称的小写字母作为索引,例如模型叫Document,那么索引就为document.<br />我们同样也支持根据@TableName注解进行指定索引名称,为了保持和MP一样的语法,这里注解命名暂时先保持@TableName,但实际上代表的是索引名称.<br />使用示例:假设我的索引名称叫: daily_document,那么我们可以在模型上加上此注解
 ```java
-@TableName(value="daily_document",shardsNum = 3,replicasNum = 2)
+@TableName(value="daily_document",shardsNum = 3,replicasNum = 2) // 0.9.11 + 版本,索引自动托管模式下亦可通过此注解设置索引的分片数和副本数
 public class Document {
     ...
 }
