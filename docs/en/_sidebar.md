@@ -43,6 +43,8 @@
   	  - [from](/en/from.md)
   	  - [size](/en/size.md)
   	  - [set](/en/set.md)
+          - [index](wrapper-index.md)
+          - [enableMust2Filter](enableMust2Filter.md) 
   	  - [AbstractWrapper](/en/AbstractWrapper.md)
   	  - [QueryWrapper](/en/QueryWrapper.md)
   	  - [UpdateWrapper](/en/UpdateWrapper.md)
