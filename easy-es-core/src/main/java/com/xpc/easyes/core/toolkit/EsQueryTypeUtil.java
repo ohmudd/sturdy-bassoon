@@ -26,14 +26,16 @@ public class EsQueryTypeUtil {
     /**
      * 添加查询类型 精确匹配/模糊匹配/范围匹配等
      *
-     * @param boolQueryBuilder 参数连接器
-     * @param attachType       连接类型
-     * @param model            参数
-     * @param entityInfo       实体信息
-     * @param dbConfig         全局配置
+     * @param boolQueryBuilder  参数连接器
+     * @param attachType        连接类型
+     * @param enableMust2Filter must条件是否转filter
+     * @param model             参数
+     * @param entityInfo        实体信息
+     * @param dbConfig          全局配置
      */
-    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer attachType, BaseEsParam.FieldValueModel
-            model, EntityInfo entityInfo, GlobalConfig.DbConfig dbConfig) {
+    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer attachType, boolean enableMust2Filter,
+                                      BaseEsParam.FieldValueModel model, EntityInfo entityInfo, GlobalConfig.DbConfig dbConfig) {
+
         Integer queryType = model.getEsQueryType();
         Object value = model.getValue();
         Float boost = model.getBoost();
@@ -52,43 +54,43 @@ public class EsQueryTypeUtil {
         if (Objects.equals(queryType, TERM_QUERY.getType())) {
             // 封装精确查询参数
             TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery(field, value).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, termQueryBuilder);
+            setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, termQueryBuilder);
         } else if (Objects.equals(queryType, TERMS_QUERY.getType())) {
             // 此处兼容由or转入shouldList的in参数
             Collection<?> values = Objects.isNull(value) ? model.getValues() : (Collection<?>) value;
             TermsQueryBuilder termsQueryBuilder = QueryBuilders.termsQuery(field, values).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, termsQueryBuilder);
+            setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, termsQueryBuilder);
         } else if (Objects.equals(queryType, MATCH_PHASE.getType())) {
             // 封装模糊分词查询参数(分词必须按原关键词顺序)
             MatchPhraseQueryBuilder matchPhraseQueryBuilder = QueryBuilders.matchPhraseQuery(field, value).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, matchPhraseQueryBuilder);
+            setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, matchPhraseQueryBuilder);
         } else if (Objects.equals(queryType, MATCH_PHRASE_PREFIX.getType())) {
             MatchPhrasePrefixQueryBuilder matchPhrasePrefixQueryBuilder = QueryBuilders.matchPhrasePrefixQuery(field, value)
                     .maxExpansions((Integer) model.getExt()).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, matchPhrasePrefixQueryBuilder);
+            setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, matchPhrasePrefixQueryBuilder);
         } else if (Objects.equals(queryType, PREFIX_QUERY.getType())) {
             PrefixQueryBuilder prefixQueryBuilder = QueryBuilders.prefixQuery(field, value.toString()).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, prefixQueryBuilder);
+            setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, prefixQueryBuilder);
         } else if (Objects.equals(queryType, QUERY_STRING_QUERY.getType())) {
             QueryStringQueryBuilder queryStringQueryBuilder = QueryBuilders.queryStringQuery(value.toString()).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, queryStringQueryBuilder);
+            setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, queryStringQueryBuilder);
         } else if (Objects.equals(queryType, MATCH_QUERY.getType())) {
             // 封装模糊分词查询参数(可无序)
             MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery(field, value).boost(boost);
             if (StringUtils.isBlank(path)) {
-                setQueryBuilder(boolQueryBuilder, attachType, matchQueryBuilder);
+                setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, matchQueryBuilder);
             } else {
                 // 嵌套类型
                 if (JoinTypeEnum.NESTED.equals(model.getExt())) {
                     matchQueryBuilder = QueryBuilders.matchQuery(path + PATH_FIELD_JOIN + field, value).boost(boost);
                     NestedQueryBuilder nestedQueryBuilder = QueryBuilders.nestedQuery(model.getPath(), matchQueryBuilder, (ScoreMode) model.getScoreMode());
-                    setQueryBuilder(boolQueryBuilder, attachType, nestedQueryBuilder);
+                    setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, nestedQueryBuilder);
                 } else if (JoinTypeEnum.HAS_CHILD.equals(model.getExt())) {
                     HasChildQueryBuilder hasChildQueryBuilder = new HasChildQueryBuilder(path, matchQueryBuilder, (ScoreMode) model.getScoreMode());
-                    setQueryBuilder(boolQueryBuilder, attachType, hasChildQueryBuilder);
+                    setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, hasChildQueryBuilder);
                 } else if (JoinTypeEnum.HAS_PARENT.equals(model.getExt())) {
                     HasParentQueryBuilder hasParentQueryBuilder = new HasParentQueryBuilder(path, matchQueryBuilder, (Boolean) model.getScoreMode());
-                    setQueryBuilder(boolQueryBuilder, attachType, hasParentQueryBuilder);
+                    setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, hasParentQueryBuilder);
                 }
             }
         } else if (Objects.equals(queryType, RANGE_QUERY.getType())) {
@@ -103,11 +105,11 @@ public class EsQueryTypeUtil {
             } else if (Objects.equals(originalAttachType, LE.getType())) {
                 rangeQueryBuilder.lte(value);
             }
-            setQueryBuilder(boolQueryBuilder, attachType, rangeQueryBuilder);
+            setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, rangeQueryBuilder);
         } else if (Objects.equals(queryType, EXISTS_QUERY.getType())) {
             // 封装是否存在查询参数
             ExistsQueryBuilder existsQueryBuilder = QueryBuilders.existsQuery(field).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, existsQueryBuilder);
+            setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, existsQueryBuilder);
         } else if (Objects.equals(queryType, WILDCARD_QUERY.getType())) {
             String query;
             if (Objects.equals(attachType, LIKE_LEFT.getType())) {
@@ -118,7 +120,7 @@ public class EsQueryTypeUtil {
                 query = WILDCARD_SIGN + value + WILDCARD_SIGN;
             }
             WildcardQueryBuilder wildcardQueryBuilder = QueryBuilders.wildcardQuery(field, query).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, wildcardQueryBuilder);
+            setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, wildcardQueryBuilder);
         }
     }
 
@@ -126,16 +128,17 @@ public class EsQueryTypeUtil {
     /**
      * 添加查询类型 适用于多字段单值情形
      *
-     * @param boolQueryBuilder 参数连接器
-     * @param queryType        查询类型
-     * @param attachType       连接类型
-     * @param fields           字段列表
-     * @param value            值
-     * @param ext              拓展字段
-     * @param minShouldMatch   最小匹配百分比
-     * @param boost            权重
+     * @param boolQueryBuilder  参数连接器
+     * @param queryType         查询类型
+     * @param attachType        连接类型
+     * @param enableMust2Filter must是否转filter
+     * @param fields            字段列表
+     * @param value             值
+     * @param ext               拓展字段
+     * @param minShouldMatch    最小匹配百分比
+     * @param boost             权重
      */
-    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType,
+    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType, boolean enableMust2Filter,
                                       List<String> fields, Object value, Object ext, Integer minShouldMatch, Float boost) {
         if (Objects.equals(queryType, MULTI_MATCH_QUERY.getType())) {
             MultiMatchQueryBuilder multiMatchQueryBuilder = QueryBuilders.multiMatchQuery(value, fields.toArray(new String[0])).boost(boost);
@@ -144,26 +147,28 @@ public class EsQueryTypeUtil {
                 multiMatchQueryBuilder.operator(operator);
                 multiMatchQueryBuilder.minimumShouldMatch(minShouldMatch + PERCENT);
             }
-            setQueryBuilder(boolQueryBuilder, attachType, multiMatchQueryBuilder);
+            setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, multiMatchQueryBuilder);
         }
     }
 
     /**
      * 添加查询类型 精确匹配 用于between 操作
      *
-     * @param boolQueryBuilder 参数连接器
-     * @param queryType        查询类型
-     * @param attachType       连接类型
-     * @param field            字段
-     * @param leftValue        左值
-     * @param rightValue       右值
-     * @param boost            权重
+     * @param boolQueryBuilder  参数连接器
+     * @param queryType         查询类型
+     * @param attachType        连接类型
+     * @param enableMust2Filter must是否转filter
+     * @param field             字段
+     * @param leftValue         左值
+     * @param rightValue        右值
+     * @param boost             权重
      */
-    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType, String field, Object leftValue, Object rightValue, Float boost) {
+    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType,
+                                      boolean enableMust2Filter, String field, Object leftValue, Object rightValue, Float boost) {
         if (Objects.equals(queryType, INTERVAL_QUERY.getType())) {
             RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(field).boost(boost);
             rangeQueryBuilder.gte(leftValue).lte(rightValue);
-            setQueryBuilder(boolQueryBuilder, attachType, rangeQueryBuilder);
+            setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, rangeQueryBuilder);
         }
     }
 
@@ -171,11 +176,12 @@ public class EsQueryTypeUtil {
     /**
      * 设置连接类型 must,filter,should,must not 对应mysql中的and,and,or,!= 丶 not like...
      *
-     * @param boolQueryBuilder  参数连接器
-     * @param attachType        连接类型
-     * @param matchQueryBuilder 匹配参数
+     * @param boolQueryBuilder 参数连接器
+     * @param attachType       连接类型
+     * @param queryBuilder     匹配参数
      */
-    private static void setQueryBuilder(BoolQueryBuilder boolQueryBuilder, Integer attachType, QueryBuilder matchQueryBuilder) {
+    private static void setQueryBuilder(BoolQueryBuilder boolQueryBuilder, Integer attachType, boolean enableMust2Filter,
+                                        QueryBuilder queryBuilder) {
         boolean must = Objects.equals(attachType, MUST.getType()) || Objects.equals(attachType, GT.getType())
                 || Objects.equals(attachType, LT.getType()) || Objects.equals(attachType, GE.getType())
                 || Objects.equals(attachType, LE.getType()) || Objects.equals(attachType, IN.getType())
@@ -184,13 +190,17 @@ public class EsQueryTypeUtil {
         boolean mustNot = Objects.equals(attachType, MUST_NOT.getType()) || Objects.equals(attachType, NOT_IN.getType())
                 || Objects.equals(attachType, NOT_EXISTS.getType()) || Objects.equals(attachType, NOT_BETWEEN.getType());
         if (must) {
-            boolQueryBuilder.must(matchQueryBuilder);
+            if (enableMust2Filter) {
+                boolQueryBuilder.filter(queryBuilder);
+            } else {
+                boolQueryBuilder.must(queryBuilder);
+            }
         } else if (Objects.equals(attachType, FILTER.getType())) {
-            boolQueryBuilder.filter(matchQueryBuilder);
+            boolQueryBuilder.filter(queryBuilder);
         } else if (Objects.equals(attachType, SHOULD.getType())) {
-            boolQueryBuilder.should(matchQueryBuilder);
+            boolQueryBuilder.should(queryBuilder);
         } else if (mustNot) {
-            boolQueryBuilder.mustNot(matchQueryBuilder);
+            boolQueryBuilder.mustNot(queryBuilder);
         }
     }
 
