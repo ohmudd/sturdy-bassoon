@@ -27,3 +27,7 @@ public class Document{
      // Omit other extraneous fields...
 }
 ````
+
+> **Tips:**
+> - Highlight annotation supports setting the length fragmentSize of the content intercepted by the highlight return, the default value is 100
+> - Highlight annotation supports setting the label of highlighted content, the default is <em></em>
