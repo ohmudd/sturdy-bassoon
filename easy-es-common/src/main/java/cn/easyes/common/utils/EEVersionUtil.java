@@ -19,9 +19,18 @@ import java.util.Optional;
 public class EEVersionUtil {
 
     /**
-     * 支持的版本 目前支持版本为7.xx 推荐7.14.0
+     * 获取指定类版本号
+     * <ul>
+     *      <li>只能获取jar包版本，并且打包后META-INF/MANIFEST.MF文件中存在 Implementation-Version</li>
+     *      <li>不存在 Implementation-Version 时返回 unknown</li>
+     * </ul>
+     *
+     * @return classVersion
      */
-    private final static String supportedVersion = "7";
+    public static <T> String getJarVersion(Class<T> objectClass) {
+        return Optional.ofNullable(objectClass.getPackage().getImplementationVersion()).
+                orElse("unknown");
+    }
 
     /**
      * 获取EE版本号
@@ -29,24 +38,14 @@ public class EEVersionUtil {
      * @return ee version
      */
     public static String getEEVersion() {
-        return Optional.ofNullable(EEVersionUtil.class.getPackage().getImplementationVersion()).
-                orElse("unknown");
-    }
-
-    /**
-     * 获取es jar包版本
-     *
-     * @param restHighLevelClient es 高级客户端
-     * @return jar version
-     */
-    public static String getJarVersion(RestHighLevelClient restHighLevelClient) {
-        String version = restHighLevelClient.getClass().getPackage().getImplementationVersion();
-        LogUtils.formatInfo("Elasticsearch jar version:%s", version);
-        return version;
+        return getJarVersion(EEVersionUtil.class);
     }
 
     /**
      * 获取elasticsearch client 版本
+     * <p>
+     * elasticsearch 客户端必须通过 restHighLevelClient.info 获取，无法使用getPackage.getImplementationVersion 获取
+     * </p>
      *
      * @param restHighLevelClient es高级客户端
      * @return client version
@@ -61,28 +60,5 @@ public class EEVersionUtil {
         String version = info.getVersion().getNumber();
         LogUtils.formatInfo("Elasticsearch client version:%s", version);
         return version;
-    }
-
-    /**
-     * 校验es client版本及jar包版本
-     *
-     * @param restHighLevelClient es高级客户端
-     */
-    public static void verify(RestHighLevelClient restHighLevelClient) {
-        // 校验jar包版本是否为推荐使用版本
-        String jarVersion = getJarVersion(restHighLevelClient);
-        if (!jarVersion.startsWith(supportedVersion)) {
-            // 这里抛出异常原因是ee强制依赖于jar包版本，jar包版本不对会导致ee异常
-            throw ExceptionUtils.eee("Easy-Es supported elasticsearch jar version is:%s.xx", supportedVersion);
-        }
-        String clientVersion = getClientVersion(restHighLevelClient);
-        if (!clientVersion.startsWith(supportedVersion)) {
-            // 这里校验客户端为非强制，客户端版本非推荐版本对应提醒即可，es会报错提醒
-            LogUtils.formatWarn("Easy-Es supported elasticsearch client version is:%s.xx", supportedVersion);
-        }
-        if (!jarVersion.equals(clientVersion)) {
-            // 提示jar包与客户端版本不对应，es官方推荐jar包版本对应客户端版本
-            LogUtils.formatWarn("Elasticsearch clientVersion:%s not equals jarVersion:%s", clientVersion, jarVersion);
-        }
     }
 }
