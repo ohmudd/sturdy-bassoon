@@ -136,6 +136,9 @@ public class WrapperProcessor {
         List<Param> children = (List<Param>) param.getChildren();
         QueryBuilder queryBuilder;
         switch (param.getQueryTypeEnum()) {
+            case OR:
+                // just skip
+                break;
             case TERM:
                 queryBuilder = QueryBuilders.termQuery(param.getColumn(), param.getVal()).boost(param.getBoost());
                 setChildrenBool(bool, queryBuilder, parentType);
@@ -239,20 +242,20 @@ public class WrapperProcessor {
                 setChildrenBool(bool, queryBuilder, parentType);
                 break;
             case AND_MUST:
-                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), EsQueryTypeEnum.AND_MUST);
-                setChildrenBool(bool, queryBuilder, parentType);
+                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), parentType);
+                setChildrenBool(bool, queryBuilder, AND_MUST);
                 break;
             case FILTER:
-                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), EsQueryTypeEnum.FILTER);
-                setChildrenBool(bool, queryBuilder, parentType);
+                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), parentType);
+                setChildrenBool(bool, queryBuilder, FILTER);
                 break;
             case MUST_NOT:
-                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), EsQueryTypeEnum.MUST_NOT);
-                setChildrenBool(bool, queryBuilder, parentType);
+                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), parentType);
+                setChildrenBool(bool, queryBuilder, MUST_NOT);
                 break;
             case OR_SHOULD:
-                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), EsQueryTypeEnum.OR_SHOULD);
-                setChildrenBool(bool, queryBuilder, parentType);
+                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), parentType);
+                setChildrenBool(bool, queryBuilder, OR_SHOULD);
                 break;
             default:
                 throw ExceptionUtils.eee("非法参数类型");

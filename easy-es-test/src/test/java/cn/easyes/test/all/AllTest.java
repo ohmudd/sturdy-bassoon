@@ -7,6 +7,7 @@ import cn.easyes.core.biz.SAPageInfo;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.conditions.LambdaEsQueryWrapper;
 import cn.easyes.core.conditions.LambdaEsUpdateWrapper;
+import cn.easyes.core.conditions.WrapperProcessor;
 import cn.easyes.core.toolkit.EntityInfoHelper;
 import cn.easyes.core.toolkit.EsWrappers;
 import cn.easyes.core.toolkit.FieldUtils;
@@ -806,8 +807,19 @@ public class AllTest {
         boolQueryBuilder.must(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("state",9))
                 .should(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("state",8)).must(QueryBuilders.termQuery("bidding_sign",1))));
         boolQueryBuilder.should(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("business_type",2)).must(QueryBuilders.termsQuery("state",values)));
-        System.out.println(boolQueryBuilder.toString());
+        System.out.println(boolQueryBuilder);
         System.out.println();
+
+
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.eq("business_type",1)
+                .and(a->a.eq("state",9).or(b->b.eq("state",8).eq("bidding_sign",1))
+                )
+                .or(i->i.eq("business_type",2).in("state",2,3));
+
+
+        documentMapper.selectList(wrapper);
+
     }
 
 }
