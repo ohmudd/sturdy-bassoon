@@ -571,7 +571,19 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
 
     @Override
     public Children or(boolean condition) {
-        getWrapper().exists(condition);
+        getWrapper().or(condition);
+        return typedThis;
+    }
+
+    @Override
+    public Children not(boolean condition) {
+        getWrapper().not(condition);
+        return typedThis;
+    }
+
+    @Override
+    public Children filter(boolean condition) {
+        getWrapper().filter(condition);
         return typedThis;
     }
 

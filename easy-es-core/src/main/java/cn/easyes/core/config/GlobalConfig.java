@@ -39,14 +39,14 @@ public class GlobalConfig {
     private boolean distributed = true;
     /**
      * Activate the current client's release index maximum number of retries
-     * 分布式环境下,平滑模式,当前客户端激活最新索引最大重试次数若数据量过大,重建索引数据迁移时间超过60*(180/60)=180分钟时,可调大此参数值,此参数值决定最大重试次数,超出此次数后仍未成功,则终止重试并记录异常日志
+     * 分布式环境下,平滑模式,当前客户端激活最新索引最大重试次数,若数据量过大,重建索引数据迁移时间超过4320/60=72H,可调大此参数值,此参数值决定最大重试次数,超出此次数后仍未成功,则终止重试并记录异常日志
      */
-    private int activeReleaseIndexMaxRetry = 60;
+    private int activeReleaseIndexMaxRetry = 4320;
     /**
      * Activate the current client's release index retry delay for a fixed time uint:second
-     * 分布式环境下,平滑模式,当前客户端激活最新索引最大重试次数 若数据量过大,重建索引数据迁移时间超过60*(180/60)=180分钟时,可调大此参数值 此参数值决定多久重试一次 单位:秒
+     * 分布式环境下,平滑模式,当前客户端激活最新索引重试时间间隔 若您期望最终一致性的时效性更高,可调小此值,但会牺牲一些性能
      */
-    private int activeReleaseIndexFixedDelay = 180;
+    private int activeReleaseIndexFixedDelay = 60;
     /**
      * es db config 数据库配置
      */
@@ -61,7 +61,7 @@ public class GlobalConfig {
         /**
          * index prefix eg:daily_, 索引前缀 可缺省
          */
-        private String tablePrefix = EMPTY_STR;
+        private String indexPrefix = EMPTY_STR;
         /**
          * enable underscore to camel case default false 是否开启下划线自动转驼峰 默认关闭
          */

@@ -100,7 +100,7 @@ public enum EsQueryTypeEnum {
     /**
      * 与条件必须满足，但不返回得分，效率更高
      */
-    FILTER,
+    AND_FILTER,
     /**
      * 或条件，相当于MYSQL中的OR 和MP中的or嵌套用法一致
      */
@@ -110,7 +110,16 @@ public enum EsQueryTypeEnum {
      */
     NESTED,
     /**
-     * 或条件，仅影响紧跟其后的一个条件，和MP中的拼接or用法一致
+     * 拼接OR,或条件，和MP中的拼接or用法一致
      */
-    OR;
+    OR,
+    /**
+     * 拼接NOT,非条件 表示必须不满足
+     */
+    NOT,
+    /**
+     * 拼接filter,
+     */
+    FILTER;
+
 }

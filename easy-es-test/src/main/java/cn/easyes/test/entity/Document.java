@@ -14,7 +14,7 @@ import java.util.List;
  **/
 @Data
 @Accessors(chain = true)
-@IndexName(value = "easyes_document", shardsNum = 3, replicasNum = 2, keepGlobalPrefix = true, childClass = Comment.class,routing = "666")
+@IndexName(value = "easyes_document", shardsNum = 3, replicasNum = 2, keepGlobalPrefix = true, childClass = Comment.class,routing = "testRouting")
 public class Document {
     /**
      * es中的唯一id,字段名随便起,我这里演示用esId,你也可以用id(推荐),bizId等.

@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -125,5 +127,11 @@ public class IndexTest {
         wrapper.mapping(map);
         boolean isOk = documentMapper.createIndex(wrapper);
         Assertions.assertTrue(isOk);
+    }
+
+    @Test
+    public void testActiveIndex(){
+        String indexName = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        documentMapper.setCurrentActiveIndex(indexName);
     }
 }

@@ -581,7 +581,7 @@ public class EntityInfoHelper {
         GlobalConfig.DbConfig dbConfig = globalConfig.getDbConfig();
         IndexName table = clazz.getAnnotation(IndexName.class);
         String tableName = clazz.getSimpleName().toLowerCase(Locale.ROOT);
-        String tablePrefix = dbConfig.getTablePrefix();
+        String tablePrefix = dbConfig.getIndexPrefix();
 
         boolean tablePrefixEffect = true;
         String indexName;

@@ -13,6 +13,7 @@ import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.unit.DistanceUnit;
@@ -29,6 +30,7 @@ import org.elasticsearch.search.aggregations.metrics.ParsedMin;
 import org.elasticsearch.search.aggregations.metrics.ParsedSum;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.*;
@@ -161,6 +163,26 @@ public class AllTest {
     }
 
     // 3.查询
+
+    @Test
+    @Order(6)
+    public void testSQL() {
+        // 注意 sql中的from后面跟的是要被查询的索引名,也可以是索引别名(效果一样) 由于索引名可能会变,所以此处我采用别名ee_default_alias进行查询
+        String sql = "select count(*) from ee_default_alias where star_num > 0";
+        String jsonResult = documentMapper.executeSQL(sql);
+        System.out.println(jsonResult);
+        Assertions.assertNotNull(jsonResult);
+    }
+
+    @Test
+    @Order(6)
+    public void testDSL() {
+        String dsl = "{\"size\":10000,\"query\":{\"bool\":{\"must\":[{\"term\":{\"title.keyword\":{\"value\":\"测试文档2\",\"boost\":1.0}}}],\"adjust_pure_negative\":true,\"boost\":1.0}}\"track_total_hits\":2147483647}";
+        String jsonResult = documentMapper.executeDSL(dsl);
+        System.out.println(jsonResult);
+        Assertions.assertNotNull(jsonResult);
+    }
+
     @Test
     @Order(6)
     public void testSelectOne() {
@@ -491,6 +513,26 @@ public class AllTest {
         Assertions.assertEquals(2, documents.size());
     }
 
+    @Test
+    @Order(6)
+    public void testConditionFilter() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.eq(Document::getStarNum, 10)
+                .filter(i -> i.eq(Document::getTitle, "测试文档10"));
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals(1, documents.size());
+    }
+
+    @Test
+    @Order(6)
+    public void testConditionMustNot() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.in(Document::getStarNum, 10,11,12,13)
+                .mustNot(i->i.eq(Document::getTitle,"测试文档10").eq(Document::getTitle,"测试文档11"));
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals(2, documents.size());
+    }
+
 
     @Test
     @Order(6)
@@ -760,12 +802,12 @@ public class AllTest {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         GeoPoint geoPoint = new GeoPoint(41.0, 116.0);
         wrapper.geoDistance(Document::getLocation, 168.8, DistanceUnit.KILOMETERS, geoPoint);
-//        GeoDistanceSortBuilder geoDistanceSortBuilder = SortBuilders.geoDistanceSort(FieldUtils.val(Document::getLocation), geoPoint)
-//                .unit(DistanceUnit.KILOMETERS)
-//                .geoDistance(GeoDistance.ARC)
-//                .order(SortOrder.DESC);
-//
-//        wrapper.sort(geoDistanceSortBuilder);
+        GeoDistanceSortBuilder geoDistanceSortBuilder = SortBuilders.geoDistanceSort(FieldUtils.val(Document::getLocation), geoPoint)
+                .unit(DistanceUnit.KILOMETERS)
+                .geoDistance(GeoDistance.ARC)
+                .order(SortOrder.DESC);
+
+        wrapper.sort(geoDistanceSortBuilder);
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(4, documents.size());
     }
@@ -832,7 +874,7 @@ public class AllTest {
 
     @Test
     @Order(9)
-    public void testDSL() {
+    public void testComplex() {
         // SQL写法
         // where business_type = 1 and (state = 9 or (state = 8 and bidding_sign = 1)) or business_type = 2 and state in (2,3)
 

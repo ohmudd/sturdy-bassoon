@@ -1,6 +1,5 @@
 package cn.easyes.core.core;
 
-import cn.easyes.common.enums.MethodEnum;
 import cn.easyes.core.biz.EsPageInfo;
 import cn.easyes.core.biz.SAPageInfo;
 import org.elasticsearch.action.search.SearchRequest;
@@ -101,23 +100,29 @@ public interface BaseEsMapper<T> {
     Boolean refresh(String... indexNames);
 
     /**
-     * 执行静态dsl语句 不传索引名,默认为当前mapper对应索引
+     * 执行SQL语句
      *
-     * @param dsl    dsl语句
-     * @param method 请求类型 比如查询类GET 更新PUT...
+     * @param sql 被执行的sql语句
      * @return 执行结果 jsonString
      */
-    String executeDSL(String dsl, MethodEnum method);
+    String executeSQL(String sql);
+
+    /**
+     * 执行静态dsl语句 不传索引名,默认为当前mapper对应索引
+     *
+     * @param dsl dsl语句
+     * @return 执行结果 jsonString
+     */
+    String executeDSL(String dsl);
 
     /**
      * 执行静态dsl语句 可指定作用的索引
      *
      * @param dsl       dsl语句
-     * @param method    请求类型 比如查询类GET 更新PUT...
      * @param indexName 作用的索引名
      * @return 执行结果 jsonString
      */
-    String executeDSL(String dsl, MethodEnum method, String indexName);
+    String executeDSL(String dsl, String indexName);
 
     /**
      * 标准查询

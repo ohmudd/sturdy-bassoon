@@ -167,18 +167,26 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     @SneakyThrows
-    public String executeDSL(String dsl, MethodEnum method) {
-        String indexName = EntityInfoHelper.getEntityInfo(entityClass).getIndexName();
-        Request request = new Request(method.toString(), indexName);
+    public String executeSQL(String sql) {
+        Request request = new Request(MethodEnum.POST.name(), SQL_ENDPOINT);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(QUERY, sql);
+        request.setJsonEntity(jsonObject.toJSONString());
         Response response = client.getLowLevelClient().performRequest(request);
         return EntityUtils.toString(response.getEntity());
     }
 
     @Override
     @SneakyThrows
-    public String executeDSL(String dsl, MethodEnum method, String indexName) {
+    public String executeDSL(String dsl) {
+        return executeDSL(dsl, EntityInfoHelper.getEntityInfo(entityClass).getIndexName());
+    }
+
+    @Override
+    @SneakyThrows
+    public String executeDSL(String dsl, String indexName) {
         Assert.notNull(indexName, "indexName must not null");
-        Request request = new Request(method.toString(), indexName);
+        Request request = new Request(MethodEnum.GET.name(), indexName + DSL_ENDPOINT);
         Response response = client.getLowLevelClient().performRequest(request);
         return EntityUtils.toString(response.getEntity());
     }

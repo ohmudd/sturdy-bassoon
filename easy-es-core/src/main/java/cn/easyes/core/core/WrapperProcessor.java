@@ -98,7 +98,9 @@ public class WrapperProcessor {
         String realField;
         switch (param.getQueryTypeEnum()) {
             case OR:
-                // 渣男行为,*完就不认人了,因为拼接OR已处理过了 直接跳过
+            case NOT:
+            case FILTER:
+                // 渣男行为,*完就不认人了,因为拼接类型在AbstractWrapper中已处理过了 直接跳过
                 break;
             case TERM:
                 realField = getRealFieldAndSuffix(param.getColumn(), fieldTypeMap, mappingColumnMap);
@@ -233,7 +235,7 @@ public class WrapperProcessor {
                 break;
             // 下面五种嵌套类型 需要对孩子节点递归处理
             case AND_MUST:
-            case FILTER:
+            case AND_FILTER:
             case MUST_NOT:
             case OR_SHOULD:
                 queryBuilder = getBool(children, QueryBuilders.boolQuery(), entityInfo, null);
@@ -264,12 +266,12 @@ public class WrapperProcessor {
             bool.must(queryBuilder);
         } else if (OR_SHOULD.equals(parentType)) {
             bool.should(queryBuilder);
-        } else if (FILTER.equals(parentType)) {
+        } else if (AND_FILTER.equals(parentType)) {
             bool.filter(queryBuilder);
         } else if (MUST_NOT.equals(parentType)) {
             bool.mustNot(queryBuilder);
         } else {
-            // just ignore,almost never happen
+            // by default
             bool.must(queryBuilder);
         }
     }

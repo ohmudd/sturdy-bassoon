@@ -158,7 +158,17 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children filter(boolean condition, Consumer<Children> consumer) {
-        return addNested(condition, FILTER, consumer);
+        return addNested(condition, AND_FILTER, consumer);
+    }
+
+    @Override
+    public Children filter(boolean condition) {
+        return addParam(condition, FILTER, null, null, null);
+    }
+
+    @Override
+    public Children not(boolean condition) {
+        return addParam(condition, NOT, null, null, null);
     }
 
     @Override
@@ -667,8 +677,8 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         param.setBoost(boost);
         param.setLevel(level);
 
-        // 入队之前需要先对MP中的拼接or()特殊处理
-        processOr(param);
+        // 入队之前需要先对MP中的拼接类型特殊处理
+        processJoin(param);
         paramQueue.add(param);
     }
 
@@ -687,8 +697,15 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         param.setLevel(level);
         param.setPrevQueryType(queryTypeEnum);
 
-        // 入队之前需要先对MP中的拼接or()特殊处理
-        processOr(param);
+        // 入队之前需要先对MP中的拼接类型特殊处理
+        processJoin(param);
+
+        // 这两种情况需要重置其prevType
+        if (MUST_NOT.equals(queryTypeEnum)) {
+            prevQueryType = MUST_NOT;
+        } else if (FILTER.equals(queryTypeEnum)) {
+            prevQueryType = FILTER;
+        }
 
         paramQueue.add(param);
         this.parentId = param.getId();
@@ -708,16 +725,22 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
 
     /**
-     * 特殊处理拼接or
+     * 特殊处理拼接
      *
      * @param param 参数
      */
-    private void processOr(Param param) {
+    private void processJoin(Param param) {
         if (!paramQueue.isEmpty()) {
             Param prev = paramQueue.peekLast();
             if (OR.equals(prev.getQueryTypeEnum())) {
                 // 上一节点是拼接or() 需要重置其prevQueryType类型,让其走should查询
                 param.setPrevQueryType(OR_SHOULD);
+            } else if (NOT.equals(prev.getQueryTypeEnum())) {
+                // 上一节点是拼接not() 需要重置其prevQueryType类型,让其走must_not查询
+                param.setPrevQueryType(MUST_NOT);
+            } else if (FILTER.equals(prev.getPrevQueryType())) {
+                // 上一节点是拼接filter() 需要重置其prevQueryType类型,让其走filter查询
+                param.setPrevQueryType(AND_FILTER);
             }
         }
     }
