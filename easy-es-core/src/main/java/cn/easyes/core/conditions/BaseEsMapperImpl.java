@@ -106,7 +106,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         Optional.ofNullable(wrapper.aliasName).ifPresent(createIndexParam::setAliasName);
 
         // 创建索引
-        return IndexUtils.createIndex(client, createIndexParam);
+        return IndexUtils.createIndex(client, EntityInfoHelper.getEntityInfo(entityClass), createIndexParam);
     }
 
 
@@ -124,7 +124,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
                 // 空参数列表,则不更新
                 return Boolean.FALSE;
             }
-            Map<String, Object> mapping = IndexUtils.initMapping(wrapper.esIndexParamList);
+            Map<String, Object> mapping = IndexUtils.initMapping(EntityInfoHelper.getEntityInfo(entityClass), wrapper.esIndexParamList);
             putMappingRequest.source(mapping);
         } else {
             // 用户自行指定的mapping信息

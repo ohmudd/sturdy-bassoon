@@ -67,7 +67,7 @@ public class AutoProcessIndexNotSmoothlyServiceImpl implements AutoProcessIndexS
         CreateIndexParam createIndexParam = IndexUtils.getCreateIndexParam(entityInfo);
 
         // 执行创建
-        return IndexUtils.createIndex(client, createIndexParam);
+        return IndexUtils.createIndex(client, entityInfo, createIndexParam);
     }
 
     private boolean doCreateIndex(EntityInfo entityInfo, RestHighLevelClient client) {
@@ -75,7 +75,7 @@ public class AutoProcessIndexNotSmoothlyServiceImpl implements AutoProcessIndexS
         CreateIndexParam createIndexParam = IndexUtils.getCreateIndexParam(entityInfo);
 
         // 执行创建
-        return IndexUtils.createIndex(client, createIndexParam);
+        return IndexUtils.createIndex(client, entityInfo, createIndexParam);
     }
 
 }

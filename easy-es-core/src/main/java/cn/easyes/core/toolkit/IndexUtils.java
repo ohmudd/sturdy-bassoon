@@ -28,7 +28,6 @@ import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.indices.GetIndexResponse;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.ReindexAction;
 import org.elasticsearch.index.reindex.ReindexRequest;
 
 import java.io.IOException;
@@ -70,7 +69,7 @@ public class IndexUtils {
      * @param indexParam 创建索引参数
      * @return 是否创建成功
      */
-    public static boolean createIndex(RestHighLevelClient client, CreateIndexParam indexParam) {
+    public static boolean createIndex(RestHighLevelClient client, EntityInfo entityInfo, CreateIndexParam indexParam) {
         CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexParam.getIndexName());
 
         // 设置settings信息
@@ -87,7 +86,7 @@ public class IndexUtils {
 
         // mapping信息
         if (Objects.isNull(indexParam.getMapping())) {
-            Map<String, Object> mapping = initMapping(indexParam.getEsIndexParamList());
+            Map<String, Object> mapping = initMapping(entityInfo, indexParam.getEsIndexParamList());
             createIndexRequest.mapping(mapping);
         } else {
             // 用户自定义的mapping
@@ -301,7 +300,7 @@ public class IndexUtils {
      * @param indexParamList 索引参数列表
      * @return 索引mapping
      */
-    public static Map<String, Object> initMapping(List<EsIndexParam> indexParamList) {
+    public static Map<String, Object> initMapping(EntityInfo entityInfo, List<EsIndexParam> indexParamList) {
         Map<String, Object> mapping = new HashMap<>(1);
         if (CollectionUtils.isEmpty(indexParamList)) {
             return mapping;
@@ -311,6 +310,22 @@ public class IndexUtils {
                 .map(GlobalConfig::getDbConfig)
                 .orElse(new GlobalConfig.DbConfig());
 
+        initInfo(entityInfo, dbConfig, properties, indexParamList);
+        mapping.put(BaseEsConstants.PROPERTIES, properties);
+        return mapping;
+    }
+
+
+    /**
+     * 初始化索引info信息
+     *
+     * @param entityInfo     实体信息
+     * @param dbConfig       配置
+     * @param properties     字段属性容器
+     * @param indexParamList 索引参数列表
+     * @return info信息
+     */
+    private static Map<String, Object> initInfo(EntityInfo entityInfo, GlobalConfig.DbConfig dbConfig, Map<String, Object> properties, List<EsIndexParam> indexParamList) {
         indexParamList.forEach(indexParam -> {
             Map<String, Object> info = new HashMap<>();
             Optional.ofNullable(indexParam.getDateFormat()).ifPresent(format -> info.put(BaseEsConstants.FORMAT, indexParam.getDateFormat()));
@@ -333,6 +348,15 @@ public class IndexUtils {
                 info.put(BaseEsConstants.RELATIONS, relation);
             }
 
+            // 设置嵌套类型
+            if (FieldType.NESTED.getType().equals(indexParam.getFieldType())) {
+                // 递归
+                List<EntityFieldInfo> nestedFields = entityInfo.getNestedFieldListMap().get(indexParam.getNestedClass());
+                List<EsIndexParam> esIndexParams = initIndexParam(entityInfo, nestedFields, true);
+                Map<String, Object> nested = initInfo(entityInfo, dbConfig, new HashMap<>(), esIndexParams);
+                info.put(BaseEsConstants.PROPERTIES, nested);
+            }
+
             // 驼峰处理
             String fieldName = indexParam.getFieldName();
             if (dbConfig.isMapUnderscoreToCamelCase()) {
@@ -340,9 +364,7 @@ public class IndexUtils {
             }
             properties.put(fieldName, info);
         });
-
-        mapping.put(BaseEsConstants.PROPERTIES, properties);
-        return mapping;
+        return properties;
     }
 
     /**
@@ -397,7 +419,7 @@ public class IndexUtils {
      */
     public static CreateIndexParam getCreateIndexParam(EntityInfo entityInfo) {
         // 初始化字段信息参数
-        List<EsIndexParam> esIndexParamList = initIndexParam(entityInfo);
+        List<EsIndexParam> esIndexParamList = initIndexParam(entityInfo, entityInfo.getFieldList(), false);
 
         // 设置创建参数
         CreateIndexParam createIndexParam = new CreateIndexParam();
@@ -418,13 +440,12 @@ public class IndexUtils {
      * @param entityInfo 实体信息
      * @return 索引参数列表
      */
-    public static List<EsIndexParam> initIndexParam(EntityInfo entityInfo) {
-        // 实体类中的字段列表
-        List<EntityFieldInfo> fieldList = new ArrayList<>();
-        fieldList.addAll(entityInfo.getFieldList());
-
-        // 针对子文档处理
-        if (!DefaultChildClass.class.equals(entityInfo.getChildClass())) {
+    public static List<EsIndexParam> initIndexParam(EntityInfo entityInfo, List<EntityFieldInfo> fieldList, boolean isNested) {
+        List<EntityFieldInfo> copyFieldList = new ArrayList<>();
+        copyFieldList.addAll(fieldList);
+        // 针对子文档处理, 嵌套类无需重复追加
+        boolean addChild = !DefaultChildClass.class.equals(entityInfo.getChildClass()) && !isNested;
+        if (addChild) {
             // 追加子文档信息
             EntityInfo childEntityInfo = EntityInfoHelper.getEntityInfo(entityInfo.getChildClass());
             List<EntityFieldInfo> childFieldList = childEntityInfo.getFieldList();
@@ -434,23 +455,25 @@ public class IndexUtils {
                     if (FieldType.KEYWORD.equals(child.getFieldType())) {
                         child.setFieldType(FieldType.TEXT);
                     }
-
                     // 添加子文档中除JoinField以外的字段
                     if (!entityInfo.getJoinFieldName().equals(child.getMappingColumn())) {
-                        fieldList.add(child);
+                        copyFieldList.add(child);
                     }
                 });
             }
         }
 
         List<EsIndexParam> esIndexParamList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(fieldList)) {
-            fieldList.forEach(field -> {
+        if (CollectionUtils.isNotEmpty(copyFieldList)) {
+            copyFieldList.forEach(field -> {
                 EsIndexParam esIndexParam = new EsIndexParam();
                 String esFieldType = IndexUtils.getEsFieldType(field.getFieldType(), field.getColumnType());
                 esIndexParam.setFieldType(esFieldType);
                 esIndexParam.setFieldName(field.getMappingColumn());
                 esIndexParam.setDateFormat(field.getDateFormat());
+                if (FieldType.NESTED.equals(field.getFieldType())) {
+                    esIndexParam.setNestedClass(entityInfo.getPathClassMap().get(field.getColumn()));
+                }
                 if (!Analyzer.NONE.equals(field.getAnalyzer())) {
                     esIndexParam.setAnalyzer(field.getAnalyzer());
                 }
@@ -483,10 +506,9 @@ public class IndexUtils {
         }
 
         // 根据当前实体类及自定义注解配置, 生成最新的Mapping信息
-        List<EsIndexParam> esIndexParamList = IndexUtils.initIndexParam(entityInfo);
+        List<EsIndexParam> esIndexParamList = IndexUtils.initIndexParam(entityInfo, entityInfo.getFieldList(), false);
 
-
-        Map<String, Object> mapping = IndexUtils.initMapping(esIndexParamList);
+        Map<String, Object> mapping = IndexUtils.initMapping(entityInfo, esIndexParamList);
 
         // 与查询到的已知index对比是否发生改变
         Map<String, Object> esIndexInfoMapping = Objects.isNull(esIndexInfo.getMapping())

@@ -75,11 +75,15 @@ public class EntityInfo {
      */
     private Class<?> joinFieldClass = JoinField.class;
     /**
+     * 嵌套类的字段信息列表
+     */
+    private Map<Class<?>, List<EntityFieldInfo>> nestedFieldListMap = new HashMap<>();
+    /**
      * 表字段信息列表
      */
     private List<EntityFieldInfo> fieldList;
     /**
-     * 标记该字段属于哪个类
+     * 标记id字段属于哪个类
      */
     private Class<?> clazz;
     /**

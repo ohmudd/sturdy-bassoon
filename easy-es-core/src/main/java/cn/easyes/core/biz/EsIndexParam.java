@@ -11,6 +11,10 @@ import lombok.Data;
 @Data
 public class EsIndexParam {
     /**
+     * 当前嵌套类
+     */
+    private Class<?> nestedClass;
+    /**
      * 字段名称
      */
     private String fieldName;

@@ -123,7 +123,7 @@ public class AutoProcessIndexSmoothlyServiceImpl implements AutoProcessIndexServ
         // 初始化创建索引参数
         CreateIndexParam createIndexParam = IndexUtils.getCreateIndexParam(entityInfo);
         // 执行创建
-        return IndexUtils.createIndex(client, createIndexParam);
+        return IndexUtils.createIndex(client, entityInfo, createIndexParam);
     }
 
 }

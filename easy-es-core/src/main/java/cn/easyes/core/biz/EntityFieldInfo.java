@@ -1,10 +1,10 @@
 package cn.easyes.core.biz;
 
 import cn.easyes.annotation.TableField;
-import cn.easyes.core.config.GlobalConfig;
 import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldStrategy;
 import cn.easyes.common.enums.FieldType;
+import cn.easyes.core.config.GlobalConfig;
 import com.alibaba.fastjson.serializer.NameFilter;
 import lombok.AccessLevel;
 import lombok.Data;
