@@ -46,6 +46,20 @@ public class AggTest {
     }
 
     @Test
+    public void testManyAgg() {
+        // 根据文档标题聚合,聚合完在该桶中再次根据点赞数聚合,求最大最小值
+        // 注意:指定的多个聚合参数为链式聚合,就是第一个聚合参数聚合之后的结果,再根据第二个参数聚合,对应Pipeline聚合
+        // 实现 select title, max(startNum), min(startNum) from table group by title的效果
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.eq(Document::getTitle, "老汉")
+                .groupBy(Document::getTitle)
+                .max(Document::getStarNum)
+                .min(Document::getStarNum);
+        SearchResponse response = documentMapper.search(wrapper);
+        System.out.println(response);
+    }
+
+    @Test
     public void testAggNotPipeline() {
         // 对于下面两个字段,如果不想以pipeline管道聚合,各自聚合的结果在各自的桶中展示的话,我们也提供了支持
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
