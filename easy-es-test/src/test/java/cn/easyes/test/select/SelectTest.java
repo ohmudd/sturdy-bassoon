@@ -1,7 +1,10 @@
 package cn.easyes.test.select;
 
+import cn.easyes.common.enums.Link;
+import cn.easyes.common.enums.Query;
 import cn.easyes.core.conditions.LambdaEsQueryWrapper;
 import cn.easyes.core.toolkit.EsWrappers;
+import cn.easyes.core.toolkit.QueryUtils;
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;
@@ -151,7 +154,7 @@ public class SelectTest {
     }
 
     @Test
-    public void queryStringQuery() {
+    public void testQueryStringQuery() {
         // 从所有字段中查询包含关键词老汉的数据
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.queryStringQuery("老汉");
@@ -160,7 +163,22 @@ public class SelectTest {
     }
 
     @Test
-    public void prefixQuery() {
+    public void testQueryStringQueryMulti() {
+        // 假设我的查询条件是:创建者等于老王,且创建者分词匹配"隔壁"(比如:隔壁老汉,隔壁老王),或者创建者包含猪蹄
+        // 对应mysql语法是(creator="老王" and creator like "老王") or creator like "%猪蹄%",下面用es的queryString来演示实现一样的效果
+        // 足够灵活,非常适合前端页面中的查询条件列表字段及条件不固定,且可选"与或"的场景.
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        String queryStr = QueryUtils.combine(Link.OR,
+                QueryUtils.buildQueryString(Document::getCreator, "老王", Query.EQ, Link.AND),
+                QueryUtils.buildQueryString(Document::getCreator, "隔壁", Query.MATCH))
+                + QueryUtils.buildQueryString(Document::getCreator, "*猪蹄*", Query.EQ);
+        wrapper.queryStringQuery(queryStr);
+        List<Document> documents = documentMapper.selectList(wrapper);
+        System.out.println(documents);
+    }
+
+    @Test
+    public void testPrefixQuery() {
         // 查询创建者以"隔壁"打头的所有数据  比如隔壁老王 隔壁老汉 都能被查出来
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.prefixQuery(Document::getCreator, "隔壁");
