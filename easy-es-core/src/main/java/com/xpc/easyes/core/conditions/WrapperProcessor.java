@@ -358,15 +358,11 @@ public class WrapperProcessor {
                         EsAttachTypeEnum.NOT_BETWEEN.getType(), entityInfo.getMappingColumn(fieldValueModel.getField()),
                         fieldValueModel.getLeftValue(), fieldValueModel.getRightValue(), fieldValueModel.getBoost()));
 
-        baseEsParam.getInList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
-                        EsAttachTypeEnum.IN.getType(), entityInfo.getMappingColumn(fieldValueModel.getField()),
-                        fieldValueModel.getValues(), fieldValueModel.getBoost()));
+        baseEsParam.getInList().forEach(fieldValueModel -> EsQueryTypeUtil.addQueryByType(boolQueryBuilder,
+                EsAttachTypeEnum.IN.getType(), fieldValueModel, entityInfo, dbConfig));
 
-        baseEsParam.getNotInList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
-                        EsAttachTypeEnum.NOT_IN.getType(), entityInfo.getMappingColumn(fieldValueModel.getField()),
-                        fieldValueModel.getValues(), fieldValueModel.getBoost()));
+        baseEsParam.getNotInList().forEach(fieldValueModel -> EsQueryTypeUtil.addQueryByType(boolQueryBuilder,
+                EsAttachTypeEnum.NOT_IN.getType(), fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getIsNullList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EsAttachTypeEnum.NOT_EXISTS.getType(), fieldValueModel, entityInfo, dbConfig));
