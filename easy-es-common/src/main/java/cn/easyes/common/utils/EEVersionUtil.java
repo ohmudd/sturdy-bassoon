@@ -26,7 +26,7 @@ public class EEVersionUtil {
      *      <li>如果获取EE本身版本需要打包后获取,在test包测试用例中无法获取</li>
      * </ul>
      *
-     * @param objectClass T.getClass()
+     * @param <T> objectClass T.getClass()
      * @return classVersion
      */
     public static <T> String getJarVersion(Class<T> objectClass) {
