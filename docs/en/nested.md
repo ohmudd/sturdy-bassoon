@@ -1,6 +1,6 @@
 > **Foreword:** The bottom layer of ES is Lucene. Since Lucene does not actually support nested types, all documents are stored in Lucene in a flat structure. ES's support for nested documents actually adopts It's done in an opportunistic way.
 
-> Nested documents are stored as independent documents, and then add associations, which will lead to a nested type of document, the bottom layer actually stores N pieces of data, and the update will be linked to nine types of updates, resulting in efficiency Low, and for nested types, its query function is also limited, and does not support functions such as aggregation sorting, so we do not recommend that you use these two types in actual development.
+> Nested documents are stored as independent documents, and then add associations, which will lead to a nested type of document, the bottom layer actually stores N pieces of data, and the update will be linked to nine types of updates, resulting in efficiency Low, and for nested types, its query function is also limited, and does not support functions such as aggregation sorting, so we do not recommend that you use this type in actual development.
 
 > ES itself is more suitable for the "large wide table" mode. Don't use ES with the way of thinking of traditional relational databases. We can completely combine the fields and contents of multiple tables into one table (an index). Complete the desired function and avoid the use of nested types as much as possible, which is not only efficient, but also more powerful.
 
