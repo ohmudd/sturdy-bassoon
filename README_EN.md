@@ -124,7 +124,7 @@ String indexName = "document";
    SELECT * FROM document WHERE title = 'Hello World' AND creator = 'Guy'
   ```
 
-> This showcase is just a small part of Easy-Es features. If you want to learn more, please refer to the [documentation](https://www.yuque.com/laohan-14b9d/tald79/qf7ns2).
+> This showcase is just a small part of Easy-Es features. If you want to learn more, please refer to the [documentation](https://easy-es.cn/#/en/).
 
 ## Syntax comparison with MySQL
 ---
@@ -165,7 +165,7 @@ String indexName = "document";
 
 ## Donate
 ---
-[Donate Easy-Es](https://www.yuque.com/laohan-14b9d/tald79/oqpgto)
+[Donate Easy-Es](https://easy-es.cn/#/en/donate)
 
 
 ## License
