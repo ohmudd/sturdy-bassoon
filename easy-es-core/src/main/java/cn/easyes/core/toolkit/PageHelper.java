@@ -15,6 +15,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PageHelper {
     /**
+     * 获取分页信息
+     *
      * @param list     数据列表
      * @param total    总数
      * @param pageNum  当前页
@@ -32,6 +34,8 @@ public class PageHelper {
     }
 
     /**
+     * 获取SearchAfter分页信息
+     *
      * @param list            数据列表
      * @param total           总数
      * @param searchAfter     当前页

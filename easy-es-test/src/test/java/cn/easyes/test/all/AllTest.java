@@ -473,6 +473,24 @@ public class AllTest {
         Assertions.assertEquals(22, pageInfo.getTotal());
     }
 
+
+    @Test
+    @Order(6)
+    public void testSearchAfter() {
+        LambdaEsQueryWrapper<Document> lambdaEsQueryWrapper = EsWrappers.lambdaQuery(Document.class);
+        lambdaEsQueryWrapper.size(10);
+        lambdaEsQueryWrapper.orderByDesc(Document::getId, Document::getStarNum);
+        SAPageInfo<Document> saPageInfo = documentMapper.searchAfterPage(lambdaEsQueryWrapper, null, 10);
+        //第一页
+        System.out.println(saPageInfo);
+        Assertions.assertEquals(10, saPageInfo.getList().size());
+
+        //获取下一页
+        List<Object> nextSearchAfter = saPageInfo.getNextSearchAfter();
+        SAPageInfo<Document> next = documentMapper.searchAfterPage(lambdaEsQueryWrapper, nextSearchAfter, 10);
+        Assertions.assertEquals(10, next.getList().size());
+    }
+
     @Test
     @Order(6)
     public void testFilterField() {
@@ -742,18 +760,4 @@ public class AllTest {
         Assertions.assertTrue(lockDeleted);
     }
 
-    @Test
-    @Order(11)
-    public void testSearchAfter() {
-        LambdaEsQueryWrapper<Document> lambdaEsQueryWrapper = EsWrappers.lambdaQuery(Document.class);
-        lambdaEsQueryWrapper.size(10);
-        lambdaEsQueryWrapper.orderByDesc(Document::getId, Document::getStarNum);
-        SAPageInfo<Document> saPageInfo = documentMapper.searchAfterPage(lambdaEsQueryWrapper, null, 10);
-        //第一页
-        System.out.println(saPageInfo);
-        //获取下一页
-        List<Object> nextSearchAfter = saPageInfo.getNextSearchAfter();
-        SAPageInfo<Document> documentSAPageInfo = documentMapper.searchAfterPage(lambdaEsQueryWrapper, nextSearchAfter, 10);
-        System.out.println(documentSAPageInfo);
-    }
 }

@@ -248,14 +248,13 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public SAPageInfo<T> searchAfterPage(LambdaEsQueryWrapper<T> wrapper, List<Object> searchAfter, Integer pageSize) {
-        // 兼容分页参数
-        pageSize = pageSize == null || pageSize <= BaseEsConstants.ZERO ? BaseEsConstants.PAGE_SIZE : pageSize;
-
         //searchAfter必须要进行排序，不排序无法进行分页
         if (CollectionUtils.isEmpty(wrapper.sortParamList)) {
             throw ExceptionUtils.eee("sortParamList cannot be empty");
         }
 
+        // 兼容分页参数
+        pageSize = pageSize == null || pageSize <= BaseEsConstants.ZERO ? BaseEsConstants.PAGE_SIZE : pageSize;
         wrapper.size(pageSize);
 
         // 请求es获取数据

@@ -2,7 +2,6 @@ package cn.easyes.test.select;
 
 import cn.easyes.common.enums.Link;
 import cn.easyes.common.enums.Query;
-import cn.easyes.core.biz.SAPageInfo;
 import cn.easyes.core.conditions.LambdaEsQueryWrapper;
 import cn.easyes.core.toolkit.EsWrappers;
 import cn.easyes.core.toolkit.QueryUtils;
@@ -11,7 +10,6 @@ import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -192,21 +190,6 @@ public class SelectTest {
         wrapper.in(Document::getId, "2", "3");
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents);
-    }
-
-    @Test
-    @Order(11)
-    public void testSearchAfter() {
-        LambdaEsQueryWrapper<Document> lambdaEsQueryWrapper = EsWrappers.lambdaQuery(Document.class);
-        lambdaEsQueryWrapper.size(10);
-        lambdaEsQueryWrapper.orderByDesc(Document::getId, Document::getStarNum);
-        SAPageInfo<Document> saPageInfo = documentMapper.searchAfterPage(lambdaEsQueryWrapper, null, 10);
-        //第一页
-        System.out.println(saPageInfo);
-        //获取下一页
-        List<Object> nextSearchAfter = saPageInfo.getNextSearchAfter();
-        SAPageInfo<Document> documentSAPageInfo = documentMapper.searchAfterPage(lambdaEsQueryWrapper, nextSearchAfter, 10);
-        System.out.println(documentSAPageInfo);
     }
 
 }
