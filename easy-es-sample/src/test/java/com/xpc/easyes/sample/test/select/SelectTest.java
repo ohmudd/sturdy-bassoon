@@ -169,10 +169,9 @@ public class SelectTest {
     }
 
     @Test
-    public void testIn(){
+    public void testIn() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.notIn(Document::getId,"2","3");
-//        wrapper.eq(Document::getDocId,"2");
+        wrapper.notIn(Document::getId, "2", "3");
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents);
     }
