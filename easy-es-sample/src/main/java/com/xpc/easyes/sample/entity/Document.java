@@ -70,4 +70,8 @@ public class Document {
      */
     @HighLightMappingField("content")
     private String highlightContent;
+    /**
+     * 文档点赞数
+     */
+    private Integer starNum;
 }

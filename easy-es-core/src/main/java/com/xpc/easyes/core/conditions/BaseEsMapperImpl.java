@@ -702,12 +702,17 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
                     }
                 } else if (FieldStrategy.NOT_EMPTY.equals(fieldStrategy)) {
                     invoke = invokeMethod.invoke(entity);
-                    if (Objects.nonNull(invoke) && invoke instanceof String) {
-                        String value = (String) invoke;
-                        if (!StringUtils.isEmpty(value)) {
-                            goodColumn.add(column);
-                        }
-                    }
+                    Optional.ofNullable(invoke)
+                            .ifPresent(value -> {
+                                if (value instanceof String) {
+                                    String strValue = (String) invoke;
+                                    if (!StringUtils.isEmpty(strValue)) {
+                                        goodColumn.add(column);
+                                    }
+                                } else {
+                                    goodColumn.add(column);
+                                }
+                            });
                 }
             } catch (Exception e) {
                 throw ExceptionUtils.eee("buildJsonIndexSource exception, entity:%s", e, entity);

@@ -524,7 +524,7 @@ public class IndexUtils {
             } else {
                 LogUtils.warn("===> Unfortunately, auto process index by Easy-Es failed, please check your configuration");
             }
-        });
+        }).join();
     }
 
 }
