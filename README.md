@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://www.yuque.com/laohan-14b9d/foyrfa/naw1ie">
+  <a href="https://easy-es.cn/">
    <img alt="East-Es-Logo" src="https://iknow.hs.net/e2ccba53-812e-4927-9cac-d6ca61327752.png">
   </a>
 </p>
@@ -12,7 +12,7 @@
   <a href="https://search.maven.org/search?q=g:io.github.xpc1024%20a:easy-*">
     <img alt="maven" src="https://img.shields.io/github/v/release/xpc1024/easy-es?include_prereleases&logo=xpc&style=plastic">
   </a>
-
+  <a href="https://www.murphysec.com/dr/1hRHmuH0DE3RYL9uE0" alt="OSCS Status"><img src="https://www.oscs1024.com/platform/badge/dromara/easy-es.git.svg?size=small"/></a>
   <a href="https://www.apache.org/licenses/LICENSE-2.0">
     <img alt="code style" src="https://img.shields.io/badge/license-Apache%202-4EB1BA.svg?style=flat-square">
   </a>
@@ -88,11 +88,13 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动�
 # 官网地址 | Official website
 ---
 
-**easy-es官网** https://easy-es.cn
+**easy-es官网** https://easy-es.cn/
 
-**开源社区dromara** https://dromara.org
+**开源社区dromara** https://dromara.org/
 
-**开源社区码云首页** https://gitee.com/dromara
+**开源社区码云首页** https://gitee.com/dromara/
+
+> **Tip:** 官网是vue单页面应用，首次访问加载可能比较慢🐢，主公们请耐心等待一下，后续会很快🏹。
 
 # 架构 | Architecture
 ---
