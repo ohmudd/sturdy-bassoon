@@ -119,11 +119,9 @@ public class AutoProcessIndexSmoothlyServiceImpl implements AutoProcessIndexServ
         return IndexUtils.reindex(client, oldIndexName, releaseIndexName);
     }
 
-
     private boolean doCreateIndex(EntityInfo entityInfo, RestHighLevelClient client) {
         // 初始化创建索引参数
         CreateIndexParam createIndexParam = IndexUtils.getCreateIndexParam(entityInfo);
-
         // 执行创建
         return IndexUtils.createIndex(client, createIndexParam);
     }

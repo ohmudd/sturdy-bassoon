@@ -28,6 +28,7 @@ import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.indices.GetIndexResponse;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.ReindexAction;
 import org.elasticsearch.index.reindex.ReindexRequest;
 
 import java.io.IOException;
@@ -561,11 +562,15 @@ public class IndexUtils {
             }
         }).exceptionally((throwable) -> {
             Optional.ofNullable(throwable).ifPresent(e -> LogUtils.error("process index exception", e.toString()));
+            // 异常,需清除新创建的索引,避免新旧索引同时存在
+            deleteIndex(client, EntityInfoHelper.getEntityInfo(entityClass).getReleaseIndexName());
             return Boolean.FALSE;
         }).whenCompleteAsync((success, throwable) -> {
             if (success) {
                 LogUtils.info("===> Congratulations auto process index by Easy-Es is done !");
             } else {
+                // 未成功完成迁移,需清除新创建的索引,避免新旧索引同时存在
+                deleteIndex(client, EntityInfoHelper.getEntityInfo(entityClass).getReleaseIndexName());
                 LogUtils.warn("===> Unfortunately, auto process index by Easy-Es failed, please check your configuration");
             }
         });
