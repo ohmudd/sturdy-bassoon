@@ -40,6 +40,7 @@ public interface Analyzer {
     String PATTERN = "pattern";
     /**
      * 语言分词器
+     * 如：english、french、chinese
      */
     String LANGUAGE = "language";
     /**
