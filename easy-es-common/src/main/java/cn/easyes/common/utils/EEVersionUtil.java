@@ -49,8 +49,6 @@ public class EEVersionUtil {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        String version = info.getVersion().getNumber();
-        LogUtils.formatInfo("Elasticsearch client version:%s", version);
-        return version;
+        return info.getVersion().getNumber();
     }
 }

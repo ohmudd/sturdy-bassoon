@@ -42,6 +42,7 @@ public class RestHighLevelClientBuilder {
             throw ExceptionUtils.eee("Easy-Es supported elasticsearch jar version is:%s.xx", supportedVersion);
         }
         String clientVersion = EEVersionUtil.getClientVersion(restHighLevelClient);
+        LogUtils.formatInfo("Elasticsearch client version:%s", clientVersion);
         if (!clientVersion.startsWith(supportedVersion)) {
             // 这里校验客户端为非强制，客户端版本非推荐版本对应提醒即可，es会报错提醒
             LogUtils.formatWarn("Easy-Es supported elasticsearch client version is:%s.xx", supportedVersion);
