@@ -37,6 +37,7 @@ public enum FieldType {
     ARRAY("array"),
     OBJECT("object"),
     NESTED("nested"),
+    JOIN("join"),
     /**
      * geo
      */

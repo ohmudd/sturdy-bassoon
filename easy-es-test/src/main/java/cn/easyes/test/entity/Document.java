@@ -1,13 +1,14 @@
 package cn.easyes.test.entity;
 
-import cn.easyes.annotation.anno.HighLightMappingField;
-import cn.easyes.annotation.anno.TableField;
-import cn.easyes.annotation.anno.TableId;
-import cn.easyes.annotation.anno.TableName;
+import cn.easyes.annotation.HighLightMappingField;
+import cn.easyes.annotation.TableField;
+import cn.easyes.annotation.TableId;
+import cn.easyes.annotation.TableName;
 import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldStrategy;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.common.enums.IdType;
+import cn.easyes.common.params.JoinField;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -20,7 +21,7 @@ import java.util.List;
  **/
 @Data
 @Accessors(chain = true)
-@TableName(shardsNum = 3, replicasNum = 2, keepGlobalPrefix = true)
+@TableName(shardsNum = 3, replicasNum = 2, keepGlobalPrefix = true, childClass = Comment.class)
 public class Document {
     /**
      * es中的唯一id,如果你想自定义es中的id为你提供的id,比如MySQL中的id,请将注解中的type指定为customize或直接在全局配置文件中指定,如此id便支持任意数据类型)
@@ -81,4 +82,10 @@ public class Document {
      */
     @TableField(fieldType = FieldType.NESTED, nestedClass = User.class)
     private List<User> users;
+
+    /**
+     * 父子类型 须通过注解在父文档及子文档的实体类中指明其类型为Join,及其父名称和子名称
+     */
+    @TableField(fieldType = FieldType.JOIN, parentName = "document",childName = "comment")
+    private JoinField joinField;
 }

@@ -1,6 +1,6 @@
 package cn.easyes.core.biz;
 
-import cn.easyes.annotation.anno.TableField;
+import cn.easyes.annotation.TableField;
 import cn.easyes.core.config.GlobalConfig;
 import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldStrategy;
@@ -56,6 +56,14 @@ public class EntityFieldInfo {
      * 字段策略 默认，自判断 null
      */
     private final FieldStrategy fieldStrategy;
+    /**
+     * 父名称
+     */
+    private String parentName;
+    /**
+     * 子名称
+     */
+    private String childName;
 
     /**
      * 缓存包含主键及字段的 sql select

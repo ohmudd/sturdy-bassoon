@@ -95,6 +95,14 @@ public interface BaseEsConstants {
      */
     String SEARCH_ANALYZER = "search_analyzer";
     /**
+     * 字段关系
+     */
+    String RELATIONS = "relations";
+    /**
+     * 父子类型-父id字段
+     */
+    String PARENT = "parent";
+    /**
      * 通配符
      */
     String WILDCARD_SIGN = "*";
@@ -182,4 +190,8 @@ public interface BaseEsConstants {
      * 嵌套类型 path和field连接符
      */
     String PATH_FIELD_JOIN = ".";
+    /**
+     * 父子类型索引-eager_global_ordinals
+     */
+    String EAGER_GLOBAL_ORDINALS_KEY = "eager_global_ordinals";
 }

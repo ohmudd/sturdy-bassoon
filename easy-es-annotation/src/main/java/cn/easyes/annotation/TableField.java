@@ -1,9 +1,11 @@
-package cn.easyes.annotation.anno;
+package cn.easyes.annotation;
 
-import cn.easyes.annotation.assist.DefaultNestedClass;
 import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldStrategy;
 import cn.easyes.common.enums.FieldType;
+import cn.easyes.common.params.DefaultChildClass;
+import cn.easyes.common.params.DefaultNestedClass;
+import cn.easyes.common.params.JoinField;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -73,4 +75,25 @@ public @interface TableField {
      * @return 默认嵌套类
      */
     Class<?> nestedClass() default DefaultNestedClass.class;
+
+    /**
+     * 父名称
+     *
+     * @return 父名称
+     */
+    String parentName() default "";
+
+    /**
+     * 子名称
+     *
+     * @return 子名称
+     */
+    String childName() default "";
+
+    /**
+     * 父子类型关系字段类 如果使用自定义的类,需要在此处指明,否则采用默认(推荐)
+     *
+     * @return 默认子类
+     */
+    Class<?> joinFieldClass() default JoinField.class;
 }

@@ -12,6 +12,7 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.join.query.HasChildQueryBuilder;
 import org.elasticsearch.join.query.HasParentQueryBuilder;
+import org.elasticsearch.join.query.ParentIdQueryBuilder;
 
 import java.util.Collection;
 import java.util.List;
@@ -80,17 +81,20 @@ public class EsQueryTypeUtil {
             if (StringUtils.isBlank(path)) {
                 setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, matchQueryBuilder);
             } else {
-                // 嵌套类型
+                // 嵌套类型及父子类型处理
                 if (JoinTypeEnum.NESTED.equals(model.getExt())) {
                     matchQueryBuilder = QueryBuilders.matchQuery(path + BaseEsConstants.PATH_FIELD_JOIN + field, value).boost(boost);
                     NestedQueryBuilder nestedQueryBuilder = QueryBuilders.nestedQuery(model.getPath(), matchQueryBuilder, (ScoreMode) model.getScoreMode());
                     setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, nestedQueryBuilder);
                 } else if (JoinTypeEnum.HAS_CHILD.equals(model.getExt())) {
-                    HasChildQueryBuilder hasChildQueryBuilder = new HasChildQueryBuilder(path, matchQueryBuilder, (ScoreMode) model.getScoreMode());
+                    HasChildQueryBuilder hasChildQueryBuilder = new HasChildQueryBuilder(path, matchQueryBuilder, (ScoreMode) model.getScoreMode()).boost(boost);
                     setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, hasChildQueryBuilder);
                 } else if (JoinTypeEnum.HAS_PARENT.equals(model.getExt())) {
-                    HasParentQueryBuilder hasParentQueryBuilder = new HasParentQueryBuilder(path, matchQueryBuilder, (Boolean) model.getScoreMode());
+                    HasParentQueryBuilder hasParentQueryBuilder = new HasParentQueryBuilder(path, matchQueryBuilder, (Boolean) model.getScoreMode()).boost(boost);
                     setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, hasParentQueryBuilder);
+                } else if (JoinTypeEnum.PARENT_ID.equals(model.getExt())) {
+                    ParentIdQueryBuilder parentIdQueryBuilder = new ParentIdQueryBuilder(path,model.getValue().toString()).boost(boost);
+                    setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, parentIdQueryBuilder);
                 }
             }
         } else if (Objects.equals(queryType, EsQueryTypeEnum.RANGE_QUERY.getType())) {

@@ -1,6 +1,6 @@
 package cn.easyes.test.entity;
 
-import cn.easyes.annotation.anno.TableField;
+import cn.easyes.annotation.TableField;
 import cn.easyes.common.enums.FieldType;
 import lombok.AllArgsConstructor;
 import lombok.Data;

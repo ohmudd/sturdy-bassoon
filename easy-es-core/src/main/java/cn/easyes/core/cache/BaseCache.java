@@ -1,10 +1,11 @@
 package cn.easyes.core.cache;
 
-import cn.easyes.core.conditions.BaseEsMapperImpl;
 import cn.easyes.common.constants.BaseEsConstants;
 import cn.easyes.common.utils.CollectionUtils;
-import cn.easyes.core.toolkit.EntityInfoHelper;
 import cn.easyes.common.utils.ExceptionUtils;
+import cn.easyes.core.biz.EntityInfo;
+import cn.easyes.core.conditions.BaseEsMapperImpl;
+import cn.easyes.core.toolkit.EntityInfoHelper;
 import cn.easyes.core.toolkit.FieldUtils;
 import org.elasticsearch.client.RestHighLevelClient;
 
@@ -49,15 +50,19 @@ public class BaseCache {
         Map<String, Method> invokeMethodsMap = initInvokeMethodsMap(entityClass);
         baseEsEntityMethodMap.putIfAbsent(entityClass, invokeMethodsMap);
 
+        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
         // 初始化嵌套类中的所有方法
-        Set<Class<?>> allNestedClass = EntityInfoHelper.getEntityInfo(entityClass).getAllNestedClass();
+        Set<Class<?>> allNestedClass = entityInfo.getAllNestedClass();
         if (CollectionUtils.isNotEmpty(allNestedClass)) {
             allNestedClass.forEach(nestedClass -> {
                 Map<String, Method> nestedInvokeMethodsMap = initInvokeMethodsMap(nestedClass);
                 baseEsEntityMethodMap.putIfAbsent(nestedClass, nestedInvokeMethodsMap);
             });
-
         }
+
+        // 初始化父子类型JoinField中的所有方法
+        Map<String, Method> joinInvokeMethodsMap = initInvokeMethodsMap(entityInfo.getJoinFieldClass());
+        baseEsEntityMethodMap.putIfAbsent(entityInfo.getJoinFieldClass(), joinInvokeMethodsMap);
     }
 
     private static Map<String, Method> initInvokeMethodsMap(Class<?> clazz) {
@@ -93,7 +98,7 @@ public class BaseCache {
      * @return 执行方法
      */
     public static Method getterMethod(Class<?> entityClass, String methodName) {
-        return Optional.ofNullable(baseEsEntityMethodMap.get(entityClass))
+        return Optional.ofNullable(BaseCache.baseEsEntityMethodMap.get(entityClass))
                 .map(b -> b.get(BaseEsConstants.GET_FUNC_PREFIX + FieldUtils.firstToUpperCase(methodName)))
                 .orElseThrow(() -> ExceptionUtils.eee("no such method:", entityClass, methodName));
     }

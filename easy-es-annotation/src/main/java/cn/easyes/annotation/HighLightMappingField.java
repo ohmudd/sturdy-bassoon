@@ -1,4 +1,4 @@
-package cn.easyes.annotation.anno;
+package cn.easyes.annotation;
 
 
 import java.lang.annotation.ElementType;

@@ -4,6 +4,7 @@ import cn.easyes.common.constants.BaseEsConstants;
 import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.common.enums.JdkDataTypeEnum;
+import cn.easyes.common.params.DefaultChildClass;
 import cn.easyes.common.utils.CollectionUtils;
 import cn.easyes.common.utils.ExceptionUtils;
 import cn.easyes.common.utils.LogUtils;
@@ -33,6 +34,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
+
+import static cn.easyes.common.constants.BaseEsConstants.EAGER_GLOBAL_ORDINALS_KEY;
 
 
 /**
@@ -321,6 +324,14 @@ public class IndexUtils {
                                 info.put(BaseEsConstants.SEARCH_ANALYZER, indexParam.getSearchAnalyzer().toString().toLowerCase()));
             }
 
+            // 设置父子类型关系
+            if (FieldType.JOIN.getType().equals(indexParam.getFieldType())) {
+                Map<String, Object> relation = new HashMap<>(1);
+                relation.put(indexParam.getParentName(), indexParam.getChildName());
+                info.put(EAGER_GLOBAL_ORDINALS_KEY, Boolean.TRUE);
+                info.put(BaseEsConstants.RELATIONS, relation);
+            }
+
             // 驼峰处理
             String fieldName = indexParam.getFieldName();
             if (dbConfig.isMapUnderscoreToCamelCase()) {
@@ -385,8 +396,7 @@ public class IndexUtils {
      */
     public static CreateIndexParam getCreateIndexParam(EntityInfo entityInfo) {
         // 初始化字段信息参数
-        List<EntityFieldInfo> fieldList = entityInfo.getFieldList();
-        List<EsIndexParam> esIndexParamList = initIndexParam(fieldList);
+        List<EsIndexParam> esIndexParamList = initIndexParam(entityInfo);
 
         // 设置创建参数
         CreateIndexParam createIndexParam = new CreateIndexParam();
@@ -404,10 +414,34 @@ public class IndexUtils {
     /**
      * 初始化索引参数
      *
-     * @param fieldList 字段列表
+     * @param entityInfo 实体信息
      * @return 索引参数列表
      */
-    public static List<EsIndexParam> initIndexParam(List<EntityFieldInfo> fieldList) {
+    public static List<EsIndexParam> initIndexParam(EntityInfo entityInfo) {
+        // 实体类中的字段列表
+        List<EntityFieldInfo> fieldList = new ArrayList<>();
+        fieldList.addAll(entityInfo.getFieldList());
+
+        // 针对子文档处理
+        if (!DefaultChildClass.class.equals(entityInfo.getChildClass())) {
+            // 追加子文档信息
+            EntityInfo childEntityInfo = EntityInfoHelper.getEntityInfo(entityInfo.getChildClass());
+            List<EntityFieldInfo> childFieldList = childEntityInfo.getFieldList();
+            if (!CollectionUtils.isEmpty(childFieldList)) {
+                childFieldList.forEach(child -> {
+                    // 子文档仅支持match查询,所以如果用户未指定子文档索引类型,则将默认的keyword类型转换为text类型
+                    if (FieldType.KEYWORD.equals(child.getFieldType())) {
+                        child.setFieldType(FieldType.TEXT);
+                    }
+
+                    // 添加子文档中除JoinField以外的字段
+                    if (!entityInfo.getJoinFieldName().equals(child.getMappingColumn())) {
+                        fieldList.add(child);
+                    }
+                });
+            }
+        }
+
         List<EsIndexParam> esIndexParamList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(fieldList)) {
             fieldList.forEach(field -> {
@@ -424,6 +458,8 @@ public class IndexUtils {
                         esIndexParam.setSearchAnalyzer(field.getSearchAnalyzer());
                     }
                 }
+                Optional.ofNullable(field.getParentName()).ifPresent(esIndexParam::setParentName);
+                Optional.ofNullable(field.getChildName()).ifPresent(esIndexParam::setChildName);
                 esIndexParamList.add(esIndexParam);
             });
         }
@@ -446,7 +482,9 @@ public class IndexUtils {
         }
 
         // 根据当前实体类及自定义注解配置, 生成最新的Mapping信息
-        List<EsIndexParam> esIndexParamList = IndexUtils.initIndexParam(entityInfo.getFieldList());
+        List<EsIndexParam> esIndexParamList = IndexUtils.initIndexParam(entityInfo);
+
+
         Map<String, Object> mapping = IndexUtils.initMapping(esIndexParamList);
 
         // 与查询到的已知index对比是否发生改变

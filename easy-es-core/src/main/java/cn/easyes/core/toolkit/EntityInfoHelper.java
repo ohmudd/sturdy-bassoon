@@ -1,11 +1,12 @@
 package cn.easyes.core.toolkit;
 
-import cn.easyes.annotation.anno.HighLightMappingField;
-import cn.easyes.annotation.anno.TableField;
-import cn.easyes.annotation.anno.TableId;
-import cn.easyes.annotation.anno.TableName;
-import cn.easyes.annotation.assist.DefaultNestedClass;
+import cn.easyes.annotation.HighLightMappingField;
+import cn.easyes.annotation.TableField;
+import cn.easyes.annotation.TableId;
+import cn.easyes.annotation.TableName;
+import cn.easyes.common.enums.FieldType;
 import cn.easyes.common.enums.IdType;
+import cn.easyes.common.params.DefaultNestedClass;
 import cn.easyes.common.utils.ClassUtils;
 import cn.easyes.common.utils.FastJsonUtils;
 import cn.easyes.common.utils.ReflectionKit;
@@ -24,6 +25,8 @@ import lombok.Getter;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static cn.easyes.common.constants.BaseEsConstants.PARENT;
 
 /**
  * 实体字段信息工具类
@@ -177,6 +180,14 @@ public class EntityInfoHelper {
                 .forEach((k, v) -> Optional.ofNullable(FastJsonUtils.getSimplePropertyPreFilter(k, v))
                         .ifPresent(preFilters::add));
 
+        // 父子类型的字段序列化过滤器
+        if (!entityInfo.isChild()){
+            Set<String> notSerialField = new HashSet<>();
+            notSerialField.add(PARENT);
+            Optional.ofNullable(FastJsonUtils.getSimplePropertyPreFilter(entityInfo.getJoinFieldClass(), notSerialField))
+                    .ifPresent(preFilters::add);
+        }
+
         // 添加fastjson NameFilter 针对驼峰以及下划线转换
         addNameFilter(entityInfo, preFilters);
         entityInfo.getClassSimplePropertyPreFilterMap().putIfAbsent(clazz, preFilters);
@@ -293,6 +304,18 @@ public class EntityInfoHelper {
                 entityFieldInfo.setSearchAnalyzer(tableField.searchAnalyzer());
                 entityFieldInfo.setFieldType(tableField.fieldType());
                 entityFieldInfo.setColumnType(field.getType().getSimpleName());
+
+                // 父子类型
+                if (FieldType.JOIN.equals(tableField.fieldType())) {
+                    entityFieldInfo.setParentName(tableField.parentName());
+                    entityFieldInfo.setChildName(tableField.childName());
+
+                    entityInfo.setJoinFieldName(mappingColumn);
+                    entityInfo.setJoinFieldClass(tableField.joinFieldClass());
+                    entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.joinFieldClass());
+                    processNested(tableField.joinFieldClass(), dbConfig, entityInfo);
+                }
+
                 fieldList.add(entityFieldInfo);
 
                 // 嵌套类处理
@@ -500,6 +523,8 @@ public class EntityInfoHelper {
             entityInfo.setAliasName(table.aliasName());
             entityInfo.setShardsNum(table.shardsNum());
             entityInfo.setReplicasNum(table.replicasNum());
+            entityInfo.setChild(table.child());
+            entityInfo.setChildClass(table.childClass());
         }
 
         String targetIndexName = indexName;

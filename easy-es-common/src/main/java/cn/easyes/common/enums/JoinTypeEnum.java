@@ -8,5 +8,6 @@ package cn.easyes.common.enums;
 public enum JoinTypeEnum {
     NESTED,
     HAS_CHILD,
-    HAS_PARENT;
+    HAS_PARENT,
+    PARENT_ID;
 }

@@ -1,10 +1,11 @@
 package cn.easyes.core.biz;
 
 import cn.easyes.common.constants.BaseEsConstants;
+import cn.easyes.common.enums.IdType;
+import cn.easyes.common.params.JoinField;
 import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.parser.deserializer.ExtraProcessor;
 import com.alibaba.fastjson.serializer.SerializeFilter;
-import cn.easyes.common.enums.IdType;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -66,6 +67,14 @@ public class EntityInfo {
      */
     private String aliasName;
     /**
+     * join字段名称
+     */
+    private String joinFieldName;
+    /**
+     * join关系字段类 默认为JoinField.class
+     */
+    private Class<?> joinFieldClass = JoinField.class;
+    /**
      * 表字段信息列表
      */
     private List<EntityFieldInfo> fieldList;
@@ -73,6 +82,14 @@ public class EntityInfo {
      * 标记该字段属于哪个类
      */
     private Class<?> clazz;
+    /**
+     * 父子类型,子类
+     */
+    private Class<?> childClass;
+    /**
+     * 父子类型-是否子文档 默认为否
+     */
+    private boolean child = false;
     /**
      * fastjson 字段命名策略
      */

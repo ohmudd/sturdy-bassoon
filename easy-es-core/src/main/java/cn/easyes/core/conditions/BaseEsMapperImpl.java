@@ -55,6 +55,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import static cn.easyes.common.constants.BaseEsConstants.PARENT;
+
 /**
  * 核心 所有支持方法接口实现类
  * <p>
@@ -234,11 +236,14 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public Integer insert(T entity) {
+        Assert.notNull(entity, "insert entity must not be null");
         return insert(entity, EntityInfoHelper.getEntityInfo(entityClass).getIndexName());
     }
 
     @Override
     public Integer insert(T entity, String indexName) {
+        Assert.notNull(entity, "insert entity must not be null");
+
         // 构建请求入参
         IndexRequest indexRequest = buildIndexRequest(entity, indexName);
         indexRequest.setRefreshPolicy(getRefreshPolicy());
@@ -309,12 +314,20 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         BulkRequest bulkRequest = new BulkRequest();
         bulkRequest.setRefreshPolicy(getRefreshPolicy());
         Method getId = BaseCache.getterMethod(entityClass, getRealIdFieldName());
+        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
         list.forEach(t -> {
             try {
                 Object id = getId.invoke(t);
                 if (Objects.nonNull(id)) {
                     DeleteRequest deleteRequest = new DeleteRequest();
                     deleteRequest.id(id.toString());
+
+                    // 父子类型-子文档,追加其路由,否则无法删除
+                    if (entityInfo.isChild()) {
+                        String routing = getRouting(t, entityInfo.getJoinFieldClass());
+                        deleteRequest.routing(routing);
+                    }
+
                     deleteRequest.index(getIndexName(wrapper.indexName));
                     bulkRequest.add(deleteRequest);
                 }
@@ -350,7 +363,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     @Override
     public Integer updateById(T entity, String indexName) {
         // 获取id值
-        String idValue = getIdValue(entityClass, entity);
+        String idValue = getIdValue(entity);
 
         // 构建更新请求参数
         UpdateRequest updateRequest = buildUpdateRequest(entity, idValue, indexName);
@@ -384,7 +397,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         BulkRequest bulkRequest = new BulkRequest();
         bulkRequest.setRefreshPolicy(getRefreshPolicy());
         entityList.forEach(entity -> {
-            String idValue = getIdValue(entityClass, entity);
+            String idValue = getIdValue(entity);
             UpdateRequest updateRequest = buildUpdateRequest(entity, idValue, indexName);
             bulkRequest.add(updateRequest);
         });
@@ -399,18 +412,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             return BaseEsConstants.ZERO;
         }
 
-        // 构建查询条件
-        SearchRequest searchRequest = new SearchRequest(getIndexName(updateWrapper.indexName));
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(updateWrapper.baseEsParamList,
-                updateWrapper.enableMust2Filter, entityClass);
-        searchSourceBuilder.query(boolQueryBuilder);
-        searchRequest.source(searchSourceBuilder);
-
-        // 查询id列表
-        printDSL(searchRequest);
-        List<String> idList = this.selectIdList(searchRequest);
-        if (CollectionUtils.isEmpty(idList)) {
+        // 查询数据列表
+        List<T> list = selectListByUpdateWrapper(updateWrapper);
+        if (CollectionUtils.isEmpty(list)) {
             return BaseEsConstants.ZERO;
         }
 
@@ -423,10 +427,24 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         BulkRequest bulkRequest = new BulkRequest();
         bulkRequest.setRefreshPolicy(getRefreshPolicy());
         String index = getIndexName(updateWrapper.indexName);
-        idList.forEach(id -> {
+        Method getId = BaseCache.getterMethod(entityClass, getRealIdFieldName());
+        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
+        list.forEach(item -> {
             UpdateRequest updateRequest = new UpdateRequest();
-            updateRequest.id(id).index(index);
+            try {
+                Object invoke = getId.invoke(item);
+                Optional.ofNullable(invoke).ifPresent(id -> updateRequest.id(id.toString()));
+            } catch (Exception e) {
+                throw ExceptionUtils.eee("update exception", e);
+            }
+            updateRequest.index(index);
             updateRequest.doc(jsonData, XContentType.JSON);
+
+            // 父子类型-子文档,追加其路由,否则无法更新
+            if (entityInfo.isChild()) {
+                String routing = getRouting(item, entityInfo.getJoinFieldClass());
+                updateRequest.routing(routing);
+            }
             bulkRequest.add(updateRequest);
         });
         return doBulkRequest(bulkRequest, RequestOptions.DEFAULT);
@@ -547,17 +565,27 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     /**
-     * 查询id列表
+     * 查询数据列表
      *
-     * @param searchRequest 查询参数
-     * @return id列表
+     * @param wrapper 查询参数
+     * @return 数据列表
      */
-    private List<String> selectIdList(SearchRequest searchRequest) {
+    private List<T> selectListByUpdateWrapper(LambdaEsUpdateWrapper<T> wrapper) {
+        // 构建查询条件
+        SearchRequest searchRequest = new SearchRequest(getIndexName(wrapper.indexName));
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.baseEsParamList,
+                wrapper.enableMust2Filter, entityClass);
+        Optional.ofNullable(wrapper.geoParam).ifPresent(geoParam -> WrapperProcessor.setGeoQuery(geoParam, boolQueryBuilder, entityClass));
+        searchSourceBuilder.query(boolQueryBuilder);
+        searchRequest.source(searchSourceBuilder);
+        printDSL(searchRequest);
         try {
+            //  查询数据明细
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
             SearchHit[] searchHits = parseSearchHitArray(searchResponse);
             return Arrays.stream(searchHits)
-                    .map(SearchHit::getId)
+                    .map(this::parseOne)
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw ExceptionUtils.eee("selectIdList exception", e);
@@ -575,20 +603,27 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         IndexRequest indexRequest = new IndexRequest();
 
         // id预处理,除下述情况,其它情况使用es默认的id
-        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entity.getClass());
+        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
 
         if (IdType.UUID.equals(entityInfo.getIdType())) {
             indexRequest.id(UUID.randomUUID().toString());
         } else if (IdType.CUSTOMIZE.equals(entityInfo.getIdType())) {
-            indexRequest.id(getIdValue(entityClass, entity));
+            indexRequest.id(getIdValue(entity));
         }
-
 
         // 构建插入的json格式数据
         String jsonData = buildJsonIndexSource(entity);
+
         indexName = StringUtils.isBlank(indexName) ? entityInfo.getIndexName() : indexName;
         indexRequest.index(indexName);
         indexRequest.source(jsonData, XContentType.JSON);
+
+        // 父子类型-子文档,设置路由
+        if (entityInfo.isChild()) {
+            String routing = getRouting(entity, entityInfo.getJoinFieldClass());
+            indexRequest.routing(routing);
+        }
+
         return indexRequest;
     }
 
@@ -733,9 +768,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @return json
      */
     private String buildJsonIndexSource(T entity) {
-        // 获取所有字段列表
-        Class<?> entityClass = entity.getClass();
-
+        // 获取当前类所有字段列表
         // 根据字段配置的策略 决定是否加入到实际es处理字段中
         EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
         List<EntityFieldInfo> fieldList = entityInfo.getFieldList();
@@ -924,12 +957,12 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param entity 实体
      * @param id     主键
      */
-    private void setId(T entity, String id) {
+    private void setId(Object entity, String id) {
         try {
-            Method invokeMethod = BaseCache.setterMethod(entityClass, getRealIdFieldName());
+            Method invokeMethod = BaseCache.setterMethod(entity.getClass(), getRealIdFieldName());
 
             // 将es返回的String类型id还原为字段实际的id类型,比如Long,否则反射会报错
-            Class<?> idClass = EntityInfoHelper.getEntityInfo(entityClass).getIdClass();
+            Class<?> idClass = EntityInfoHelper.getEntityInfo(entity.getClass()).getIdClass();
             Object val = ReflectionKit.getVal(id, idClass);
             invokeMethod.invoke(entity, val);
         } catch (Throwable e) {
@@ -940,11 +973,10 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     /**
      * 获取实体对象的id值
      *
-     * @param entityClass 实体类
-     * @param entity      实体对象
+     * @param entity 实体对象
      * @return id值
      */
-    private String getIdValue(Class<T> entityClass, T entity) {
+    private String getIdValue(T entity) {
         try {
             EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
             Field keyField = Optional.ofNullable(entityInfo.getKeyField())
@@ -991,4 +1023,25 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         return GlobalConfigCache.getGlobalConfig().getDbConfig().getRefreshPolicy().getValue();
     }
 
+    /**
+     * 父子
+     *
+     * @param entity         实体对象
+     * @param joinFieldClass join字段类
+     * @return
+     */
+    private String getRouting(T entity, Class<?> joinFieldClass) {
+        // 父子类型-子文档,设置路由
+        Method getJoinFieldMethod = BaseCache.getterMethod(entityClass, joinFieldClass.getSimpleName());
+        Method getParentMethod = BaseCache.getterMethod(joinFieldClass, PARENT);
+        try {
+            Object joinField = getJoinFieldMethod.invoke(entity);
+            Object parent = getParentMethod.invoke(joinField);
+            return parent.toString();
+        } catch (Throwable e) {
+            LogUtils.error("build IndexRequest: child routing invoke error, joinFieldClass:{},entity:{},e:{}",
+                    joinFieldClass.toString(), entity.toString(), e.toString());
+            throw ExceptionUtils.eee("getRouting error", e);
+        }
+    }
 }

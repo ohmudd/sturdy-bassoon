@@ -1,8 +1,8 @@
 package cn.easyes.extension.plugins;
 
 
-import cn.easyes.annotation.anno.Intercepts;
-import cn.easyes.annotation.anno.Signature;
+import cn.easyes.annotation.Intercepts;
+import cn.easyes.annotation.Signature;
 import cn.easyes.common.utils.ExceptionUtil;
 import cn.easyes.extension.context.Interceptor;
 import cn.easyes.extension.context.Invocation;
@@ -43,6 +43,7 @@ public class Plugin implements InvocationHandler {
      * @param <T>         泛型
      * @return 泛型
      */
+    @SuppressWarnings("unchecked")
     public static <T> T wrap(T t, Interceptor interceptor) {
         Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);
         return (T) Proxy.newProxyInstance(

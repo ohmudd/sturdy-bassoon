@@ -1,7 +1,7 @@
 package cn.easyes.test.entity;
 
-import cn.easyes.annotation.anno.TableField;
-import cn.easyes.annotation.anno.TableName;
+import cn.easyes.annotation.TableField;
+import cn.easyes.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

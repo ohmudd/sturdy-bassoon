@@ -726,14 +726,14 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children childMatch(boolean condition, String type, String column, Object val, ScoreMode scoreMode, Float boost) {
-        getWrapper().childMatch(condition, type, column, val, scoreMode, boost);
+    public Children hasChild(boolean condition, String type, String column, Object val, ScoreMode scoreMode, Float boost) {
+        getWrapper().hasChild(condition, type, column, val, scoreMode, boost);
         return typedThis;
     }
 
     @Override
-    public Children parentMatch(boolean condition, String type, String column, Object val, boolean score, Float boost) {
-        getWrapper().parentMatch(condition, type, column, val, score, boost);
+    public Children hasParent(boolean condition, String type, String column, Object val, boolean score, Float boost) {
+        getWrapper().hasParent(condition, type, column, val, score, boost);
         return typedThis;
     }
 }

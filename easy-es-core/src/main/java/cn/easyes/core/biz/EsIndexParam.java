@@ -30,4 +30,12 @@ public class EsIndexParam {
      * 日期格式化 如yyyy-MM-dd HH:mm:ss
      */
     private String dateFormat;
+    /**
+     * 父名称
+     */
+    private String parentName;
+    /**
+     * 子名称
+     */
+    private String childName;
 }

@@ -1,9 +1,9 @@
 package cn.easyes.core.conditions.interfaces;
 
+import cn.easyes.core.biz.PageInfo;
 import cn.easyes.core.conditions.LambdaEsIndexWrapper;
 import cn.easyes.core.conditions.LambdaEsQueryWrapper;
 import cn.easyes.core.conditions.LambdaEsUpdateWrapper;
-import cn.easyes.core.biz.PageInfo;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;

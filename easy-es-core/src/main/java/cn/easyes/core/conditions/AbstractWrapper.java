@@ -179,13 +179,19 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
-    public Children childMatch(boolean condition, String type, String column, Object val, ScoreMode scoreMode, Float boost) {
+    public Children hasChild(boolean condition, String type, String column, Object val, ScoreMode scoreMode, Float boost) {
         return doIt(condition, MATCH_QUERY, MUST, HAS_CHILD, type, column, val, scoreMode, boost);
     }
 
     @Override
-    public Children parentMatch(boolean condition, String type, String column, Object val, boolean score, Float boost) {
+    public Children hasParent(boolean condition, String type, String column, Object val, boolean score, Float boost) {
         return doIt(condition, MATCH_QUERY, MUST, HAS_PARENT, type, column, val, score, boost);
+    }
+
+    @Override
+    public Children parentId(boolean condition, Object parentId, String type, Float boost) {
+        Assert.notNull(parentId, "parentId could not be null");
+        return doIt(condition, MATCH_QUERY, MUST, PARENT_ID, type, null, parentId, null, boost);
     }
 
     @Override

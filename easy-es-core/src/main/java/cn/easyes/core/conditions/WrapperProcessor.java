@@ -317,7 +317,7 @@ public class WrapperProcessor {
      * @param geoParam         geo参数
      * @param boolQueryBuilder boolQuery参数建造者
      */
-    private static void setGeoQuery(GeoParam geoParam, BoolQueryBuilder boolQueryBuilder, Class<?> entityClass) {
+    public static void setGeoQuery(GeoParam geoParam, BoolQueryBuilder boolQueryBuilder, Class<?> entityClass) {
         // 获取配置信息
         Map<String, String> mappingColumnMap = EntityInfoHelper.getEntityInfo(entityClass).getMappingColumnMap();
         GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();

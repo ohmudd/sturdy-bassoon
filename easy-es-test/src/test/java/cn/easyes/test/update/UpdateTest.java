@@ -1,9 +1,9 @@
 package cn.easyes.test.update;
 
 import cn.easyes.core.conditions.LambdaEsUpdateWrapper;
-import cn.easyes.sample.entity.Document;
-import cn.easyes.sample.mapper.DocumentMapper;
 import cn.easyes.test.TestEasyEsApplication;
+import cn.easyes.test.entity.Document;
+import cn.easyes.test.mapper.DocumentMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * 更新测试

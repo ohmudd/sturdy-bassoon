@@ -1,6 +1,8 @@
-package cn.easyes.annotation.anno;
+package cn.easyes.annotation;
 
 import cn.easyes.common.constants.BaseEsConstants;
+import cn.easyes.common.params.DefaultChildClass;
+import cn.easyes.common.params.JoinField;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -51,4 +53,19 @@ public @interface TableName {
      * @return 默认为false
      */
     boolean keepGlobalPrefix() default false;
+
+    /**
+     * 父子类型
+     *
+     * @return 是否子文档 默认为否 若为true时,则该类型在自动挡模式下不自动创建索引,与父文档使用同一个索引
+     */
+    boolean child() default false;
+
+    /**
+     * 父子类型-默认子类
+     *
+     * @return 默认子类
+     */
+    Class<?> childClass() default DefaultChildClass.class;
+
 }

@@ -1,13 +1,16 @@
 package cn.easyes.starter.register;
 
-import cn.easyes.annotation.anno.Intercepts;
+import cn.easyes.annotation.Intercepts;
 import cn.easyes.common.enums.ProcessIndexStrategyEnum;
+import cn.easyes.common.params.DefaultChildClass;
 import cn.easyes.common.utils.LogUtils;
 import cn.easyes.common.utils.TypeUtils;
+import cn.easyes.core.biz.EntityInfo;
 import cn.easyes.core.cache.BaseCache;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.config.GlobalConfig;
 import cn.easyes.core.proxy.EsMapperProxy;
+import cn.easyes.core.toolkit.EntityInfoHelper;
 import cn.easyes.extension.context.Interceptor;
 import cn.easyes.extension.context.InterceptorChain;
 import cn.easyes.extension.context.InterceptorChainHolder;
@@ -70,9 +73,18 @@ public class MapperFactoryBean<T> implements FactoryBean<T> {
         // 异步处理索引创建/更新/数据迁移等
         GlobalConfig globalConfig = esConfigProperties.getGlobalConfig();
         if (!ProcessIndexStrategyEnum.MANUAL.equals(globalConfig.getProcessIndexMode())) {
-            AutoProcessIndexService autoProcessIndexService = indexStrategyFactory
-                    .getByStrategyType(globalConfig.getProcessIndexMode().getStrategyType());
-            autoProcessIndexService.processIndexAsync(entityClass, client);
+            // 父子类型,仅针对父类型创建索引,子类型不创建索引
+            EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
+            if (!entityInfo.isChild()) {
+                AutoProcessIndexService autoProcessIndexService = indexStrategyFactory
+                        .getByStrategyType(globalConfig.getProcessIndexMode().getStrategyType());
+                autoProcessIndexService.processIndexAsync(entityClass, client);
+
+                // 将子文档索引激活为父文档索引
+                if (!DefaultChildClass.class.equals(entityInfo.getChildClass())) {
+                    EntityInfoHelper.getEntityInfo(entityInfo.getChildClass()).setIndexName(entityInfo.getIndexName());
+                }
+            }
         } else {
             LogUtils.info("===> manual index mode activated");
         }

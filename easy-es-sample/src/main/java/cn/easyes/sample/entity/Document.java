@@ -1,9 +1,9 @@
 package cn.easyes.sample.entity;
 
-import cn.easyes.annotation.anno.HighLightMappingField;
-import cn.easyes.annotation.anno.TableField;
-import cn.easyes.annotation.anno.TableId;
-import cn.easyes.annotation.anno.TableName;
+import cn.easyes.annotation.HighLightMappingField;
+import cn.easyes.annotation.TableField;
+import cn.easyes.annotation.TableId;
+import cn.easyes.annotation.TableName;
 import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldStrategy;
 import cn.easyes.common.enums.FieldType;
