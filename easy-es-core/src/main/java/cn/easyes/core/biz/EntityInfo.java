@@ -81,17 +81,13 @@ public class EntityInfo {
      */
     private int scoreDecimalPlaces = 0;
     /**
-     * 距离字段名
+     * 距离字段名列表
      */
-    private String distanceField;
+    private List<String> distanceFields = new ArrayList<>();
     /**
-     * 距离保留小数位,默认不处理,保持es返回值,效率更高
+     * 距离保留小数位 每个排序器可自定义其保留位数,默认不处理,保持es返回值,效率更高
      */
-    private int distanceDecimalPlaces = 0;
-    /**
-     * 排序字段在sortBuilders中的位置, 默认为0
-     */
-    private int sortBuilderIndex = 0;
+    private List<Integer> distanceDecimalPlaces = new ArrayList<>();
     /**
      * join字段名称
      */

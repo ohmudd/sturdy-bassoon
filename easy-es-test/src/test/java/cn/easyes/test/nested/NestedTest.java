@@ -86,11 +86,12 @@ public class NestedTest {
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents);
 
+        // 嵌套类型中的字段获取可以用FieldUtils.val或直接传入字符串
         LambdaEsQueryWrapper<Document> wrapper1 = new LambdaEsQueryWrapper<>();
         wrapper1.match(Document::getContent, "人才")
-                .nested("users.faqs", w -> w.eq("faqAnswer", "回答4")
+                .nested("users.faqs", w -> w.eq(FieldUtils.val(Faq::getFaqAnswer), "回答4")
                         .match("faqName", "问题3"))
-//                .nested("users", w -> w.between("age", 10, 19))
+                .nested("users", w -> w.between("age", 10, 19))
                 .match(Document::getCreator, "吃饭");
         List<Document> documents1 = documentMapper.selectList(wrapper1);
         System.out.println(documents1);

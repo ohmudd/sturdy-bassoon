@@ -7,8 +7,8 @@ import cn.easyes.core.biz.SAPageInfo;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.conditions.select.LambdaEsQueryWrapper;
 import cn.easyes.core.conditions.update.LambdaEsUpdateWrapper;
-import cn.easyes.core.toolkit.EntityInfoHelper;
 import cn.easyes.core.core.EsWrappers;
+import cn.easyes.core.toolkit.EntityInfoHelper;
 import cn.easyes.core.toolkit.FieldUtils;
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
@@ -129,7 +129,7 @@ public class AllTest {
 
     @Test
     @Order(4)
-    public void testUpdateByChainWrapper(){
+    public void testUpdateByChainWrapper() {
         int count = EsWrappers.lambdaChainUpdate(documentMapper)
                 .eq(Document::getTitle, "测试文档3")
                 .set(Document::getContent, "测试文档内容3的内容被修改了")
@@ -178,9 +178,9 @@ public class AllTest {
     public void testOne() {
         // 链式调用
         Document document = EsWrappers.lambdaChainQuery(documentMapper)
-                .eq(Document::getTitle,"测试文档3")
+                .eq(Document::getTitle, "测试文档3")
                 .one();
-        Assertions.assertEquals(document.getContent(),"测试文档内容3的内容被修改了");
+        Assertions.assertEquals(document.getContent(), "测试文档内容3的内容被修改了");
     }
 
     @Test
@@ -479,7 +479,7 @@ public class AllTest {
     @Order(6)
     public void testConditionOr() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.in(Document::getStarNum,1,10,12,13)
+        wrapper.in(Document::getStarNum, 1, 10, 12, 13)
                 .or(i -> i.eq(Document::getTitle, "测试文档11").eq(Document::getTitle, "测试文档10"));
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(5, documents.size());
@@ -509,7 +509,7 @@ public class AllTest {
 
     @Test
     @Order(6)
-    public void testChainPage(){
+    public void testChainPage() {
         // 链式
         EsPageInfo<Document> pageInfo = EsWrappers.lambdaChainQuery(documentMapper)
                 .match(Document::getCreator, "老汉")
@@ -619,6 +619,21 @@ public class AllTest {
         wrapper.match(Document::getCreator, "老汉")
                 .geoDistance(Document::getLocation, 168.8, centerPoint)
                 .orderByDistanceDesc(Document::getLocation, centerPoint);
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals("4", documents.get(0).getEsId());
+        Assertions.assertEquals("3", documents.get(3).getEsId());
+    }
+
+    @Test
+    @Order(6)
+    public void testOrderByDistanceMulti() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        GeoPoint centerPoint = new GeoPoint(41.0, 116.0);
+        GeoPoint centerPoint1 = new GeoPoint(42.0, 118.0);
+        wrapper.match(Document::getCreator, "老汉")
+                .geoDistance(Document::getLocation, 168.8, centerPoint)
+                .orderByDistanceDesc(Document::getLocation, centerPoint)
+                .orderByDistanceDesc(Document::getLocation, centerPoint1);
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals("4", documents.get(0).getEsId());
         Assertions.assertEquals("3", documents.get(3).getEsId());

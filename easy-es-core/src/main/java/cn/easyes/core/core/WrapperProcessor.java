@@ -99,7 +99,7 @@ public class WrapperProcessor {
         Map<String, String> fieldTypeMap = entityInfo.getFieldList().stream()
                 .collect(Collectors.toMap(EntityFieldInfo::getColumn, item -> Optional.ofNullable(item.getFieldType())
                         .map(FieldType::getType).orElse(FieldType.KEYWORD_TEXT.getType())));
-        // TODO 嵌套类型中的字段名称及自动智能拼接.keyword后缀待近期补充
+        // TODO 嵌套类型中的字段名称及自动智能拼接.keyword后缀待近期补充 以及嵌套类型自定义字段处理
         Map<Class<?>, List<EntityFieldInfo>> nestedFieldListMap = entityInfo.getNestedFieldListMap();
 
         paramList.forEach(param -> {
@@ -428,7 +428,6 @@ public class WrapperProcessor {
         HighlightBuilder highlightBuilder = new HighlightBuilder();
         highLightParams.forEach(highLightParam -> {
             if (StringUtils.isNotBlank(highLightParam.getHighLightField())) {
-
                 //field
                 HighlightBuilder.Field field = new HighlightBuilder.Field(highLightParam.getHighLightField());
                 field.highlighterType(highLightParam.getHighLightType().getValue());

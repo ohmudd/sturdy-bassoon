@@ -105,4 +105,10 @@ public class Document {
      */
     @Distance(decimalPlaces = 1)
     private Double distance;
+
+    /**
+     * es返回的距离2,有N个排序器就有N个排序返回的距离 参考cn.easyes.test.all.AllTest#testOrderByDistanceMulti
+     */
+    @Distance(decimalPlaces = 2)
+    private Double distance2;
 }

@@ -1034,14 +1034,14 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param entityInfo 实体信息
      */
     private void setDistance(T entity, Object[] sortValues, EntityInfo entityInfo) {
-        String distanceField = entityInfo.getDistanceField();
-        if (Objects.isNull(distanceField) || ArrayUtils.isEmpty(sortValues)) {
+        List<String> distanceFields = entityInfo.getDistanceFields();
+        if (CollectionUtils.isEmpty(distanceFields) || ArrayUtils.isEmpty(sortValues)) {
             return;
         }
 
-        try {
-            // 有多个排序字段时,index为距离排序在sortBuilders中的位置
-            Object sortValue = sortValues[entityInfo.getSortBuilderIndex()];
+        // 按排序器顺序封装排序字段值
+        for (int i = 0; i < sortValues.length; i++) {
+            Object sortValue = sortValues[i];
             if (!(sortValue instanceof Double)) {
                 return;
             }
@@ -1049,14 +1049,17 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             if (Double.isNaN(distance)) {
                 return;
             }
-            if (entityInfo.getDistanceDecimalPlaces() > ZERO) {
-                distance = NumericUtils.setDecimalPlaces(distance, entityInfo.getDistanceDecimalPlaces());
+            Integer distanceDecimalPlaces = entityInfo.getDistanceDecimalPlaces().get(i);
+            if (distanceDecimalPlaces > ZERO) {
+                distance = NumericUtils.setDecimalPlaces(distance, distanceDecimalPlaces);
             }
-            Method invokeMethod = BaseCache.setterMethod(entity.getClass(), distanceField);
-            invokeMethod.invoke(entity, distance);
-        } catch (Throwable e) {
-            // 遇到异常只提示, 不阻断流程 distance未设置不影核心业务
-            LogUtils.formatError("set distance error, entity:%s,sortValues:%s,distanceField:%s,e:%s", entity, JSON.toJSONString(sortValues), distanceField, e);
+            try {
+                Method invokeMethod = BaseCache.setterMethod(entity.getClass(), distanceFields.get(i));
+                invokeMethod.invoke(entity, distance);
+            } catch (Throwable e) {
+                // 遇到异常只提示, 不阻断流程 distance未设置不影核心业务
+                LogUtils.formatError("set distance error, entity:%s,sortValues:%s,distanceField:%s,e:%s", entity, JSON.toJSONString(sortValues), distanceFields, e);
+            }
         }
     }
 
@@ -1073,7 +1076,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             return;
         }
 
-        if (entityInfo.getDistanceDecimalPlaces() > ZERO) {
+        if (entityInfo.getScoreDecimalPlaces() > ZERO) {
             score = NumericUtils.setDecimalPlaces(score, entityInfo.getScoreDecimalPlaces());
         }
 

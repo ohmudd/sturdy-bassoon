@@ -274,10 +274,9 @@ public class EntityInfoHelper {
         // 初始化封装Distance注解信息
         if (field.isAnnotationPresent(Distance.class)) {
             Distance distance = field.getAnnotation(Distance.class);
-            entityInfo.setDistanceField(field.getName());
+            entityInfo.getDistanceFields().add(field.getName());
             entityInfo.getNotSerializeField().add(field.getName());
-            entityInfo.setDistanceDecimalPlaces(distance.decimalPlaces());
-            entityInfo.setSortBuilderIndex(distance.sortBuilderIndex());
+            entityInfo.getDistanceDecimalPlaces().add(distance.decimalPlaces());
             hasAnnotation = true;
         }
         return hasAnnotation;
