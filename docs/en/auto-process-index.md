@@ -2,13 +2,13 @@
 > Among them, the fully automatic smoothing mode adopts the world's leading "brother, you don't need to move, EE is fully automatic" mode for the first time. All the whole life cycle of index creation, update, data migration, etc. does not require user intervention, and is fully completed by EE. Zero downtime, even the index type can be intelligently and automatically inferred. It is the world's first open source initiative. It fully draws on the idea of JVM garbage collection algorithm.
 
 
-**Mode 1: Smooth mode of automatic hosting (auto-block-snow mode) This mode is enabled by default (v0.9.9+ support)**
+**Mode 1: Smooth mode of automatic hosting (auto-block-snow mode) This mode is enabled by default (v0.9.10+ support)**
 
 ---
 
 In this mode, users can complete the whole life cycle of index creation, update, data migration, etc. without any operation. The process has zero downtime and no user perception. It can achieve a smooth transition in the production environment, similar to the automatic transmission of a car - snow. Mode, smooth and comfortable, completely liberate users, and enjoy the fun of automatic stance!
 
-**Mode 2: Non-smooth mode of automatic hosting (automatic gear-sport mode) (v0.9.9+ support)**
+**Mode 2: Non-smooth mode of automatic hosting (automatic gear-sport mode) (v0.9.10+ support)**
 
 ---
 
