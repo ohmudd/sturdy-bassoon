@@ -96,11 +96,6 @@
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson.version}</version>
             </dependency>
-            <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>${codec.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
