@@ -27,7 +27,10 @@ import org.elasticsearch.search.aggregations.metrics.ParsedAvg;
 import org.elasticsearch.search.aggregations.metrics.ParsedMax;
 import org.elasticsearch.search.aggregations.metrics.ParsedMin;
 import org.elasticsearch.search.aggregations.metrics.ParsedSum;
-import org.elasticsearch.search.sort.*;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -585,6 +588,32 @@ public class AllTest {
 
     @Test
     @Order(6)
+    public void testOrderByDistanceAsc() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        GeoPoint centerPoint = new GeoPoint(41.0, 116.0);
+        wrapper.match(Document::getCreator, "老汉")
+                .geoDistance(Document::getLocation, 168.8, centerPoint)
+                .orderByDistanceAsc(Document::getLocation, centerPoint);
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals("3",documents.get(0).getEsId());
+        Assertions.assertEquals("4",documents.get(3).getEsId());
+    }
+
+    @Test
+    @Order(6)
+    public void testOrderByDistanceDesc() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        GeoPoint centerPoint = new GeoPoint(41.0, 116.0);
+        wrapper.match(Document::getCreator, "老汉")
+                .geoDistance(Document::getLocation, 168.8, centerPoint)
+                .orderByDistanceDesc(Document::getLocation, centerPoint);
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals("4",documents.get(0).getEsId());
+        Assertions.assertEquals("3",documents.get(3).getEsId());
+    }
+
+    @Test
+    @Order(6)
     public void testSortByScore() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.match(Document::getCreator, "老汉11");
@@ -742,7 +771,7 @@ public class AllTest {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         GeoPoint geoPoint = new GeoPoint(41.0, 116.0);
         wrapper.geoDistance(Document::getLocation, 168.8, DistanceUnit.KILOMETERS, geoPoint);
-        GeoDistanceSortBuilder geoDistanceSortBuilder = SortBuilders.geoDistanceSort(FieldUtils.val(Document::getLocation),geoPoint)
+        GeoDistanceSortBuilder geoDistanceSortBuilder = SortBuilders.geoDistanceSort(FieldUtils.val(Document::getLocation), geoPoint)
                 .unit(DistanceUnit.KILOMETERS)
                 .geoDistance(GeoDistance.ARC)
                 .order(SortOrder.DESC);
