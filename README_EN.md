@@ -90,14 +90,14 @@ String indexName = "document";
     - Maven:
       ```xml
       <dependency>
-        <groupId>io.github.xpc1024</groupId>
+        <groupId>cn.easy-es</groupId>
         <artifactId>easy-es-boot-starter</artifactId>
         <version>Latest Version</version>
       </dependency>
       ```
     - Gradle
       ```groovy
-      compile group: 'io.github.xpc1024', name: 'easy-es-boot-starter', version: 'Latest Version'
+      compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Version'
       ```
 -   Add mapper file extends BaseEsMapper interface
 
