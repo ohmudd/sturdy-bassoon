@@ -41,7 +41,7 @@ public class Document {
     /**
      * 作者 加@TableField注解,并指明strategy = FieldStrategy.NOT_EMPTY 表示更新的时候的策略为 创建者不为空字符串时才更新
      */
-    @IndexField(strategy = FieldStrategy.NOT_EMPTY, fieldType = FieldType.KEYWORD_TEXT)
+    @IndexField(strategy = FieldStrategy.NOT_EMPTY, fieldType = FieldType.KEYWORD)
     private String creator;
     /**
      * 创建时间
