@@ -61,11 +61,11 @@ import static cn.easyes.common.constants.BaseEsConstants.*;
 /**
  * 核心 所有支持方法接口实现类
  * <p>
- *  内部实现:
- *  核心网络请求类：{@link RestHighLevelClient}、
- *  动态封装request类：{@link WrapperProcessor}、
- *  查询参数封装：{@link EsQueryTypeUtil}、
- *  查询类型枚举：{@link EsQueryTypeEnum}、
+ * 内部实现:
+ * 核心网络请求类：{@link RestHighLevelClient}、
+ * 动态封装request类：{@link WrapperProcessor}、
+ * 查询参数封装：{@link EsQueryTypeUtil}、
+ * 查询类型枚举：{@link EsQueryTypeEnum}、
  * </p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/

@@ -12,7 +12,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum HighLightTypeEnum {
     /**
-     * unified（通用高亮策略）
+     * unified（通用高亮策略,缺省配置时,默认采用此策略）
      * 其使用的是Lucene的Unified Highlighter。此高亮策略将文本分解成句子，并使用BM25算法对单个句子进行评分，支持精确的短语和多术语(模糊、前缀、正则表达式)突出显示。这个是默认的高亮策略。
      */
     UNIFIED("unified"),
@@ -28,7 +28,7 @@ public enum HighLightTypeEnum {
      * 其使用的是Lucene的Fast Vector highlighter。
      * 注意：使用此策略需要在映射中将对应字段中的属性term_vector设置为with_positions_offsets。
      */
-    FVV("fvh");
+    FVH("fvh");
 
     /**
      * 聚合类型英文名

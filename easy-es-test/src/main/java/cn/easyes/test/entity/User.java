@@ -18,9 +18,8 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@IndexName("easyes_user")
 public class User {
-    @IndexField(value = "user_name", analyzer = Analyzer.IK_SMART)
+    @IndexField(value = "user_name", fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART)
     private String username;
     @IndexField(exist = false)
     private Integer age;

@@ -512,10 +512,6 @@ public class IndexUtils {
                     .orElse(new ArrayList<>(0));
             if (!CollectionUtils.isEmpty(childFieldList)) {
                 childFieldList.forEach(child -> {
-                    // 子文档仅支持match查询,所以如果用户未指定子文档索引类型,则将默认的keyword类型转换为text类型
-                    if (FieldType.KEYWORD.equals(child.getFieldType())) {
-                        child.setFieldType(FieldType.TEXT);
-                    }
                     // 添加子文档中除JoinField以外的字段
                     if (!entityInfo.getJoinFieldName().equals(child.getMappingColumn())) {
                         copyFieldList.add(child);
