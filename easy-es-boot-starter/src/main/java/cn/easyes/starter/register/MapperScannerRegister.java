@@ -1,7 +1,7 @@
 package cn.easyes.starter.register;
 
-import cn.easyes.common.utils.LogUtils;
 import cn.easyes.common.utils.EEVersionUtil;
+import cn.easyes.common.utils.LogUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
@@ -47,7 +47,7 @@ public class MapperScannerRegister implements ImportBeanDefinitionRegistrar, Res
         //@author dazer
         boolean banner = Optional.ofNullable(environment.getProperty(ENABLE_BANNER)).map(Boolean::parseBoolean).orElse(Boolean.TRUE);
         if (banner) {
-            String versionStr = EEVersionUtil.getEEVersion();
+            String versionStr = EEVersionUtil.getJarVersion(this.getClass());
             System.out.println("\n" +
                     "___                     _  _            ___\n" +
                     "  | __|   __ _     ___    | || |   ___    | __|    ___\n" +

@@ -33,15 +33,6 @@ public class EEVersionUtil {
     }
 
     /**
-     * 获取EE版本号
-     *
-     * @return ee version
-     */
-    public static String getEEVersion() {
-        return getJarVersion(EEVersionUtil.class);
-    }
-
-    /**
      * 获取elasticsearch client 版本
      * <p>
      * elasticsearch 客户端必须通过 restHighLevelClient.info 获取，无法使用getPackage.getImplementationVersion 获取
