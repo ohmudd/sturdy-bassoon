@@ -38,6 +38,7 @@ https://easy-es.cn/#/en/
 ## Features
 ---
 
+-   Automatically create and update indexes, automatically migrate data, and process zero downtime
 -   Auto configuration on startup
 -   Out-of-the-box interfaces for operate es
 -   Powerful and flexible where condition wrapper
