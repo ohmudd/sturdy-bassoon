@@ -11,7 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum Query {
     /**
-     * 精确匹配
+     * 不分词匹配,默认为精确匹配,如果需要左模糊,右模糊或者左右都模糊,请在传入的查询字段值中拼接"*" 类似MySQL的like拼接%
      */
     EQ(".keyword"),
     /**
