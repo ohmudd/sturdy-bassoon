@@ -23,6 +23,7 @@ public class EEVersionUtil {
      * <ul>
      *      <li>只能获取jar包版本，并且打包后META-INF/MANIFEST.MF文件中存在 Implementation-Version</li>
      *      <li>不存在 Implementation-Version 时返回 unknown</li>
+     *      <li>如果获取EE本身版本需要打包后获取,在test包测试用例中无法获取</li>
      * </ul>
      *
      * @return classVersion
