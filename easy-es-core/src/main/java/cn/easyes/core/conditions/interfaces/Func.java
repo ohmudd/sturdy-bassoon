@@ -515,6 +515,36 @@ public interface Func<Children, R> extends Serializable {
      */
     Children termsAggregation(boolean condition, boolean enablePipeline, String returnName, String column);
 
+    default Children termsAggregations(R... columns) {
+        return termsAggregations(true, true, columns);
+    }
+
+    default Children termsAggregations(boolean enablePipeline, R... columns) {
+        return termsAggregations(true, enablePipeline, columns);
+    }
+
+    default Children termsAggregations(String... columns) {
+        return termsAggregations(true, true, columns);
+    }
+
+    default Children termsAggregations(boolean enablePipeline, String... columns) {
+        return termsAggregations(true, enablePipeline, columns);
+    }
+
+    default Children termsAggregations(boolean condition, boolean enablePipeline, R... columns) {
+        String[] fields = Arrays.stream(columns).map(FieldUtils::getFieldName).toArray(String[]::new);
+        return termsAggregations(condition, enablePipeline, fields);
+    }
+
+    /**
+     * 可指定返回名称分组,相当于mysql group by
+     *
+     * @param condition      条件
+     * @param enablePipeline 是否管道聚合
+     * @param columns        列,支持多列
+     * @return 泛型
+     */
+    Children termsAggregations(boolean condition, boolean enablePipeline, String... columns);
 
     default Children avg(R column) {
         return avg(true, true, FieldUtils.getFieldName(column), column);
@@ -564,6 +594,37 @@ public interface Func<Children, R> extends Serializable {
      */
     Children avg(boolean condition, boolean enablePipeline, String returnName, String column);
 
+    default Children avgs(R... columns) {
+        return avgs(true, true, columns);
+    }
+
+    default Children avgs(boolean enablePipeline, R... columns) {
+        return avgs(true, enablePipeline, columns);
+    }
+
+    default Children avgs(String... columns) {
+        return avgs(true, true, columns);
+    }
+
+    default Children avgs(boolean enablePipeline, String... columns) {
+        return avgs(true, enablePipeline, columns);
+    }
+
+    default Children avgs(boolean condition, boolean enablePipeline, R... columns) {
+        String[] fields = Arrays.stream(columns).map(FieldUtils::getFieldName).toArray(String[]::new);
+        return avgs(condition, enablePipeline, fields);
+    }
+
+    /**
+     * 求平均值
+     *
+     * @param condition      条件
+     * @param enablePipeline 是否管道聚合
+     * @param columns        列，支持多列
+     * @return 泛型
+     */
+    Children avgs(boolean condition, boolean enablePipeline, String... columns);
+
     default Children min(R column) {
         return min(true, FieldUtils.getFieldName(column), column);
     }
@@ -610,6 +671,37 @@ public interface Func<Children, R> extends Serializable {
      * @return 泛型
      */
     Children min(boolean condition, boolean enablePipeline, String returnName, String column);
+
+    default Children mins(R... columns) {
+        return mins(true, true, columns);
+    }
+
+    default Children mins(boolean enablePipeline, R... columns) {
+        return mins(true, enablePipeline, columns);
+    }
+
+    default Children mins(String... columns) {
+        return mins(true, true, columns);
+    }
+
+    default Children mins(boolean enablePipeline, String... columns) {
+        return mins(true, enablePipeline, columns);
+    }
+
+    default Children mins(boolean condition, boolean enablePipeline, R... columns) {
+        String[] fields = Arrays.stream(columns).map(FieldUtils::getFieldName).toArray(String[]::new);
+        return mins(condition, enablePipeline, fields);
+    }
+
+    /**
+     * 求最小值
+     *
+     * @param condition      条件
+     * @param enablePipeline 是否管道聚合
+     * @param columns        列，支持多列
+     * @return 泛型
+     */
+    Children mins(boolean condition, boolean enablePipeline, String... columns);
 
 
     default Children max(R column) {
@@ -659,6 +751,36 @@ public interface Func<Children, R> extends Serializable {
      */
     Children max(boolean condition, boolean enablePipeline, String returnName, String column);
 
+    default Children maxs(R... columns) {
+        return maxs(true, true, columns);
+    }
+
+    default Children maxs(boolean enablePipeline, R... columns) {
+        return maxs(true, enablePipeline, columns);
+    }
+
+    default Children maxs(String... columns) {
+        return maxs(true, true, columns);
+    }
+
+    default Children maxs(boolean enablePipeline, String... columns) {
+        return maxs(true, enablePipeline, columns);
+    }
+
+    default Children maxs(boolean condition, boolean enablePipeline, R... columns) {
+        String[] fields = Arrays.stream(columns).map(FieldUtils::getFieldName).toArray(String[]::new);
+        return maxs(condition, enablePipeline, fields);
+    }
+
+    /**
+     * 求最大值
+     *
+     * @param condition      条件
+     * @param enablePipeline 是否管道聚合
+     * @param columns        列，支持多列
+     * @return 泛型
+     */
+    Children maxs(boolean condition, boolean enablePipeline, String... columns);
 
     default Children sum(R column) {
         return sum(true, FieldUtils.getFieldName(column), column);
@@ -707,6 +829,36 @@ public interface Func<Children, R> extends Serializable {
      */
     Children sum(boolean condition, boolean enablePipeline, String returnName, String column);
 
+    default Children sums(R... columns) {
+        return sums(true, true, columns);
+    }
+
+    default Children sums(boolean enablePipeline, R... columns) {
+        return sums(true, enablePipeline, columns);
+    }
+
+    default Children sums(String... columns) {
+        return sums(true, true, columns);
+    }
+
+    default Children sums(boolean enablePipeline, String... columns) {
+        return sums(true, enablePipeline, columns);
+    }
+
+    default Children sums(boolean condition, boolean enablePipeline, R... columns) {
+        String[] fields = Arrays.stream(columns).map(FieldUtils::getFieldName).toArray(String[]::new);
+        return sums(condition, enablePipeline, fields);
+    }
+
+    /**
+     * 求和
+     *
+     * @param condition      条件
+     * @param enablePipeline 是否管道聚合
+     * @param columns        列，支持多列
+     * @return 泛型
+     */
+    Children sums(boolean condition, boolean enablePipeline, String... columns);
 
     default Children sort(SortBuilder<?> sortBuilder) {
         return sort(true, sortBuilder);

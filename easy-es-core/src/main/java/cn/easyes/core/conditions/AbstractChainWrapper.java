@@ -226,8 +226,20 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
+    public Children termsAggregations(boolean condition, boolean pipeline, R... columns) {
+        getWrapper().termsAggregations(condition, pipeline, columns);
+        return typedThis;
+    }
+
+    @Override
     public Children avg(boolean condition, boolean pipeline, String returnName, R column) {
         getWrapper().avg(condition, pipeline, returnName, column);
+        return typedThis;
+    }
+
+    @Override
+    public Children avgs(boolean condition, boolean pipeline, R... columns) {
+        getWrapper().avgs(condition, pipeline, columns);
         return typedThis;
     }
 
@@ -238,14 +250,32 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
+    public Children mins(boolean condition, boolean pipeline, R... columns) {
+        getWrapper().mins(condition, pipeline, columns);
+        return typedThis;
+    }
+
+    @Override
     public Children max(boolean condition, boolean pipeline, String returnName, R column) {
         getWrapper().max(condition, pipeline, returnName, column);
         return typedThis;
     }
 
     @Override
+    public Children maxs(boolean condition, boolean pipeline, R... columns) {
+        getWrapper().maxs(condition, pipeline, columns);
+        return typedThis;
+    }
+
+    @Override
     public Children sum(boolean condition, boolean pipeline, String returnName, R column) {
         getWrapper().sum(condition, pipeline, returnName, column);
+        return typedThis;
+    }
+
+    @Override
+    public Children sums(boolean condition, boolean pipeline, R... columns) {
+        getWrapper().sums(condition, pipeline, columns);
         return typedThis;
     }
 
@@ -595,8 +625,20 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
+    public Children termsAggregations(boolean condition, boolean enablePipeline, String... columns) {
+        getWrapper().termsAggregations(condition, enablePipeline, columns);
+        return typedThis;
+    }
+
+    @Override
     public Children avg(boolean condition, boolean enablePipeline, String returnName, String column) {
         getWrapper().avg(condition, enablePipeline, returnName, column);
+        return typedThis;
+    }
+
+    @Override
+    public Children avgs(boolean condition, boolean enablePipeline, String... columns) {
+        getWrapper().avgs(condition, enablePipeline, columns);
         return typedThis;
     }
 
@@ -607,14 +649,32 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
+    public Children mins(boolean condition, boolean enablePipeline, String... columns) {
+        getWrapper().mins(condition, enablePipeline, columns);
+        return typedThis;
+    }
+
+    @Override
     public Children max(boolean condition, boolean enablePipeline, String returnName, String column) {
         getWrapper().max(condition, enablePipeline, returnName, column);
         return typedThis;
     }
 
     @Override
+    public Children maxs(boolean condition, boolean enablePipeline, String... columns) {
+        getWrapper().maxs(condition, enablePipeline, columns);
+        return typedThis;
+    }
+
+    @Override
     public Children sum(boolean condition, boolean enablePipeline, String returnName, String column) {
         getWrapper().sum(condition, enablePipeline, returnName, column);
+        return typedThis;
+    }
+
+    @Override
+    public Children sums(boolean condition, boolean enablePipeline, String... columns) {
+        getWrapper().sums(condition, enablePipeline, columns);
         return typedThis;
     }
 

@@ -416,8 +416,26 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
+    public Children termsAggregations(boolean condition, boolean enablePipeline, String... columns) {
+        if (ArrayUtils.isEmpty(columns)) {
+            return typedThis;
+        }
+        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.TERMS, column, column));
+        return typedThis;
+    }
+
+    @Override
     public Children avg(boolean condition, boolean enablePipeline, String returnName, String column) {
         return doIt(condition, enablePipeline, AggregationTypeEnum.AVG, returnName, column);
+    }
+
+    @Override
+    public Children avgs(boolean condition, boolean enablePipeline, String... columns) {
+        if (ArrayUtils.isEmpty(columns)) {
+            return typedThis;
+        }
+        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.AVG, column, column));
+        return typedThis;
     }
 
     @Override
@@ -426,13 +444,40 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
+    public Children mins(boolean condition, boolean enablePipeline, String... columns) {
+        if (ArrayUtils.isEmpty(columns)) {
+            return typedThis;
+        }
+        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.MIN, column, column));
+        return typedThis;
+    }
+
+    @Override
     public Children max(boolean condition, boolean enablePipeline, String returnName, String column) {
         return doIt(condition, enablePipeline, AggregationTypeEnum.MAX, returnName, column);
     }
 
     @Override
+    public Children maxs(boolean condition, boolean enablePipeline, String... columns) {
+        if (ArrayUtils.isEmpty(columns)) {
+            return typedThis;
+        }
+        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.MAX, column, column));
+        return typedThis;
+    }
+
+    @Override
     public Children sum(boolean condition, boolean enablePipeline, String returnName, String column) {
         return doIt(condition, enablePipeline, AggregationTypeEnum.SUM, returnName, column);
+    }
+
+    @Override
+    public Children sums(boolean condition, boolean enablePipeline, String... columns) {
+        if (ArrayUtils.isEmpty(columns)) {
+            return typedThis;
+        }
+        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.SUM, column, column));
+        return typedThis;
     }
 
     @Override
