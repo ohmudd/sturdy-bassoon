@@ -38,6 +38,7 @@ import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
@@ -248,9 +249,11 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         } else {
             // 不去重,直接count获取,效率更高
             CountRequest countRequest = new CountRequest(getIndexNames(wrapper.indexNames));
-            BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.baseEsParamList,
-                    wrapper.enableMust2Filter, entityClass);
-            countRequest.query(boolQueryBuilder);
+            QueryBuilder queryBuilder = Optional.ofNullable(wrapper.searchSourceBuilder)
+                    .map(SearchSourceBuilder::query)
+                    .orElseGet(() -> WrapperProcessor.initBoolQueryBuilder(wrapper.baseEsParamList,
+                            wrapper.enableMust2Filter, entityClass));
+            countRequest.query(queryBuilder);
             CountResponse count;
             try {
                 printCountDSL(countRequest);
@@ -764,16 +767,13 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         SearchRequest searchRequest = new SearchRequest(getIndexNames(wrapper.indexNames));
 
         // 用户在wrapper中指定的混合查询条件优先级最高
-        SearchSourceBuilder searchSourceBuilder;
-        if (Objects.isNull(wrapper.searchSourceBuilder)) {
-            searchSourceBuilder = WrapperProcessor.buildSearchSourceBuilder(wrapper, entityClass);
-        } else {
-            searchSourceBuilder = wrapper.searchSourceBuilder;
-            // 兼容混合查询时用户在分页中自定义的分页参数
-            Optional.ofNullable(wrapper.from).ifPresent(searchSourceBuilder::from);
-            Optional.ofNullable(wrapper.size).ifPresent(searchSourceBuilder::size);
-        }
-
+        SearchSourceBuilder searchSourceBuilder = Optional.ofNullable(wrapper.searchSourceBuilder)
+                .map(builder -> {
+                    // 兼容混合查询时用户在分页中自定义的分页参数
+                    Optional.ofNullable(wrapper.from).ifPresent(builder::from);
+                    Optional.ofNullable(wrapper.size).ifPresent(builder::size);
+                    return builder;
+                }).orElseGet(() -> WrapperProcessor.buildSearchSourceBuilder(wrapper, entityClass));
         searchRequest.source(searchSourceBuilder);
         Optional.ofNullable(searchAfter).ifPresent(searchSourceBuilder::searchAfter);
         printDSL(searchRequest);

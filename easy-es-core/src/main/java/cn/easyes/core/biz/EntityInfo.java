@@ -14,6 +14,8 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static cn.easyes.annotation.rely.AnnotationConstants.DEFAULT_MAX_RESULT_WINDOW;
+
 /**
  * 实体类信息
  * <p>
@@ -45,7 +47,7 @@ public class EntityInfo {
     /**
      * 最大返回数
      */
-    private Integer maxResultWindow;
+    private Integer maxResultWindow = DEFAULT_MAX_RESULT_WINDOW;
     /**
      * 表映射结果集
      */

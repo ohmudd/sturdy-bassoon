@@ -94,7 +94,8 @@ public class EsAutoConfiguration {
         Integer connectTimeOut = easyEsConfigProperties.getConnectTimeout();
         Integer socketTimeOut = easyEsConfigProperties.getSocketTimeout();
         Integer connectionRequestTimeOut = easyEsConfigProperties.getConnectionRequestTimeout();
-        boolean needSetRequestConfig = Objects.nonNull(connectTimeOut) || Objects.nonNull(connectionRequestTimeOut);
+        boolean needSetRequestConfig = Objects.nonNull(connectTimeOut) || Objects.nonNull(socketTimeOut) ||
+                Objects.nonNull(connectionRequestTimeOut);
         if (needSetRequestConfig) {
             builder.setRequestConfigCallback(requestConfigBuilder -> {
                 Optional.ofNullable(connectTimeOut).ifPresent(requestConfigBuilder::setConnectTimeout);
