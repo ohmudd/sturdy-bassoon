@@ -105,6 +105,18 @@ public class EsQueryTypeUtil {
         }
     }
 
+    /**
+     * 添加查询类型 适用于多字段单值情形
+     *
+     * @param boolQueryBuilder 参数连接器
+     * @param queryType        查询类型
+     * @param attachType       连接类型
+     * @param fields           字段列表
+     * @param value            值
+     * @param ext              拓展字段
+     * @param minShouldMatch   最小匹配百分比
+     * @param boost            权重
+     */
     public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType,
                                       List<String> fields, Object value, Object ext, Integer minShouldMatch, Float boost) {
         if (Objects.equals(queryType, MULTI_MATCH_QUERY.getType())) {
