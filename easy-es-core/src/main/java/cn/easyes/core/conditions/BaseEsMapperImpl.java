@@ -195,7 +195,8 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         }
 
         // searchAfter必须要进行排序，不排序无法进行分页
-        if (CollectionUtils.isEmpty(wrapper.sortParamList)) {
+        boolean notSort = CollectionUtils.isEmpty(wrapper.baseSortParams) && CollectionUtils.isEmpty(wrapper.orderByParams);
+        if (notSort) {
             throw ExceptionUtils.eee("sortParamList cannot be empty");
         }
 

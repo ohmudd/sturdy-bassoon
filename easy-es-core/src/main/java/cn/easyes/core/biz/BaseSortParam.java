@@ -1,28 +1,42 @@
 package cn.easyes.core.biz;
 
+import cn.easyes.common.enums.OrderTypeEnum;
 import lombok.Builder;
 import lombok.Data;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.unit.DistanceUnit;
+import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
 /**
- * 距离排序参数
+ * 排序基本参数
  * <p>
  * Copyright © 2022 xpc1024 All Rights Reserved
  **/
 @Data
 @Builder
-public class DistanceOrderByParam {
-    /**
-     * 排序字段
-     */
-    private String fieldName;
+public class BaseSortParam {
     /**
      * 排序规则
      */
     private SortOrder sortOrder;
+
+    /**
+     * 排序字段
+     */
+    private String sortField;
+
+    /**
+     * 用户自定义的原生语法排序器
+     */
+    private SortBuilder<?> sortBuilder;
+
+    /**
+     * 排序类型
+     */
+    private OrderTypeEnum orderTypeEnum;
+
     /**
      * 计算方式 ARC PLANE 默认PLANE
      */
