@@ -324,15 +324,13 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         Method getId = BaseCache.getterMethod(entityClass, getRealIdFieldName());
         list.forEach(t -> {
             try {
-                Object invoke = getId.invoke(t);
-                if (Objects.nonNull(invoke) && invoke instanceof String) {
-                    String id = (String) invoke;
-                    if (!StringUtils.isEmpty(id)) {
-                        DeleteRequest deleteRequest = new DeleteRequest();
-                        deleteRequest.id(id);
-                        deleteRequest.index(getIndexName());
-                        bulkRequest.add(deleteRequest);
-                    }
+                Object id = getId.invoke(t);
+                if (Objects.nonNull(id)) {
+                    DeleteRequest deleteRequest = new DeleteRequest();
+                    deleteRequest.id(id.toString());
+                    deleteRequest.index(getIndexName());
+                    bulkRequest.add(deleteRequest);
+
                 }
             } catch (Exception e) {
                 throw ExceptionUtils.eee("delete exception", e);

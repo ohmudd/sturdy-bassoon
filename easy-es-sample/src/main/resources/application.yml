@@ -7,7 +7,7 @@ easy-es:
   global-config:
     print-dsl: true
     db-config:
-      map-underscore-to-camel-case: true
+#      map-underscore-to-camel-case: true
 #      table-prefix: daily_
 #      id-type: AUTO
 #      field-strategy: not_empty
