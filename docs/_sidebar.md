@@ -1,6 +1,7 @@
   - [简介](README.md)
   - [适用场景](sceen.md)
   - [顾虑粉碎](worry-free.md)
+  - [避坑指南](avoid-pit.md)
   - [快速开始](quick-start.md)
     - [Springboot集成Demo](demo.md)
   - [自动托管索引](auto-process-index.md)
