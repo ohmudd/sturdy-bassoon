@@ -69,8 +69,8 @@ CRUD示例:
         // 新新增父文档,然后再插入子文档
         Document document = new Document();
         document.setId("1");
-        document.setTitle("我是父文档的标题");
-        document.setContent("我是父文档的内容");
+        document.setTitle("父文档的标题");
+        document.setContent("父文档的内容");
         JoinField joinField = new JoinField();
         joinField.setName("document");
         document.setJoinField(joinField);
@@ -79,7 +79,7 @@ CRUD示例:
         // 插入子文档
         Comment comment = new Comment();
         comment.setId("2");
-        comment.setCommentContent("我是文档的评论1");
+        comment.setCommentContent("文档的评论1");
 
         // 这里特别注意,子文档必须指定其父文档的id,否则找不到父文档别怪我没提醒
         joinField.setParent("1");
@@ -90,7 +90,7 @@ CRUD示例:
         // 插入子文档2
         Comment comment1 = new Comment();
         comment1.setId("3");
-        comment1.setCommentContent("我是文档的评论2");
+        comment1.setCommentContent("文档的评论2");
         comment1.setJoinField(joinField);
         commentMapper.insert(comment1);
     }
@@ -123,12 +123,12 @@ CRUD示例:
         // case1: 父文档/子文档 根据各自的id更新
         Document document = new Document();
         document.setId("1");
-        document.setTitle("我是ge壁old王标题");
+        document.setTitle("父标题");
         documentMapper.updateById(document);
 
         // case2: 父文档/子文档 根据各自条件更新
         Comment comment = new Comment();
-        comment.setCommentContent("我是ge壁old王的评论");
+        comment.setCommentContent("更新后的评论");
         LambdaEsUpdateWrapper<Comment> wrapper = new LambdaEsUpdateWrapper<>();
         wrapper.match(Comment::getCommentContent, "评论");
         commentMapper.update(comment, wrapper);
