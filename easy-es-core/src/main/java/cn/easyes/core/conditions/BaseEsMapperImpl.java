@@ -176,12 +176,16 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     @Override
     public SearchResponse search(SearchRequest searchRequest, RequestOptions requestOptions) throws IOException {
         printDSL(searchRequest);
-        return client.search(searchRequest, requestOptions);
+        SearchResponse response = client.search(searchRequest, requestOptions);
+        printResponseErrors(response);
+        return response;
     }
 
     @Override
     public SearchResponse scroll(SearchScrollRequest searchScrollRequest, RequestOptions requestOptions) throws IOException {
-        return client.scroll(searchScrollRequest, requestOptions);
+        SearchResponse response = client.scroll(searchScrollRequest, requestOptions);
+        printResponseErrors(response);
+        return response;
     }
 
     @Override
@@ -602,6 +606,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         } catch (IOException e) {
             throw ExceptionUtils.eee("search exception", e);
         }
+        printResponseErrors(response);
         return response;
     }
 
@@ -657,8 +662,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         printDSL(searchRequest);
         try {
             //  查询数据明细
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            SearchHit[] searchHits = parseSearchHitArray(searchResponse);
+            SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+            printResponseErrors(response);
+            SearchHit[] searchHits = parseSearchHitArray(response);
             return Arrays.stream(searchHits)
                     .map(this::parseOne)
                     .collect(Collectors.toList());
@@ -879,13 +885,14 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      */
     private SearchHit[] getSearchHitArray(SearchRequest searchRequest) {
         printDSL(searchRequest);
-        SearchResponse searchResponse;
+        SearchResponse response;
         try {
-            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            response = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw ExceptionUtils.eee("getSearchHitArray exception,searchRequest:%s", e, searchRequest.toString());
         }
-        return parseSearchHitArray(searchResponse);
+        printResponseErrors(response);
+        return parseSearchHitArray(response);
     }
 
 
@@ -909,6 +916,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         } catch (IOException e) {
             throw ExceptionUtils.eee("getSearchHitArray IOException, searchRequest:%s", e, searchRequest.toString());
         }
+        printResponseErrors(response);
         return parseSearchHitArray(response);
     }
 
@@ -1163,6 +1171,23 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         if (GlobalConfigCache.getGlobalConfig().isPrintDsl() && Objects.nonNull(searchRequest)) {
             Optional.ofNullable(searchRequest.source())
                     .ifPresent(source -> LogUtils.info(BaseEsConstants.DSL_PREFIX + source));
+        }
+    }
+
+    /**
+     * 对响应结构进行判断，如果有错误，则抛出异常
+     *
+     * <p>如下，client方法都需要判定</p>
+     * client.search
+     * client.scroll
+     * client.explain 等等
+     */
+    private void printResponseErrors(SearchResponse searchResponse) {
+        if (Objects.nonNull(searchResponse)
+                && searchResponse.getShardFailures() != null
+                && searchResponse.getShardFailures().length > ZERO) {
+            String errorMsg = searchResponse.getShardFailures()[0].toString();
+            throw ExceptionUtils.eee("es响应出错，search response failed ,failedShards: " + errorMsg);
         }
     }
 
