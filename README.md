@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://www.yuque.com/laohan-14b9d/foyrfa/naw1ie">
-   <img alt="East-Es-Logo" src="https://iknow.hs.net/6361ec1d-edca-4358-98c1-e7a309e15a39.png">
+   <img alt="East-Es-Logo" src="https://iknow.hs.net/e2ccba53-812e-4927-9cac-d6ca61327752.png">
   </a>
 </p>
 
@@ -93,6 +93,11 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动�
 **开源社区dromara** https://dromara.org
 
 **开源社区码云首页** https://gitee.com/dromara
+
+# 架构 | Architecture
+---
+
+![Architecture](https://iknow.hs.net/27fb40b8-22d4-45c2-92e0-1471112d5102.jpg)
 
 
 # 相关链接 | Links
