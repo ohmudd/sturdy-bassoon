@@ -21,6 +21,15 @@
     @TableField("wu-la")    
     private String ula;
     }
+
+    // 场景四:支持日期字段在es索引中的format类型
+    @TableField(fieldType = FieldType.DATE, dateFormat = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis")
+    private String gmtCreate;
+
+    // 场景五:支持指定字段在es索引中的分词器类型
+    @TableField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_MAX_WORD)
+    private String content;
+    
 ```
 > **Tips:**
 > - 更新策略一共有3种:
@@ -30,3 +39,4 @@ NOT_NULL: 非Null判断,字段值为非Null时,才会被更新
 > IGNORE: 忽略判断,无论字段值为什么,都会被更新
 > - 优先级: 字段注解中指定的更新策略>全局配置中指定的更新策略
 
+>其中场景四和场景五仅在索引自动托管模式下生效,如果开启了手动处理索引模式,则需要用户通过手动调用我提供的API传入相应的分词器及日期格式化参数进行索引的创建/更新.
