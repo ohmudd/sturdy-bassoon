@@ -6,10 +6,7 @@ import cn.easyes.common.enums.FieldType;
 import cn.easyes.common.enums.JdkDataTypeEnum;
 import cn.easyes.common.enums.ProcessIndexStrategyEnum;
 import cn.easyes.common.params.DefaultChildClass;
-import cn.easyes.common.utils.CollectionUtils;
-import cn.easyes.common.utils.ExceptionUtils;
-import cn.easyes.common.utils.LogUtils;
-import cn.easyes.common.utils.StringUtils;
+import cn.easyes.common.utils.*;
 import cn.easyes.core.biz.*;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.config.GlobalConfig;
@@ -394,8 +391,7 @@ public class IndexUtils {
                                 info.put(BaseEsConstants.SEARCH_ANALYZER, indexParam.getSearchAnalyzer().toLowerCase()));
 
                 // 设置是否对text类型进行聚合处理
-                Optional.ofNullable(indexParam.getFieldData())
-                        .ifPresent(fieldData -> info.put(FIELD_DATA, indexParam.getFieldData()));
+                MyOptional.of(indexParam.isFieldData()).ifTrue(isFieldData -> info.put(FIELD_DATA, isFieldData));
             }
 
             // 设置权重
@@ -534,7 +530,9 @@ public class IndexUtils {
                 EsIndexParam esIndexParam = new EsIndexParam();
                 String esFieldType = IndexUtils.getEsFieldType(field.getFieldType(), field.getColumnType());
                 esIndexParam.setFieldType(esFieldType);
-                esIndexParam.setFieldData(field.isFieldData());
+                if (field.isFieldData()) {
+                    esIndexParam.setFieldData(field.isFieldData());
+                }
                 esIndexParam.setFieldName(field.getMappingColumn());
                 esIndexParam.setDateFormat(field.getDateFormat());
                 if (FieldType.NESTED.equals(field.getFieldType())) {

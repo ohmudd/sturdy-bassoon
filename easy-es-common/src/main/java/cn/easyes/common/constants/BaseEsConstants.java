@@ -85,7 +85,7 @@ public interface BaseEsConstants {
     /**
      * 基本数据类型的get方法前缀
      */
-    String IS_FUNC_PREFIX = "Is";
+    String IS_FUNC_PREFIX = "is";
     /**
      * 分片数量字段
      */
