@@ -71,34 +71,9 @@ public class WrapperProcessor {
     public static BoolQueryBuilder initBoolQueryBuilder(List<BaseEsParam> baseEsParamList, Boolean enableMust2Filter,
                                                         Class<?> entityClass) {
         EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
-        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();;
+        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
 
-        // 此轮循环仅打桩,获取内层or和内外层or总数,用于处理是否有外层or 全部重置; 如果仅内层OR,只重置内层.
-//        int orCount = 0;
-//        int orInnerCount = 0;
-//        for (int i = 0; i< baseEsParamList.size();i++) {
-//            BaseEsParam baseEsParam = baseEsParamList.get(i);
-//            if (OR_ALL.getType().equals(baseEsParam.getType())){
-//                orCount++;
-//            }
-//            boolean hasLogicOperator = AND_LEFT_BRACKET.getType().equals(baseEsParam.getType())
-//                    || OR_LEFT_BRACKET.getType().equals(baseEsParam.getType());
-//            if (hasLogicOperator){
-//                for (int j = i; j < baseEsParamList.size(); j++) {
-//                    BaseEsParam andOr = baseEsParamList.get(j);
-//                    if (AND_RIGHT_BRACKET.getType().equals(andOr.getType()) || OR_RIGHT_BRACKET.getType().equals(andOr.getType())){
-//
-//                    }
-//                    if (OR_ALL.getType().equals(baseEsParamList.get(j).getType())){
-//                        orInnerCount++;
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//        setOrCount(orCount,orInnerCount,baseEsParamList);
-//        System.out.println(orCount);
-//        System.out.println(orInnerCount);
+        // 获取内层or和内外层or总数,用于处理 是否有外层or:全部重置; 如果仅内层OR,只重置内层.
         OrCount orCount = getOrCount(baseEsParamList);
         // 根节点
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
@@ -111,11 +86,11 @@ public class WrapperProcessor {
         boolean hasSetUp = false;
         for (int i = 0; i < baseEsParamList.size(); i++) {
             BaseEsParam baseEsParam = baseEsParamList.get(i);
-            if (orCount.getOrAllCount() > orCount.getOrInnerCount()){
+            if (orCount.getOrAllCount() > orCount.getOrInnerCount()) {
                 // 存在外层or 统统重置
                 BaseEsParam.setUp(baseEsParam);
-            }else {
-                if (!hasSetUp){
+            } else {
+                if (!hasSetUp) {
                     // 处理or在内层的情况,仅重置括号中的内容
                     for (int j = i; j < baseEsParamList.size(); j++) {
                         BaseEsParam andOr = baseEsParamList.get(j);
@@ -124,11 +99,11 @@ public class WrapperProcessor {
                             start = j;
                         }
 
-                        if (AND_RIGHT_BRACKET.getType().equals(andOr.getType()) || OR_RIGHT_BRACKET.getType().equals(andOr.getType())){
+                        if (AND_RIGHT_BRACKET.getType().equals(andOr.getType()) || OR_RIGHT_BRACKET.getType().equals(andOr.getType())) {
                             // 找到了and/or的结束标志
                             end = j;
                         }
-                        if (remainSetUp > 0 && end > start){
+                        if (remainSetUp > 0 && end > start) {
                             // 重置内层or
                             remainSetUp--;
                             for (int k = start; k < end; k++) {
@@ -168,30 +143,36 @@ public class WrapperProcessor {
         return boolQueryBuilder;
     }
 
-    private static OrCount getOrCount(List<BaseEsParam> baseEsParamList){
+    /**
+     * 获取内层or和内外层or总数
+     *
+     * @param baseEsParamList 参数列表
+     * @return 内外侧or总数信息
+     */
+    private static OrCount getOrCount(List<BaseEsParam> baseEsParamList) {
         OrCount orCount = new OrCount();
         int start;
         int end = 0;
         int orAllCount = 0;
         int orInnerCount = 0;
-        for (int i = 0; i< baseEsParamList.size();i++) {
+        for (int i = 0; i < baseEsParamList.size(); i++) {
             BaseEsParam baseEsParam = baseEsParamList.get(i);
-            if (OR_ALL.getType().equals(baseEsParam.getType())){
+            if (OR_ALL.getType().equals(baseEsParam.getType())) {
                 orAllCount++;
             }
             boolean hasLogicOperator = AND_LEFT_BRACKET.getType().equals(baseEsParam.getType())
                     || OR_LEFT_BRACKET.getType().equals(baseEsParam.getType());
-            if (hasLogicOperator){
+            if (hasLogicOperator) {
                 start = i;
                 for (int j = i; j < baseEsParamList.size(); j++) {
                     BaseEsParam andOr = baseEsParamList.get(j);
-                    if (AND_RIGHT_BRACKET.getType().equals(andOr.getType()) || OR_RIGHT_BRACKET.getType().equals(andOr.getType())){
+                    if (AND_RIGHT_BRACKET.getType().equals(andOr.getType()) || OR_RIGHT_BRACKET.getType().equals(andOr.getType())) {
                         end = j;
                     }
 
-                    if (start<end){
+                    if (start < end) {
                         for (int k = start; k < end; k++) {
-                            if (OR_ALL.getType().equals(baseEsParamList.get(k).getType())){
+                            if (OR_ALL.getType().equals(baseEsParamList.get(k).getType())) {
                                 orInnerCount++;
                             }
                         }
