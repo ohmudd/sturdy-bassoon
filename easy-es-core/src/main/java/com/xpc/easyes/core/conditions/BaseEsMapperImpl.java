@@ -28,6 +28,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
@@ -160,6 +161,11 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     public SearchResponse search(SearchRequest searchRequest, RequestOptions requestOptions) throws IOException {
         printDSL(searchRequest);
         return client.search(searchRequest, requestOptions);
+    }
+
+    @Override
+    public SearchResponse scroll(SearchScrollRequest searchScrollRequest, RequestOptions requestOptions) throws IOException {
+        return client.scroll(searchScrollRequest, requestOptions);
     }
 
     @Override
@@ -940,4 +946,5 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
                     .ifPresent(source -> LogUtils.info(DSL_PREFIX + source));
         }
     }
+
 }
