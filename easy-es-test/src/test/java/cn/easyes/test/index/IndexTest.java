@@ -1,6 +1,6 @@
 package cn.easyes.test.index;
 
-import cn.easyes.common.enums.Analyzer;
+import cn.easyes.common.constants.Analyzer;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.core.conditions.LambdaEsIndexWrapper;
 import cn.easyes.test.TestEasyEsApplication;
@@ -48,7 +48,7 @@ public class IndexTest {
         wrapper.indexName(Document.class.getSimpleName().toLowerCase());
 
         // 此处将文章标题映射为keyword类型(不支持分词),文档内容映射为text类型(支持分词查询)
-        wrapper.mapping(Document::getTitle, FieldType.KEYWORD,2.0f)
+        wrapper.mapping(Document::getTitle, FieldType.KEYWORD, 2.0f)
                 .mapping(Document::getLocation, FieldType.GEO_POINT)
                 .mapping(Document::getGeoLocation, FieldType.GEO_SHAPE)
                 .mapping(Document::getContent, FieldType.TEXT, Analyzer.IK_SMART, Analyzer.IK_SMART);

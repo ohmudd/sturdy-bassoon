@@ -1,6 +1,5 @@
 package cn.easyes.core.conditions.interfaces;
 
-import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.core.toolkit.FieldUtils;
 import org.elasticsearch.common.settings.Settings;
@@ -60,23 +59,15 @@ public interface Index<Children, R> extends Serializable {
         return mapping(column, fieldType, null, null, dateFormat, null);
     }
 
-    default Children mapping(R column, FieldType fieldType, Analyzer analyzer) {
-        return mapping(column, fieldType, analyzer, null, null, null);
-    }
-
-    default Children mapping(R column, FieldType fieldType, Analyzer analyzer, String dateFormat) {
-        return mapping(column, fieldType, analyzer, null, dateFormat, null);
-    }
-
-    default Children mapping(R column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer) {
+    default Children mapping(R column, FieldType fieldType, String analyzer, String searchAnalyzer) {
         return mapping(column, fieldType, analyzer, searchAnalyzer, null, null);
     }
 
-    default Children mapping(R column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat) {
+    default Children mapping(R column, FieldType fieldType, String analyzer, String searchAnalyzer, String dateFormat) {
         return mapping(column, fieldType, analyzer, searchAnalyzer, dateFormat, null);
     }
 
-    default Children mapping(R column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, Float boost) {
+    default Children mapping(R column, FieldType fieldType, String analyzer, String searchAnalyzer, Float boost) {
         return mapping(column, fieldType, analyzer, searchAnalyzer, null, boost);
     }
 
@@ -88,10 +79,10 @@ public interface Index<Children, R> extends Serializable {
      * @param analyzer       分词器类型
      * @param searchAnalyzer 查询分词器类型
      * @param dateFormat     日期格式
-     * @param boost 权重值
+     * @param boost          权重值
      * @return 泛型
      */
-    default Children mapping(R column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat, Float boost) {
+    default Children mapping(R column, FieldType fieldType, String analyzer, String searchAnalyzer, String dateFormat, Float boost) {
         return mapping(FieldUtils.getFieldName(column), fieldType, analyzer, searchAnalyzer, dateFormat, boost);
     }
 
@@ -104,23 +95,16 @@ public interface Index<Children, R> extends Serializable {
         return mapping(column, fieldType, null, null, null, boost);
     }
 
-    default Children mapping(String column, FieldType fieldType, String dateFormat) {
-        return mapping(column, fieldType, null, null, dateFormat, null);
-    }
 
-    default Children mapping(String column, FieldType fieldType, Analyzer analyzer) {
+    default Children mapping(String column, FieldType fieldType, String analyzer) {
         return mapping(column, fieldType, analyzer, null, null, null);
     }
 
-    default Children mapping(String column, FieldType fieldType, Analyzer analyzer, String dateFormat) {
+    default Children mapping(String column, FieldType fieldType, String analyzer, String dateFormat) {
         return mapping(column, fieldType, analyzer, null, dateFormat, null);
     }
 
-    default Children mapping(String column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer) {
-        return mapping(column, fieldType, analyzer, null, null, null);
-    }
-
-    default Children mapping(String column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, Float boost) {
+    default Children mapping(String column, FieldType fieldType, String analyzer, String searchAnalyzer, Float boost) {
         return mapping(column, fieldType, analyzer, searchAnalyzer, null, boost);
     }
 
@@ -135,7 +119,7 @@ public interface Index<Children, R> extends Serializable {
      * @param boost          字段权重值
      * @return 泛型
      */
-    Children mapping(String column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat, Float boost);
+    Children mapping(String column, FieldType fieldType, String analyzer, String searchAnalyzer, String dateFormat, Float boost);
 
     /**
      * 设置创建别名信息

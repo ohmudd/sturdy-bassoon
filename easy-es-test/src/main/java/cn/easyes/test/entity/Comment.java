@@ -2,7 +2,7 @@ package cn.easyes.test.entity;
 
 import cn.easyes.annotation.TableField;
 import cn.easyes.annotation.TableName;
-import cn.easyes.common.enums.Analyzer;
+import cn.easyes.common.constants.Analyzer;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.common.params.JoinField;
 import lombok.Data;
@@ -22,7 +22,7 @@ public class Comment {
     /**
      * 评论内容
      */
-    @TableField(fieldType = FieldType.TEXT,analyzer = Analyzer.IK_SMART,searchAnalyzer = Analyzer.IK_SMART)
+    @TableField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_SMART)
     private String commentContent;
     /**
      * 父子关系字段

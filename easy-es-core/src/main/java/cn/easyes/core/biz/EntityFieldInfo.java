@@ -1,7 +1,6 @@
 package cn.easyes.core.biz;
 
 import cn.easyes.annotation.TableField;
-import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldStrategy;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.core.config.GlobalConfig;
@@ -43,11 +42,11 @@ public class EntityFieldInfo {
     /**
      * 分词器
      */
-    private Analyzer analyzer;
+    private String analyzer;
     /**
      * 查询分词器
      */
-    private Analyzer searchAnalyzer;
+    private String searchAnalyzer;
     /**
      * 用户配置的日期格式 例如yyyy-MM-dd HH:mm:ss
      */

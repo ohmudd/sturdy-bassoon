@@ -1,6 +1,5 @@
 package cn.easyes.core.biz;
 
-import cn.easyes.common.enums.Analyzer;
 import lombok.Data;
 
 /**
@@ -25,7 +24,7 @@ public class EsIndexParam {
     /**
      * 分词器
      */
-    private Analyzer analyzer;
+    private String analyzer;
     /**
      * 索引权重
      */
@@ -33,7 +32,7 @@ public class EsIndexParam {
     /**
      * 查询分词器
      */
-    private Analyzer searchAnalyzer;
+    private String searchAnalyzer;
     /**
      * 日期格式化 如yyyy-MM-dd HH:mm:ss
      */

@@ -1,8 +1,7 @@
 package cn.easyes.test.entity;
 
-import cn.easyes.annotation.HighLight;
 import cn.easyes.annotation.TableField;
-import cn.easyes.common.enums.Analyzer;
+import cn.easyes.common.constants.Analyzer;
 import cn.easyes.common.enums.FieldType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,7 +18,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
-    @TableField(value = "user_name",analyzer = Analyzer.IK_SMART)
+    @TableField(value = "user_name", analyzer = Analyzer.IK_SMART)
     private String username;
     @TableField(exist = false)
     private Integer age;

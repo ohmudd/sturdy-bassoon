@@ -1,7 +1,7 @@
 package cn.easyes.core.toolkit;
 
+import cn.easyes.common.constants.Analyzer;
 import cn.easyes.common.constants.BaseEsConstants;
-import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.common.enums.JdkDataTypeEnum;
 import cn.easyes.common.params.DefaultChildClass;
@@ -371,10 +371,10 @@ public class IndexUtils {
             if (FieldType.TEXT.getType().equals(indexParam.getFieldType())) {
                 Optional.ofNullable(indexParam.getAnalyzer())
                         .ifPresent(analyzer ->
-                                info.put(BaseEsConstants.ANALYZER, indexParam.getAnalyzer().toString().toLowerCase()));
+                                info.put(BaseEsConstants.ANALYZER, indexParam.getAnalyzer().toLowerCase()));
                 Optional.ofNullable(indexParam.getSearchAnalyzer())
                         .ifPresent(searchAnalyzer ->
-                                info.put(BaseEsConstants.SEARCH_ANALYZER, indexParam.getSearchAnalyzer().toString().toLowerCase()));
+                                info.put(BaseEsConstants.SEARCH_ANALYZER, indexParam.getSearchAnalyzer().toLowerCase()));
             }
 
             // 设置权重

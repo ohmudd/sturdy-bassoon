@@ -1,6 +1,6 @@
 package cn.easyes.annotation;
 
-import cn.easyes.common.enums.Analyzer;
+import cn.easyes.common.constants.Analyzer;
 import cn.easyes.common.enums.FieldStrategy;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.common.params.DefaultNestedClass;
@@ -45,14 +45,14 @@ public @interface TableField {
      *
      * @return 分词器
      */
-    Analyzer analyzer() default Analyzer.NONE;
+    String analyzer() default Analyzer.NONE;
 
     /**
      * 查询分词器
      *
      * @return 分词器
      */
-    Analyzer searchAnalyzer() default Analyzer.NONE;
+    String searchAnalyzer() default Analyzer.NONE;
 
     /**
      * 字段验证策略

@@ -1,6 +1,5 @@
 package cn.easyes.core.conditions;
 
-import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.common.params.SFunction;
 import cn.easyes.common.utils.StringUtils;
@@ -111,7 +110,7 @@ public class LambdaEsIndexWrapper<T> extends Wrapper<T> implements Index<LambdaE
     }
 
     @Override
-    public LambdaEsIndexWrapper<T> mapping(String column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat, Float boost) {
+    public LambdaEsIndexWrapper<T> mapping(String column, FieldType fieldType, String analyzer, String searchAnalyzer, String dateFormat, Float boost) {
         addEsIndexParam(column, fieldType, analyzer, analyzer, dateFormat, boost);
         return typedThis;
     }
@@ -139,7 +138,7 @@ public class LambdaEsIndexWrapper<T> extends Wrapper<T> implements Index<LambdaE
         return typedThis;
     }
 
-    private void addEsIndexParam(String fieldName, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat, Float boost) {
+    private void addEsIndexParam(String fieldName, FieldType fieldType, String analyzer, String searchAnalyzer, String dateFormat, Float boost) {
         EsIndexParam esIndexParam = new EsIndexParam();
         esIndexParam.setFieldName(fieldName);
         esIndexParam.setFieldType(fieldType.getType());
