@@ -4,6 +4,7 @@ import cn.easyes.annotation.*;
 import cn.easyes.common.constants.Analyzer;
 import cn.easyes.common.enums.FieldStrategy;
 import cn.easyes.common.enums.FieldType;
+import cn.easyes.common.enums.HighLightTypeEnum;
 import cn.easyes.common.enums.IdType;
 import cn.easyes.common.params.JoinField;
 import lombok.Data;
@@ -37,7 +38,7 @@ public class Document {
     /**
      * 文档内容,指定了类型及存储/查询分词器
      */
-    @HighLight(mappingField = "highlightContent", fragmentSize = 2)
+    @HighLight(mappingField = "highlightContent", fragmentSize = 2,highLightType = HighLightTypeEnum.UNIFIED)
     @IndexField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_SMART)
     private String content;
     /**

@@ -374,7 +374,7 @@ public class EntityInfoHelper {
 
         // 封装高亮参数
         HighLightParam highLightParam =
-                new HighLightParam(highLight.fragmentSize(), highLight.preTag(), highLight.postTag(), realHighLightField);
+                new HighLightParam(highLight.fragmentSize(), highLight.preTag(), highLight.postTag(), realHighLightField,highLight.highLightType());
         entityInfo.getHighLightParams().add(highLightParam);
     }
 

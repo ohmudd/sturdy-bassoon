@@ -501,7 +501,12 @@ public class WrapperProcessor {
         HighlightBuilder highlightBuilder = new HighlightBuilder();
         highLightParams.forEach(highLightParam -> {
             if (StringUtils.isNotBlank(highLightParam.getHighLightField())) {
-                highlightBuilder.field(highLightParam.getHighLightField());
+
+                //field
+                HighlightBuilder.Field field = new HighlightBuilder.Field(highLightParam.getHighLightField());
+                field.highlighterType(highLightParam.getHighLightType().getValue());
+                highlightBuilder.field(field);
+
                 highlightBuilder.fragmentSize(highLightParam.getFragmentSize());
                 highlightBuilder.preTags(highLightParam.getPreTag());
                 highlightBuilder.postTags(highLightParam.getPostTag());
@@ -520,6 +525,11 @@ public class WrapperProcessor {
         if (!CollectionUtils.isEmpty(highLightParamList)) {
             highLightParamList.forEach(highLightParam -> {
                 if (StringUtils.isNotBlank(highLightParam.getHighLightField())) {
+                    //field
+                    HighlightBuilder.Field field = new HighlightBuilder.Field(highLightParam.getHighLightField());
+                    field.highlighterType(highLightParam.getHighLightType().getValue());
+                    highlightBuilder.field(field);
+
                     highlightBuilder.field(highLightParam.getHighLightField());
                     highlightBuilder.preTags(highLightParam.getPreTag());
                     highlightBuilder.postTags(highLightParam.getPostTag());
