@@ -57,7 +57,7 @@ public class EsAutoConfiguration implements InitializingBean, EnvironmentAware, 
     @ConditionalOnMissingBean
     public RestHighLevelClient restHighLevelClient() {
         // 处理地址
-        String address = environment.getProperty(ADDRESS);
+        String address = esConfigProperties.getAddress();
         if (StringUtils.isEmpty(address)) {
             throw ExceptionUtils.eee("please config the es address");
         }

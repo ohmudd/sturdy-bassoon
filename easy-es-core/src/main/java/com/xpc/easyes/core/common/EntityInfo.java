@@ -3,7 +3,7 @@ package com.xpc.easyes.core.common;
 import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.parser.deserializer.ExtraProcessor;
 import com.alibaba.fastjson.serializer.SerializeFilter;
-import com.xpc.easyes.core.enums.FieldType;
+import com.xpc.easyes.core.constants.BaseEsConstants;
 import com.xpc.easyes.core.enums.IdType;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -33,9 +33,13 @@ public class EntityInfo {
      */
     private Class<?> idClass;
     /**
-     * 索引名称
+     * 索引名称(原索引名)
      */
     private String indexName;
+    /**
+     * 新索引名(由EE在更新索引时自动创建)
+     */
+    private String releaseIndexName;
     /**
      * 表映射结果集
      */
@@ -53,13 +57,13 @@ public class EntityInfo {
      */
     private String keyColumn;
     /**
-     * 分片数
+     * 分片数 默认为1
      */
-    private Integer shardsNum;
+    private Integer shardsNum = BaseEsConstants.ONE;
     /**
-     * 副本数
+     * 副本数 默认为1
      */
-    private Integer replicasNum;
+    private Integer replicasNum = BaseEsConstants.ONE;
     /**
      * 索引别名
      */

@@ -1,5 +1,6 @@
 package com.xpc.easyes.core.config;
 
+import com.xpc.easyes.core.enums.AutoProcessIndexStrategyEnum;
 import com.xpc.easyes.core.enums.FieldStrategy;
 import com.xpc.easyes.core.enums.IdType;
 import lombok.Data;
@@ -38,5 +39,17 @@ public class GlobalConfig {
          * 字段验证策略 (默认 NOT NULL)
          */
         private FieldStrategy fieldStrategy = FieldStrategy.NOT_NULL;
+        /**
+         * 是否开启自动托管索引 默认开启
+         */
+        private boolean openAutoProcessIndex = true;
+        /**
+         * 自动托管索引模式 默认为平滑迁移
+         */
+        private Integer autoProcessIndexMode = AutoProcessIndexStrategyEnum.SMOOTHLY.getStrategyType();
+        /**
+         * 是否分布式环境
+         */
+        private boolean isDistributed = false;
     }
 }
