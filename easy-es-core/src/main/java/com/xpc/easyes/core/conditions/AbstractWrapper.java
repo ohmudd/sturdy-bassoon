@@ -8,6 +8,7 @@ import com.xpc.easyes.core.enums.EsAttachTypeEnum;
 import com.xpc.easyes.core.enums.EsQueryTypeEnum;
 import com.xpc.easyes.core.params.*;
 import com.xpc.easyes.core.toolkit.*;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.unit.DistanceUnit;
@@ -136,6 +137,11 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     @Override
     public Children match(boolean condition, R column, Object val, Float boost) {
         return doIt(condition, MATCH_QUERY, MUST, FieldUtils.getFieldName(column), val, boost);
+    }
+
+    @Override
+    public Children nestedMatch(boolean condition, R path, String column, Object val, ScoreMode scoreMode, Float boost) {
+        return doIt(condition, MATCH_QUERY, MUST, FieldUtils.getFieldName(path), column, val, scoreMode, boost);
     }
 
     @Override
@@ -653,6 +659,28 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                             .esQueryType(queryTypeEnum.getType())
                             .originalAttachType(attachTypeEnum.getType())
                             .build();
+            setModel(baseEsParam, model, attachTypeEnum);
+            baseEsParamList.add(baseEsParam);
+        }
+        return typedThis;
+    }
+
+    private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum, String path,
+                          String column, Object val, ScoreMode scoreMode, Float boost) {
+        if (condition) {
+            BaseEsParam baseEsParam = new BaseEsParam();
+            BaseEsParam.FieldValueModel model =
+                    BaseEsParam.FieldValueModel
+                            .builder()
+                            .field(column)
+                            .path(path)
+                            .scoreMode(scoreMode)
+                            .value(val)
+                            .boost(boost)
+                            .esQueryType(queryTypeEnum.getType())
+                            .originalAttachType(attachTypeEnum.getType())
+                            .build();
+
             setModel(baseEsParam, model, attachTypeEnum);
             baseEsParamList.add(baseEsParam);
         }

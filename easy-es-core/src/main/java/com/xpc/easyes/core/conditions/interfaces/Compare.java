@@ -1,5 +1,6 @@
 package com.xpc.easyes.core.conditions.interfaces;
 
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.Operator;
 
 import java.io.Serializable;
@@ -12,6 +13,7 @@ import static com.xpc.easyes.core.constants.BaseEsConstants.*;
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 public interface Compare<Children, R> extends Serializable {
+
     default Children eq(R column, Object val) {
         return eq(true, column, val);
     }
@@ -69,6 +71,48 @@ public interface Compare<Children, R> extends Serializable {
     default Children match(boolean condition, R column, Object val) {
         return match(condition, column, val, DEFAULT_BOOST);
     }
+
+
+    default Children nestedMatch(R path, String column, Object val) {
+        return nestedMatch(true, path, column, val, ScoreMode.Avg, DEFAULT_BOOST);
+    }
+
+    default Children nestedMatch(R path, String column, Object val, ScoreMode scoreMode) {
+        return nestedMatch(true, path, column, val, scoreMode, DEFAULT_BOOST);
+    }
+
+    default Children nestedMatch(boolean condition, R path, String column, Object val) {
+        return nestedMatch(condition, path, column, val, ScoreMode.Avg, DEFAULT_BOOST);
+    }
+
+    default Children nestedMatch(boolean condition, R path, String column, Object val, Float boost) {
+        return nestedMatch(condition, path, column, val, ScoreMode.Avg, boost);
+    }
+
+    default Children nestedMatch(R path, String column, Object val, Float boost) {
+        return nestedMatch(true, path, column, val, ScoreMode.Avg, boost);
+    }
+
+    default Children nestedMatch(boolean condition, R path, String column, Object val, ScoreMode scoreMode) {
+        return nestedMatch(condition, path, column, val, scoreMode, DEFAULT_BOOST);
+    }
+
+    default Children nestedMatch(R path, String column, Object val, ScoreMode scoreMode, Float boost) {
+        return nestedMatch(true, path, column, val, scoreMode, boost);
+    }
+
+    /**
+     * 嵌套查询
+     *
+     * @param condition 条件
+     * @param path      路径
+     * @param column    列名
+     * @param val       值
+     * @param scoreMode 得分模式 默认为均值
+     * @param boost     权重
+     * @return 泛型
+     */
+    Children nestedMatch(boolean condition, R path, String column, Object val, ScoreMode scoreMode, Float boost);
 
     /**
      * match 分词匹配

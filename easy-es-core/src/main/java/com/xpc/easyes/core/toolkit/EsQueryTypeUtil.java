@@ -1,13 +1,15 @@
 package com.xpc.easyes.core.toolkit;
 
+import com.xpc.easyes.core.common.EntityInfo;
+import com.xpc.easyes.core.config.GlobalConfig;
+import com.xpc.easyes.core.params.BaseEsParam;
 import org.elasticsearch.index.query.*;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import static com.xpc.easyes.core.constants.BaseEsConstants.PERCENT;
-import static com.xpc.easyes.core.constants.BaseEsConstants.WILDCARD_SIGN;
+import static com.xpc.easyes.core.constants.BaseEsConstants.*;
 import static com.xpc.easyes.core.enums.EsAttachTypeEnum.*;
 import static com.xpc.easyes.core.enums.EsQueryTypeEnum.*;
 
@@ -20,24 +22,34 @@ public class EsQueryTypeUtil {
     /**
      * 添加查询类型 精确匹配/模糊匹配/范围匹配等
      *
-     * @param boolQueryBuilder   参数连接器
-     * @param queryType          查询类型
-     * @param attachType         连接类型
-     * @param originalAttachType 原始连接类型
-     * @param field              字段
-     * @param value              值
-     * @param ext                拓展字段
-     * @param boost              权重
+     * @param boolQueryBuilder 参数连接器
+     * @param attachType       连接类型
+     * @param model            参数
      */
-    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType,
-                                      Integer originalAttachType, String field, Object value, Object ext, Float boost) {
+    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer attachType, BaseEsParam.FieldValueModel
+            model, EntityInfo entityInfo, GlobalConfig.DbConfig dbConfig) {
+        Integer queryType = model.getEsQueryType();
+        Object value = model.getValue();
+        Float boost = model.getBoost();
+        String path = model.getPath();
+        Integer originalAttachType = model.getOriginalAttachType();
+        String field = model.getField();
+        // 自定义字段名称及驼峰和嵌套字段名称的处理
+        if (StringUtils.isBlank(path)) {
+            field = FieldUtils.getRealField(field, entityInfo.getMappingColumnMap(), dbConfig);
+        } else {
+            // 嵌套
+            field = FieldUtils.getRealField(field, entityInfo.getNestedMappingColumnMapByPath(path), dbConfig);
+        }
+
+        // 封装查询参数
         if (Objects.equals(queryType, TERM_QUERY.getType())) {
             // 封装精确查询参数
             TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery(field, value).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, termQueryBuilder);
         } else if (Objects.equals(queryType, TERMS_QUERY.getType())) {
             // 此处处理由or转入shouldList的in参数
-            TermsQueryBuilder termsQueryBuilder = QueryBuilders.termsQuery(field, (Collection<?>)value).boost(boost);
+            TermsQueryBuilder termsQueryBuilder = QueryBuilders.termsQuery(field, (Collection<?>) value).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, termsQueryBuilder);
         } else if (Objects.equals(queryType, MATCH_PHASE.getType())) {
             // 封装模糊分词查询参数(分词必须按原关键词顺序)
@@ -45,7 +57,7 @@ public class EsQueryTypeUtil {
             setQueryBuilder(boolQueryBuilder, attachType, matchPhraseQueryBuilder);
         } else if (Objects.equals(queryType, MATCH_PHRASE_PREFIX.getType())) {
             MatchPhrasePrefixQueryBuilder matchPhrasePrefixQueryBuilder = QueryBuilders.matchPhrasePrefixQuery(field, value)
-                    .maxExpansions((Integer) ext).boost(boost);
+                    .maxExpansions((Integer) model.getExt()).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, matchPhrasePrefixQueryBuilder);
         } else if (Objects.equals(queryType, PREFIX_QUERY.getType())) {
             PrefixQueryBuilder prefixQueryBuilder = QueryBuilders.prefixQuery(field, value.toString()).boost(boost);
@@ -55,8 +67,15 @@ public class EsQueryTypeUtil {
             setQueryBuilder(boolQueryBuilder, attachType, queryStringQueryBuilder);
         } else if (Objects.equals(queryType, MATCH_QUERY.getType())) {
             // 封装模糊分词查询参数(可无序)
-            MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery(field, value).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, matchQueryBuilder);
+            if (StringUtils.isBlank(path)) {
+                MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery(field, value).boost(boost);
+                setQueryBuilder(boolQueryBuilder, attachType, matchQueryBuilder);
+            } else {
+                // 嵌套类型
+                MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery(path + PATH_FIELD_JOIN + field, value).boost(boost);
+                NestedQueryBuilder nestedQueryBuilder = QueryBuilders.nestedQuery(model.getPath(), matchQueryBuilder, model.getScoreMode());
+                setQueryBuilder(boolQueryBuilder, attachType, nestedQueryBuilder);
+            }
         } else if (Objects.equals(queryType, RANGE_QUERY.getType())) {
             // 封装范围查询参数
             RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(field).boost(boost);

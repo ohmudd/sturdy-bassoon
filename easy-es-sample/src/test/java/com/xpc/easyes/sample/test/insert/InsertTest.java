@@ -1,6 +1,7 @@
 package com.xpc.easyes.sample.test.insert;
 
 import com.xpc.easyes.sample.entity.Document;
+import com.xpc.easyes.sample.entity.User;
 import com.xpc.easyes.sample.mapper.DocumentMapper;
 import com.xpc.easyes.sample.test.TestEasyEsApplication;
 import org.elasticsearch.geometry.Point;
@@ -31,9 +32,9 @@ public class InsertTest {
     public void testInsert() {
         // 测试插入数据
         Document document = new Document();
-        document.setId("13");
+        document.setId("4");
         document.setTitle("老汉");
-        document.setContent("推*技术过硬");
+        document.setContent("人才");
         document.setCreator("吃饭");
         document.setLocation("40.171975,116.587105");
         document.setGmtCreate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -41,6 +42,10 @@ public class InsertTest {
         Point point = new Point(13.400544, 52.530286);
         document.setGeoLocation(point.toString());
         document.setStarNum(1);
+        List<User> users = new ArrayList<>();
+        users.add(new User("用户1",18));
+        users.add(new User("用户2",19));
+        document.setUsers(users);
         int successCount = documentMapper.insert(document);
         Assert.assertEquals(successCount, 1);
     }

@@ -434,7 +434,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         // 构造查询参数
         SearchRequest searchRequest = new SearchRequest(getIndexName());
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.termQuery(getIdFieldName(), id));
+        searchSourceBuilder.query(QueryBuilders.termQuery(EntityInfoHelper.getDEFAULT_ES_ID_NAME(), id));
         searchRequest.source(searchSourceBuilder);
 
         // 请求es获取数据
@@ -457,7 +457,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         List<String> stringIdList = idList.stream().map(Object::toString).collect(Collectors.toList());
         SearchRequest searchRequest = new SearchRequest(getIndexName());
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.query(QueryBuilders.termsQuery(getIdFieldName(), stringIdList));
+        sourceBuilder.query(QueryBuilders.termsQuery(EntityInfoHelper.getDEFAULT_ES_ID_NAME(), stringIdList));
         searchRequest.source(sourceBuilder);
 
         // 请求es获取数据
@@ -532,13 +532,13 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
         // id预处理,除下述情况,其它情况使用es默认的id
         EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entity.getClass());
-        if (!StringUtils.isEmpty(entityInfo.getId())) {
-            if (IdType.UUID.equals(entityInfo.getIdType())) {
-                indexRequest.id(UUID.randomUUID().toString());
-            } else if (IdType.CUSTOMIZE.equals(entityInfo.getIdType())) {
-                indexRequest.id(getIdValue(entityClass, entity));
-            }
+
+        if (IdType.UUID.equals(entityInfo.getIdType())) {
+            indexRequest.id(UUID.randomUUID().toString());
+        } else if (IdType.CUSTOMIZE.equals(entityInfo.getIdType())) {
+            indexRequest.id(getIdValue(entityClass, entity));
         }
+
 
         // 构建插入的json格式数据
         String jsonData = buildJsonIndexSource(entity);
@@ -713,7 +713,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         // 根据字段配置的策略 决定是否加入到实际es处理字段中
         EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
         List<EntityFieldInfo> fieldList = entityInfo.getFieldList();
-        Set<String> goodColumn = new HashSet<>(fieldList.size());
+        Set<String> excludeColumn = new HashSet<>();
 
         fieldList.forEach(field -> {
             String column = field.getColumn();
@@ -721,36 +721,36 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             Object invoke;
             FieldStrategy fieldStrategy = field.getFieldStrategy();
             try {
-                if (FieldStrategy.IGNORED.equals(fieldStrategy) || FieldStrategy.DEFAULT.equals(fieldStrategy)) {
-                    // 忽略及无字段配置, 无全局配置 默认加入Json
-                    goodColumn.add(column);
-                } else if (FieldStrategy.NOT_NULL.equals(fieldStrategy)) {
+                if (FieldStrategy.NOT_NULL.equals(fieldStrategy)) {
                     invoke = invokeMethod.invoke(entity);
-                    if (Objects.nonNull(invoke)) {
-                        goodColumn.add(column);
+                    if (Objects.isNull(invoke)) {
+                        excludeColumn.add(column);
                     }
                 } else if (FieldStrategy.NOT_EMPTY.equals(fieldStrategy)) {
                     invoke = invokeMethod.invoke(entity);
-                    Optional.ofNullable(invoke)
-                            .ifPresent(value -> {
-                                if (value instanceof String) {
-                                    String strValue = (String) invoke;
-                                    if (!StringUtils.isEmpty(strValue)) {
-                                        goodColumn.add(column);
-                                    }
-                                } else {
-                                    goodColumn.add(column);
-                                }
-                            });
+                    if (Objects.isNull(invoke)) {
+                        excludeColumn.add(column);
+                    } else {
+                        if (invoke instanceof String) {
+                            String strValue = (String) invoke;
+                            if (StringUtils.isEmpty(strValue)) {
+                                excludeColumn.add(column);
+                            }
+                        }
+                    }
                 }
             } catch (Exception e) {
                 throw ExceptionUtils.eee("buildJsonIndexSource exception, entity:%s", e, entity.toString());
             }
         });
 
-        SimplePropertyPreFilter simplePropertyPreFilter = getSimplePropertyPreFilter(entity.getClass(), goodColumn);
-        SerializeFilter[] filters = {simplePropertyPreFilter, entityInfo.getSerializeFilter()};
-        return JSON.toJSONString(entity, filters, SerializerFeature.WriteMapNullValue);
+        // 字段过滤器
+        List<SerializeFilter> serializeFilters = entityInfo.getClassSimplePropertyPreFilterMap().get(entityClass);
+        // 主类中的字段策略过滤
+        SimplePropertyPreFilter simplePropertyPreFilter = FastJsonUtils.getSimplePropertyPreFilter(entity.getClass(), excludeColumn);
+        serializeFilters.add(simplePropertyPreFilter);
+
+        return JSON.toJSONString(entity, serializeFilters.toArray(new SerializeFilter[0]), SerializerFeature.WriteMapNullValue);
     }
 
     /**
@@ -764,17 +764,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         JSONObject jsonObject = new JSONObject();
         updateParamList.forEach(esUpdateParam -> jsonObject.put(esUpdateParam.getField(), esUpdateParam.getValue()));
         return JSON.toJSONString(jsonObject, SerializerFeature.WriteMapNullValue);
-    }
-
-    /**
-     * 设置fastjson toJsonString字段
-     *
-     * @param clazz  类
-     * @param fields 字段列表
-     * @return
-     */
-    private SimplePropertyPreFilter getSimplePropertyPreFilter(Class<?> clazz, Set<String> fields) {
-        return new SimplePropertyPreFilter(clazz, fields.toArray(new String[fields.size()]));
     }
 
     /**
@@ -850,15 +839,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      */
     private String getIndexName() {
         return EntityInfoHelper.getEntityInfo(entityClass).getIndexName();
-    }
-
-    /**
-     * 获取id字段名称(注解中的)
-     *
-     * @return id字段名称
-     */
-    private String getIdFieldName() {
-        return EntityInfoHelper.getEntityInfo(entityClass).getKeyColumn();
     }
 
     /**

@@ -41,7 +41,7 @@ public class SelectTest {
     @Test
     public void testSelectById() {
         // 测试根据id查询
-        String id = "OWELCIAB0E2Rzy0qtVNY";
+        String id = "13";
         Document document = documentMapper.selectById(id);
         System.out.println(document);
     }
