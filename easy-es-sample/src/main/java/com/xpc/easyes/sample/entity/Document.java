@@ -2,9 +2,12 @@ package com.xpc.easyes.sample.entity;
 
 import com.xpc.easyes.core.anno.HighLightMappingField;
 import com.xpc.easyes.core.anno.TableField;
+import com.xpc.easyes.core.anno.TableId;
+import com.xpc.easyes.core.anno.TableName;
 import com.xpc.easyes.core.enums.Analyzer;
 import com.xpc.easyes.core.enums.FieldStrategy;
 import com.xpc.easyes.core.enums.FieldType;
+import com.xpc.easyes.core.enums.IdType;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -15,17 +18,19 @@ import lombok.experimental.Accessors;
  **/
 @Data
 @Accessors(chain = true)
+@TableName(shardsNum = 3,replicasNum = 2)
 public class Document {
     /**
-     * es中的唯一id
+     * es中的唯一id,如果你想自定义es中的id为你提供的id,比如MySQL中的id,请将注解中的type指定为customize,如此id便支持任意数据类型)
      */
+    @TableId(type = IdType.CUSTOMIZE)
     private String id;
     /**
-     * 文档标题
+     * 文档标题,不指定类型默认被创建为keyword类型,可进行精确查询
      */
     private String title;
     /**
-     * 文档内容
+     * 文档内容,指定了类型及存储/查询分词器
      */
     @TableField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_MAX_WORD)
     private String content;
@@ -47,10 +52,12 @@ public class Document {
     /**
      * 地理位置经纬度坐标 例如: "40.13933715136454,116.63441990026217"
      */
+    @TableField(fieldType = FieldType.GEO_POINT)
     private String location;
     /**
-     * 图形
+     * 图形(例如圆心,矩形)
      */
+    @TableField(fieldType = FieldType.GEO_SHAPE)
     private String geoLocation;
     /**
      * 自定义字段名称

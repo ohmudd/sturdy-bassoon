@@ -26,7 +26,7 @@ public class GlobalConfig {
     /**
      * is distributed environment true by default 是否分布式环境 默认为是
      */
-    private boolean isDistributed = true;
+    private boolean distributed = true;
 
     /**
      * es db config 数据库配置
