@@ -113,7 +113,7 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动�
 ```
 **Gradle:**
 ```groovy
-compile group: 'io.github.xpc1024', name: 'easy-es-boot-starter', version: 'Latest Version'
+compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Version'
 ```
 
 # 其他开源项目 | Other Project
