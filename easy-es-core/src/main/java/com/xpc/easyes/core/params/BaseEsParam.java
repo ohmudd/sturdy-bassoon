@@ -134,6 +134,14 @@ public class BaseEsParam {
          * 字段列表
          */
         private List<String> fields;
+        /**
+         * 拓展字段
+         */
+        private Object ext;
+        /**
+         *最小匹配度 百分比
+         */
+        private int minimumShouldMatch;
     }
 
     /**

@@ -12,6 +12,7 @@ import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.geometry.Geometry;
+import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
@@ -151,16 +152,16 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
-    public Children matchPhrasePrefixQuery(boolean condition, R column, Object val, Float boost) {
-        return doIt(condition, MATCH_PHRASE_PREFIX, MUST, FieldUtils.getFieldName(column), val, boost);
+    public Children matchPhrasePrefixQuery(boolean condition, R column, Object val, int maxExpansions, Float boost) {
+        return doIt(condition, MATCH_PHRASE_PREFIX, MUST, FieldUtils.getFieldName(column), val, maxExpansions, boost);
     }
 
     @Override
-    public Children multiMatchQuery(boolean condition, Object val, Float boost, R... columns) {
+    public Children multiMatchQuery(boolean condition, Object val, Operator operator, int minimumShouldMatch, Float boost, R... columns) {
         if (ArrayUtils.isEmpty(columns)) {
             return typedThis;
         }
-        return doIt(condition, MULTI_MATCH_QUERY, MUST_MULTI_FIELDS, val, boost, columns);
+        return doIt(condition, MULTI_MATCH_QUERY, MUST_MULTI_FIELDS, val, operator, minimumShouldMatch, boost, columns);
     }
 
     @Override
@@ -526,6 +527,22 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * @return 泛型
      */
     private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum, String field, Object val, Float boost) {
+        return doIt(condition, queryTypeEnum, attachTypeEnum, field, val, null, boost);
+    }
+
+    /**
+     * 封装查询参数(普通情况,不带括号)
+     *
+     * @param condition      条件
+     * @param queryTypeEnum  查询类型
+     * @param attachTypeEnum 连接类型
+     * @param field          字段
+     * @param val            值
+     * @param boost          权重
+     * @param ext            拓展字段
+     * @return 泛型
+     */
+    private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum, String field, Object val, Object ext, Float boost) {
         if (condition) {
             BaseEsParam baseEsParam = new BaseEsParam();
             BaseEsParam.FieldValueModel model =
@@ -536,6 +553,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                             .boost(boost)
                             .esQueryType(queryTypeEnum.getType())
                             .originalAttachType(attachTypeEnum.getType())
+                            .ext(ext)
                             .build();
 
             setModel(baseEsParam, model, attachTypeEnum);
@@ -613,7 +631,8 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * @param columns        字段列表
      * @return 泛型
      */
-    private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum, Object val, float boost, R... columns) {
+    private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum, Object val,
+                          Operator operator, int minimumShouldMatch, Float boost, R... columns) {
         if (condition) {
             BaseEsParam baseEsParam = new BaseEsParam();
             List<String> fields = Arrays.stream(columns).map(FieldUtils::getFieldName).collect(Collectors.toList());
@@ -622,6 +641,8 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                             .builder()
                             .fields(fields)
                             .value(val)
+                            .ext(operator)
+                            .minimumShouldMatch(minimumShouldMatch)
                             .boost(boost)
                             .esQueryType(queryTypeEnum.getType())
                             .originalAttachType(attachTypeEnum.getType())
@@ -825,6 +846,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                 break;
             case MUST_MULTI_FIELDS:
                 baseEsParam.getMustMultiFieldList().add(model);
+                break;
             default:
                 throw new UnsupportedOperationException("不支持的连接类型,请参见EsAttachTypeEnum");
         }

@@ -1,5 +1,7 @@
 package com.xpc.easyes.core.constants;
 
+import org.elasticsearch.index.query.Operator;
+
 /**
  * EasyEs的常量
  * <p>
@@ -167,7 +169,15 @@ public interface BaseEsConstants {
      */
     String REPEAT_NUM_KEY = "repeat_num";
     /**
-     * 获取折叠重复数据数量key
+     * 默认最大拓展数
      */
-    String CARDINALITY_AGG = "cardinality";
+    int DEFAULT_MAX_EXPANSIONS = 50;
+    /**
+     * 默认最小匹配百分比
+     */
+    int DEFAULT_MIN_SHOULD_MATCH = 60;
+    /**
+     * 百分比符号
+     */
+    String PERCENT = "%";
 }

@@ -1,8 +1,10 @@
 package com.xpc.easyes.core.conditions.interfaces;
 
+import org.elasticsearch.index.query.Operator;
+
 import java.io.Serializable;
 
-import static com.xpc.easyes.core.constants.BaseEsConstants.DEFAULT_BOOST;
+import static com.xpc.easyes.core.constants.BaseEsConstants.*;
 
 /**
  * 比较相关
@@ -118,27 +120,36 @@ public interface Compare<Children, R> extends Serializable {
 
 
     default Children matchPhrasePrefixQuery(R column, Object val) {
-        return matchPhrasePrefixQuery(true, column, val, DEFAULT_BOOST);
+        return matchPhrasePrefixQuery(true, column, val, DEFAULT_MAX_EXPANSIONS, DEFAULT_BOOST);
     }
 
     default Children matchPhrasePrefixQuery(boolean condition, R column, Object val) {
-        return matchPhrasePrefixQuery(condition, column, val, DEFAULT_BOOST);
+        return matchPhrasePrefixQuery(condition, column, val, DEFAULT_MAX_EXPANSIONS, DEFAULT_BOOST);
     }
 
     default Children matchPhrasePrefixQuery(R column, Object val, Float boost) {
-        return matchPhrasePrefixQuery(true, column, val, boost);
+        return matchPhrasePrefixQuery(true, column, val, DEFAULT_MAX_EXPANSIONS, boost);
+    }
+
+    default Children matchPhrasePrefixQuery(R column, Object val, int maxExpansions) {
+        return matchPhrasePrefixQuery(true, column, val, maxExpansions, DEFAULT_BOOST);
+    }
+
+    default Children matchPhrasePrefixQuery(R column, Object val, int maxExpansions, Float boost) {
+        return matchPhrasePrefixQuery(true, column, val, maxExpansions, boost);
     }
 
     /**
      * 前缀匹配
      *
-     * @param condition 条件
-     * @param column    列
-     * @param val       值
-     * @param boost     权重值
+     * @param condition     条件
+     * @param column        列
+     * @param val           值
+     * @param maxExpansions 最大扩展数
+     * @param boost         权重值
      * @return 泛型
      */
-    Children matchPhrasePrefixQuery(boolean condition, R column, Object val, Float boost);
+    Children matchPhrasePrefixQuery(boolean condition, R column, Object val, int maxExpansions, Float boost);
 
 
     default Children multiMatchQuery(Object val, R... columns) {
@@ -146,23 +157,49 @@ public interface Compare<Children, R> extends Serializable {
     }
 
     default Children multiMatchQuery(boolean condition, Object val, R... columns) {
-        return multiMatchQuery(condition, val, DEFAULT_BOOST, columns);
+        return multiMatchQuery(condition, val, Operator.OR, DEFAULT_MIN_SHOULD_MATCH, DEFAULT_BOOST, columns);
     }
 
     default Children multiMatchQuery(Object val, Float boost, R... columns) {
-        return multiMatchQuery(true, val, boost, columns);
+        return multiMatchQuery(true, val, Operator.OR, DEFAULT_MIN_SHOULD_MATCH, boost, columns);
+    }
+
+    default Children multiMatchQuery(Object val, int minimumShouldMatch, R... columns) {
+        return multiMatchQuery(true, val, Operator.OR, minimumShouldMatch, DEFAULT_BOOST, columns);
+    }
+
+    default Children multiMatchQuery(Object val, Operator operator, int minimumShouldMatch, R... columns) {
+        return multiMatchQuery(true, val, operator, minimumShouldMatch, DEFAULT_BOOST, columns);
+    }
+
+    default Children multiMatchQuery(Object val, Operator operator, R... columns) {
+        return multiMatchQuery(true, val, operator, DEFAULT_MIN_SHOULD_MATCH, DEFAULT_BOOST, columns);
+    }
+
+    default Children multiMatchQuery(Object val, int minimumShouldMatch, Float boost, R... columns) {
+        return multiMatchQuery(true, val, Operator.OR, minimumShouldMatch, boost, columns);
+    }
+
+    default Children multiMatchQuery(Object val, Operator operator, Float boost, R... columns) {
+        return multiMatchQuery(true, val, operator, DEFAULT_MIN_SHOULD_MATCH, boost, columns);
+    }
+
+    default Children multiMatchQuery(Object val, Operator operator, int minimumShouldMatch, Float boost, R... columns) {
+        return multiMatchQuery(true, val, operator, minimumShouldMatch, boost, columns);
     }
 
     /**
      * 多字段匹配
      *
-     * @param condition 条件
-     * @param val       值
-     * @param boost     权重
-     * @param columns   字段列表
+     * @param condition          条件
+     * @param val                值
+     * @param boost              权重
+     * @param columns            字段列表
+     * @param operator           操作类型 or and
+     * @param minimumShouldMatch 最小匹配度 百分比
      * @return 泛型
      */
-    Children multiMatchQuery(boolean condition, Object val, Float boost, R... columns);
+    Children multiMatchQuery(boolean condition, Object val, Operator operator, int minimumShouldMatch, Float boost, R... columns);
 
 
     default Children queryStringQuery(String queryString) {

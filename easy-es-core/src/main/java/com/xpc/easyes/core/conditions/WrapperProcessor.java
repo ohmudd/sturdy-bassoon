@@ -298,59 +298,61 @@ public class WrapperProcessor {
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.MUST.getType(), fieldValueModel.getOriginalAttachType(),
                         entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
-                        fieldValueModel.getBoost()));
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
         // 多字段情形
         baseEsParam.getMustMultiFieldList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), EsAttachTypeEnum.MUST.getType(),
-                        getRealFields(fieldValueModel.getFields(), entityInfo.getMappingColumnMap()), fieldValueModel.getValue(), fieldValueModel.getBoost()));
+                        getRealFields(fieldValueModel.getFields(), entityInfo.getMappingColumnMap()), fieldValueModel.getValue(),
+                        fieldValueModel.getExt(), fieldValueModel.getMinimumShouldMatch(), fieldValueModel.getBoost()));
 
         baseEsParam.getFilterList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.FILTER.getType(), fieldValueModel.getOriginalAttachType(),
                         entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
-                        fieldValueModel.getBoost()));
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
         baseEsParam.getShouldList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.SHOULD.getType(), fieldValueModel.getOriginalAttachType(),
                         entityInfo.getMappingColumn(fieldValueModel.getField()),
                         fieldValueModel.getValue() == null ? fieldValueModel.getValues() : fieldValueModel.getValue(),
-                        fieldValueModel.getBoost()));
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
         // 多字段情形
         baseEsParam.getMustMultiFieldList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), EsAttachTypeEnum.SHOULD.getType(),
-                        getRealFields(fieldValueModel.getFields(), entityInfo.getMappingColumnMap()), fieldValueModel.getValue(), fieldValueModel.getBoost()));
+                        getRealFields(fieldValueModel.getFields(), entityInfo.getMappingColumnMap()), fieldValueModel.getValue(),
+                        fieldValueModel.getExt(), fieldValueModel.getMinimumShouldMatch(), fieldValueModel.getBoost()));
 
         baseEsParam.getMustNotList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.MUST_NOT.getType(), fieldValueModel.getOriginalAttachType(),
                         entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
-                        fieldValueModel.getBoost()));
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
         baseEsParam.getGtList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.GT.getType(), fieldValueModel.getOriginalAttachType(),
                         entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
-                        fieldValueModel.getBoost()));
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
         baseEsParam.getLtList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.LT.getType(), fieldValueModel.getOriginalAttachType(),
                         entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
-                        fieldValueModel.getBoost()));
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
         baseEsParam.getGeList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.GE.getType(), fieldValueModel.getOriginalAttachType(),
                         entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
-                        fieldValueModel.getBoost()));
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
         baseEsParam.getLeList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.LE.getType(), fieldValueModel.getOriginalAttachType(),
                         entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
-                        fieldValueModel.getBoost()));
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
         baseEsParam.getBetweenList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
@@ -375,24 +377,26 @@ public class WrapperProcessor {
         baseEsParam.getIsNullList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.NOT_EXISTS.getType(), fieldValueModel.getOriginalAttachType(),
-                        entityInfo.getMappingColumn(fieldValueModel.getField()), Optional.empty(), fieldValueModel.getBoost()));
+                        entityInfo.getMappingColumn(fieldValueModel.getField()), Optional.empty(),
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
         baseEsParam.getNotNullList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.EXISTS.getType(), fieldValueModel.getOriginalAttachType(),
-                        entityInfo.getMappingColumn(fieldValueModel.getField()), Optional.empty(), fieldValueModel.getBoost()));
+                        entityInfo.getMappingColumn(fieldValueModel.getField()), Optional.empty(),
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
         baseEsParam.getLikeLeftList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.LIKE_LEFT.getType(), fieldValueModel.getOriginalAttachType(),
                         entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
-                        fieldValueModel.getBoost()));
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
         baseEsParam.getLikeRightList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.LIKE_RIGHT.getType(), fieldValueModel.getOriginalAttachType(),
                         entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
-                        fieldValueModel.getBoost()));
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
     }
 
     /**

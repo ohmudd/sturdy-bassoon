@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import static com.xpc.easyes.core.constants.BaseEsConstants.PERCENT;
 import static com.xpc.easyes.core.constants.BaseEsConstants.WILDCARD_SIGN;
 import static com.xpc.easyes.core.enums.EsAttachTypeEnum.*;
 import static com.xpc.easyes.core.enums.EsQueryTypeEnum.*;
@@ -25,9 +26,11 @@ public class EsQueryTypeUtil {
      * @param originalAttachType 原始连接类型
      * @param field              字段
      * @param value              值
+     * @param ext                拓展字段
      * @param boost              权重
      */
-    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType, Integer originalAttachType, String field, Object value, Float boost) {
+    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType,
+                                      Integer originalAttachType, String field, Object value, Object ext, Float boost) {
         if (Objects.equals(queryType, TERM_QUERY.getType())) {
             // 封装精确查询参数
             TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery(field, value).boost(boost);
@@ -41,7 +44,8 @@ public class EsQueryTypeUtil {
             MatchPhraseQueryBuilder matchPhraseQueryBuilder = QueryBuilders.matchPhraseQuery(field, value).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, matchPhraseQueryBuilder);
         } else if (Objects.equals(queryType, MATCH_PHRASE_PREFIX.getType())) {
-            MatchPhrasePrefixQueryBuilder matchPhrasePrefixQueryBuilder = QueryBuilders.matchPhrasePrefixQuery(field, value).boost(boost);
+            MatchPhrasePrefixQueryBuilder matchPhrasePrefixQueryBuilder = QueryBuilders.matchPhrasePrefixQuery(field, value)
+                    .maxExpansions((Integer) ext).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, matchPhrasePrefixQueryBuilder);
         } else if (Objects.equals(queryType, PREFIX_QUERY.getType())) {
             PrefixQueryBuilder prefixQueryBuilder = QueryBuilders.prefixQuery(field, value.toString()).boost(boost);
@@ -101,9 +105,15 @@ public class EsQueryTypeUtil {
         }
     }
 
-    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType, List<String> fields, Object value, Float boost) {
-        if (Objects.equals(queryType, MUST.getType())) {
+    public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType,
+                                      List<String> fields, Object value, Object ext, Integer minShouldMatch, Float boost) {
+        if (Objects.equals(queryType, MULTI_MATCH_QUERY.getType())) {
             MultiMatchQueryBuilder multiMatchQueryBuilder = QueryBuilders.multiMatchQuery(value, fields.toArray(new String[0])).boost(boost);
+            if (ext instanceof Operator) {
+                Operator operator = (Operator) ext;
+                multiMatchQueryBuilder.operator(operator);
+                multiMatchQueryBuilder.minimumShouldMatch(minShouldMatch + PERCENT);
+            }
             setQueryBuilder(boolQueryBuilder, attachType, multiMatchQueryBuilder);
         }
     }

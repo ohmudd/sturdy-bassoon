@@ -6,6 +6,7 @@ import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.geometry.Geometry;
+import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
@@ -106,14 +107,14 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children matchPhrasePrefixQuery(boolean condition, R column, Object val, Float boost) {
-        getWrapper().matchPhrasePrefixQuery(condition, column, val, boost);
+    public Children matchPhrasePrefixQuery(boolean condition, R column, Object val, int maxExpansions, Float boost) {
+        getWrapper().matchPhrasePrefixQuery(condition, column, val, maxExpansions, boost);
         return typedThis;
     }
 
     @Override
-    public Children multiMatchQuery(boolean condition, Object val, Float boost, R... columns) {
-        getWrapper().multiMatchQuery(condition, val, boost, columns);
+    public Children multiMatchQuery(boolean condition, Object val, Operator operator, int minimumShouldMatch, Float boost, R... columns) {
+        getWrapper().multiMatchQuery(condition, val, operator, minimumShouldMatch, boost, columns);
         return typedThis;
     }
 

@@ -1,5 +1,6 @@
 package com.xpc.easyes.sample.test.agg;
 
+import com.alibaba.fastjson.JSON;
 import com.xpc.easyes.core.common.PageInfo;
 import com.xpc.easyes.core.conditions.LambdaEsQueryWrapper;
 import com.xpc.easyes.core.conditions.interfaces.Query;
