@@ -179,17 +179,9 @@ public interface BaseEsConstants {
      */
     Integer LOCK_MAX_RETRY = 3;
     /**
-     * 激活索引最大重试次数
-     */
-    Integer ACTIVE_INDEX_MAX_RETRY = 60;
-    /**
      * 初始任务执行延迟
      */
-    Long INITIAL_DELAY = 1L;
-    /**
-     * 固定任务执行延迟时间
-     */
-    Long FIXED_DELAY = 5L;
+    int INITIAL_DELAY = 30;
     /**
      * 默认分片数
      */

@@ -4,6 +4,7 @@ import cn.easyes.common.constants.Analyzer;
 import cn.easyes.common.constants.BaseEsConstants;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.common.enums.JdkDataTypeEnum;
+import cn.easyes.common.enums.ProcessIndexStrategyEnum;
 import cn.easyes.common.params.DefaultChildClass;
 import cn.easyes.common.utils.CollectionUtils;
 import cn.easyes.common.utils.ExceptionUtils;
@@ -673,7 +674,8 @@ public class IndexUtils {
                         }));
 
         // 达到最大重试次数仍未成功,则终止流程,避免浪费资源
-        if (maxRetry >= ACTIVE_INDEX_MAX_RETRY) {
+        int activeReleaseIndexMaxRetry = GlobalConfigCache.getGlobalConfig().getActiveReleaseIndexMaxRetry();
+        if (maxRetry >= activeReleaseIndexMaxRetry) {
             if (activated.get()) {
                 LogUtils.info("Current client index has been successfully activated");
             } else {
@@ -704,8 +706,11 @@ public class IndexUtils {
                 if (!lock) {
                     // 未获取到分布式锁的机器,需要等待获取到锁的机器完成索引由旧到新的迁移,期间会不断重试并激活该新索引
                     AtomicInteger maxTry = new AtomicInteger(ZERO);
-                    Executors.newSingleThreadScheduledExecutor()
-                            .scheduleWithFixedDelay(() -> activeReleaseIndex(client, entityClass, maxTry.addAndGet(ONE)), INITIAL_DELAY, FIXED_DELAY, TimeUnit.MINUTES);
+                    if (ProcessIndexStrategyEnum.SMOOTHLY.equals(globalConfig.getProcessIndexMode())) {
+                        // 平滑模式下,需要将未获取到锁的客户端的索引延迟激活为最新索引
+                        Executors.newSingleThreadScheduledExecutor()
+                                .scheduleWithFixedDelay(() -> activeReleaseIndex(client, entityClass, maxTry.addAndGet(ONE)), INITIAL_DELAY, globalConfig.getActiveReleaseIndexFixedDelay(), TimeUnit.SECONDS);
+                    }
                     LogUtils.warn("retry get distribute lock failed, please check whether other resources have been preempted or deadlocked");
                     return Boolean.FALSE;
                 }
