@@ -92,12 +92,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children notBetween(boolean condition, R column, Object val1, Object val2, Float boost) {
-        getWrapper().notBetween(condition, column, val1, val2, boost);
-        return typedThis;
-    }
-
-    @Override
     public Children match(boolean condition, R column, Object val, Float boost) {
         getWrapper().match(condition, column, val, boost);
         return typedThis;
@@ -161,12 +155,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     @Override
     public Children likeRight(boolean condition, R column, Object val, Float boost) {
         getWrapper().likeRight(condition, column, val, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children isNull(boolean condition, R column, Float boost) {
-        getWrapper().isNull(condition, column, boost);
         return typedThis;
     }
 
@@ -248,12 +236,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children notIn(boolean condition, R column, Collection<?> coll, Float boost) {
-        getWrapper().notIn(condition, column, coll, boost);
-        return typedThis;
-    }
-
-    @Override
     public Children and(boolean condition, Consumer<Param> consumer) {
         getWrapper().and(condition, consumer);
         return typedThis;
@@ -296,12 +278,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children notBetween(R column, Object val1, Object val2, Float boost) {
-        getWrapper().between(column, val1, val2, boost);
-        return typedThis;
-    }
-
-    @Override
     public Children like(R column, Object val, Float boost) {
         getWrapper().like(column, val, boost);
         return typedThis;
@@ -338,20 +314,8 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children notInGeoBoundingBox(boolean condition, R column, GeoPoint topLeft, GeoPoint bottomRight, Float boost) {
-        getWrapper().notInGeoBoundingBox(condition, column, topLeft, bottomRight, boost);
-        return typedThis;
-    }
-
-    @Override
     public Children geoDistance(boolean condition, R column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint, Float boost) {
         getWrapper().geoDistance(condition, column, distance, distanceUnit, centralGeoPoint, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children notInGeoDistance(boolean condition, R column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint, Float boost) {
-        getWrapper().notInGeoDistance(condition, column, distance, distanceUnit, centralGeoPoint, boost);
         return typedThis;
     }
 
@@ -362,20 +326,8 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children notInGeoDistance(boolean condition, R column, String distance, GeoPoint centralGeoPoint, Float boost) {
-        getWrapper().notInGeoDistance(condition, column, distance, centralGeoPoint, boost);
-        return typedThis;
-    }
-
-    @Override
     public Children geoPolygon(boolean condition, R column, List<GeoPoint> geoPoints, Float boost) {
         getWrapper().geoPolygon(condition, column, geoPoints, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children notInGeoPolygon(boolean condition, R column, Collection<GeoPoint> geoPoints, Float boost) {
-        getWrapper().notInGeoPolygon(condition, column, geoPoints, boost);
         return typedThis;
     }
 
@@ -386,20 +338,8 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children notInGeoShape(boolean condition, R column, String indexedShapeId, Float boost) {
-        getWrapper().notInGeoShape(condition, column, indexedShapeId, boost);
-        return typedThis;
-    }
-
-    @Override
     public Children geoShape(boolean condition, R column, Geometry geometry, ShapeRelation shapeRelation, Float boost) {
         getWrapper().geoShape(condition, column, geometry, shapeRelation, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children notInGeoShape(boolean condition, R column, Geometry geometry, ShapeRelation shapeRelation, Float boost) {
-        getWrapper().notInGeoShape(condition, column, geometry, shapeRelation, boost);
         return typedThis;
     }
 
@@ -472,12 +412,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children notBetween(boolean condition, String column, Object val1, Object val2, Float boost) {
-        getWrapper().notBetween(condition, column, val1, val2, boost);
-        return typedThis;
-    }
-
-    @Override
     public Children like(boolean condition, String column, Object val, Float boost) {
         getWrapper().like(condition, column, val, boost);
         return typedThis;
@@ -505,18 +439,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     @Override
     public Children in(boolean condition, String column, Collection<?> coll, Float boost) {
         getWrapper().in(condition, column, coll, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children notIn(boolean condition, String column, Collection<?> coll, Float boost) {
-        getWrapper().notIn(condition, column, coll, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children isNull(boolean condition, String column, Float boost) {
-        getWrapper().isNull(condition, column, boost);
         return typedThis;
     }
 
@@ -575,20 +497,8 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children notInGeoBoundingBox(boolean condition, String column, GeoPoint topLeft, GeoPoint bottomRight, Float boost) {
-        getWrapper().notInGeoBoundingBox(condition, column, topLeft, bottomRight, boost);
-        return typedThis;
-    }
-
-    @Override
     public Children geoDistance(boolean condition, String column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint, Float boost) {
         getWrapper().geoDistance(condition, column, distance, distanceUnit, centralGeoPoint, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children notInGeoDistance(boolean condition, String column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint, Float boost) {
-        getWrapper().notInGeoDistance(condition, column, distance, distanceUnit, centralGeoPoint, boost);
         return typedThis;
     }
 
@@ -599,20 +509,8 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children notInGeoDistance(boolean condition, String column, String distance, GeoPoint centralGeoPoint, Float boost) {
-        getWrapper().notInGeoDistance(condition, column, distance, centralGeoPoint, boost);
-        return typedThis;
-    }
-
-    @Override
     public Children geoPolygon(boolean condition, String column, List<GeoPoint> geoPoints, Float boost) {
         getWrapper().geoPolygon(condition, column, geoPoints, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children notInGeoPolygon(boolean condition, String column, Collection<GeoPoint> geoPoints, Float boost) {
-        getWrapper().notInGeoPolygon(condition, column, geoPoints, boost);
         return typedThis;
     }
 
@@ -623,20 +521,8 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children notInGeoShape(boolean condition, String column, String indexedShapeId, Float boost) {
-        getWrapper().notInGeoShape(condition, column, indexedShapeId, boost);
-        return typedThis;
-    }
-
-    @Override
     public Children geoShape(boolean condition, String column, Geometry geometry, ShapeRelation shapeRelation, Float boost) {
         getWrapper().geoShape(condition, column, geometry, shapeRelation, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children notInGeoShape(boolean condition, String column, Geometry geometry, ShapeRelation shapeRelation, Float boost) {
-        getWrapper().notInGeoShape(condition, column, geometry, shapeRelation, boost);
         return typedThis;
     }
 

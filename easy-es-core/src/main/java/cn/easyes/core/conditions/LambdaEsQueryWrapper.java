@@ -9,12 +9,10 @@ import cn.easyes.core.biz.BaseSortParam;
 import cn.easyes.core.biz.EntityFieldInfo;
 import cn.easyes.core.conditions.interfaces.Query;
 import cn.easyes.core.toolkit.EntityInfoHelper;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 import java.util.function.Predicate;
 
 /**
@@ -55,8 +53,6 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
      */
     public LambdaEsQueryWrapper() {
         this(null);
-        include = new String[]{};
-        exclude = new String[]{};
     }
 
     public LambdaEsQueryWrapper(Class<T> entityClass) {
@@ -69,8 +65,6 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
     LambdaEsQueryWrapper(T entity, List<Param> paramList, LinkedList<String> queue, Integer level, String parentId, List<BaseSortParam> baseSortParams,
                          List<AggregationParam> aggregationParamList) {
         super.setEntity(entity);
-        include = new String[]{};
-        exclude = new String[]{};
         this.queue = queue;
         this.level = level;
         this.parentId = parentId;
@@ -159,12 +153,6 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
             this.searchSourceBuilder = searchSourceBuilder;
         }
         return typedThis;
-    }
-
-    @Override
-    protected SearchRequest getSearchRequest() {
-        // TODO 代码结构待优化 v1.0+
-        return null;
     }
 
     @Override

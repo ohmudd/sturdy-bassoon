@@ -9,7 +9,10 @@ import cn.easyes.core.biz.*;
 import cn.easyes.core.cache.BaseCache;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.conditions.interfaces.BaseEsMapper;
-import cn.easyes.core.toolkit.*;
+import cn.easyes.core.toolkit.EntityInfoHelper;
+import cn.easyes.core.toolkit.FieldUtils;
+import cn.easyes.core.toolkit.IndexUtils;
+import cn.easyes.core.toolkit.PageHelper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializeFilter;
@@ -65,7 +68,6 @@ import static cn.easyes.common.constants.BaseEsConstants.*;
  * 内部实现:
  * 核心网络请求类：{@link RestHighLevelClient}、
  * 动态封装request类：{@link WrapperProcessor}、
- * 查询参数封装：{@link EsQueryTypeUtil}、
  * 查询类型枚举：{@link EsQueryTypeEnum}、
  * </p>
  * Copyright © 2021 xpc1024 All Rights Reserved
@@ -251,8 +253,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             CountRequest countRequest = new CountRequest(getIndexNames(wrapper.indexNames));
             QueryBuilder queryBuilder = Optional.ofNullable(wrapper.searchSourceBuilder)
                     .map(SearchSourceBuilder::query)
-                    .orElseGet(() -> WrapperProcessor.initBoolQueryBuilder(wrapper.baseEsParamList,
-                            wrapper.enableMust2Filter, entityClass));
+                    .orElseGet(() -> WrapperProcessor.initBoolQueryBuilder(wrapper.paramList, entityClass));
             countRequest.query(queryBuilder);
             CountResponse count;
             try {
@@ -327,7 +328,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     @Override
     public Integer delete(LambdaEsQueryWrapper<T> wrapper) {
         DeleteByQueryRequest request = new DeleteByQueryRequest(getIndexNames(wrapper.indexNames));
-        BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.baseEsParamList, wrapper.enableMust2Filter, entityClass);
+        BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.paramList, entityClass);
         request.setQuery(boolQueryBuilder);
         BulkByScrollResponse bulkResponse;
         try {
@@ -830,9 +831,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             searchSourceBuilder.fetchSource(includes, null);
             searchSourceBuilder.trackTotalHits(true);
             searchSourceBuilder.size(GlobalConfigCache.getGlobalConfig().getDbConfig().getBatchUpdateThreshold());
-            BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.baseEsParamList,
-                    wrapper.enableMust2Filter, entityClass);
-            Optional.ofNullable(wrapper.geoParam).ifPresent(geoParam -> WrapperProcessor.setGeoQuery(geoParam, boolQueryBuilder, entityClass));
+            BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.paramList, entityClass);
             searchSourceBuilder.query(boolQueryBuilder);
         } else {
             // 用户在wrapper中指定的混合查询条件优先级最高
@@ -1009,7 +1008,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             if (Double.isNaN(distance)) {
                 return;
             }
-            if (entityInfo.getScoreDecimalPlaces() > ZERO) {
+            if (entityInfo.getDistanceDecimalPlaces() > ZERO) {
                 distance = NumericUtils.setDecimalPlaces(distance, entityInfo.getDistanceDecimalPlaces());
             }
             Method invokeMethod = BaseCache.setterMethod(entity.getClass(), distanceField);

@@ -7,7 +7,6 @@ import cn.easyes.common.utils.ArrayUtils;
 import cn.easyes.common.utils.StringUtils;
 import cn.easyes.core.biz.EsIndexParam;
 import cn.easyes.core.conditions.interfaces.Index;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.common.settings.Settings;
 
 import java.util.*;
@@ -68,11 +67,6 @@ public class LambdaEsIndexWrapper<T> extends Wrapper<T> implements Index<LambdaE
     public LambdaEsIndexWrapper(Class<T> entityClass) {
         this.entityClass = entityClass;
         esIndexParamList = new ArrayList<>();
-    }
-
-    @Override
-    protected SearchRequest getSearchRequest() {
-        return null;
     }
 
     @Override

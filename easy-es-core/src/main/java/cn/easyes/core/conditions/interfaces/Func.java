@@ -311,87 +311,6 @@ public interface Func<Children, R> extends Serializable {
      */
     Children in(boolean condition, String column, Collection<?> coll, Float boost);
 
-
-    default Children notIn(R column, Collection<?> coll) {
-        return notIn(true, column, coll);
-    }
-
-    default Children notIn(boolean condition, R column, Collection<?> coll) {
-        return notIn(condition, column, coll, BaseEsConstants.DEFAULT_BOOST);
-    }
-
-    default Children notIn(R column, Object... value) {
-        return notIn(true, column, value);
-    }
-
-    default Children notIn(boolean condition, R column, Object... values) {
-        return notIn(condition, column, Arrays.stream(Optional.ofNullable(values).orElseGet(() -> new Object[]{}))
-                .collect(toList()));
-    }
-
-    default Children notIn(String column, Collection<?> coll) {
-        return notIn(true, column, coll);
-    }
-
-    default Children notIn(boolean condition, String column, Collection<?> coll) {
-        return notIn(condition, column, coll, BaseEsConstants.DEFAULT_BOOST);
-    }
-
-    default Children notIn(String column, Object... value) {
-        return notIn(true, column, value);
-    }
-
-    default Children notIn(boolean condition, String column, Object... values) {
-        return notIn(condition, column, Arrays.stream(Optional.ofNullable(values).orElseGet(() -> new Object[]{}))
-                .collect(toList()));
-    }
-
-    default Children notIn(boolean condition, R column, Collection<?> coll, Float boost) {
-        return notIn(condition, FieldUtils.getFieldName(column), coll, boost);
-    }
-
-    /**
-     * 字段 NOT IN
-     *
-     * @param condition 条件
-     * @param column    列
-     * @param coll      集合
-     * @param boost     权重
-     * @return 泛型
-     */
-    Children notIn(boolean condition, String column, Collection<?> coll, Float boost);
-
-    default Children isNull(R column) {
-        return isNull(true, column);
-    }
-
-    default Children isNull(boolean condition, R column) {
-        return isNull(condition, column, BaseEsConstants.DEFAULT_BOOST);
-    }
-
-    default Children isNull(String column) {
-        return isNull(true, column);
-    }
-
-    default Children isNull(boolean condition, String column) {
-        return isNull(condition, column, BaseEsConstants.DEFAULT_BOOST);
-    }
-
-    default Children isNull(boolean condition, R column, Float boost) {
-        return isNull(condition, FieldUtils.getFieldName(column), boost);
-    }
-
-
-    /**
-     * 字段 IS NULL
-     *
-     * @param condition 条件
-     * @param column    列
-     * @param boost     权重
-     * @return 泛型
-     */
-    Children isNull(boolean condition, String column, Float boost);
-
     default Children isNotNull(R column) {
         return isNotNull(true, column);
     }
@@ -413,13 +332,46 @@ public interface Func<Children, R> extends Serializable {
     }
 
     /***
-     * 字段 IS NOT NULL
+     * 字段 IS NOT NULL 等价于Es中的exists查询 未废弃是为了兼容mysql用法
      * @param condition 条件
      * @param column 列
      * @param boost 权重
      * @return 泛型
      */
-    Children isNotNull(boolean condition, String column, Float boost);
+    default Children isNotNull(boolean condition, String column, Float boost) {
+        return exists(condition, column, boost);
+    }
+
+    default Children exists(R column) {
+        return isNotNull(true, column);
+    }
+
+    default Children exists(boolean condition, R column) {
+        return isNotNull(condition, column, BaseEsConstants.DEFAULT_BOOST);
+    }
+
+    default Children exists(String column) {
+        return isNotNull(true, column);
+    }
+
+    default Children exists(boolean condition, String column) {
+        return exists(condition, column, BaseEsConstants.DEFAULT_BOOST);
+    }
+
+    default Children exists(boolean condition, R column, Float boost) {
+        return exists(condition, FieldUtils.getFieldName(column), boost);
+    }
+
+    /**
+     * 字段存在 等价于上面的isNotNull
+     *
+     * @param condition 条件
+     * @param column    列
+     * @param boost     权重
+     * @return 泛型
+     */
+    Children exists(boolean condition, String column, Float boost);
+
 
     default Children groupBy(R column) {
         return groupBy(true, true, column);

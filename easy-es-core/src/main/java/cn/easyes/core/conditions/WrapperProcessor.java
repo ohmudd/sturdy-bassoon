@@ -1,18 +1,29 @@
 package cn.easyes.core.conditions;
 
 import cn.easyes.common.enums.AggregationTypeEnum;
+import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.utils.*;
 import cn.easyes.core.Param;
-import cn.easyes.core.biz.*;
+import cn.easyes.core.biz.AggregationParam;
+import cn.easyes.core.biz.BaseSortParam;
+import cn.easyes.core.biz.EntityInfo;
+import cn.easyes.core.biz.HighLightParam;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.config.GlobalConfig;
 import cn.easyes.core.toolkit.EntityInfoHelper;
-import cn.easyes.core.toolkit.EsQueryTypeUtil;
 import cn.easyes.core.toolkit.FieldUtils;
 import cn.easyes.core.toolkit.TreeBuilder;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.lucene.search.join.ScoreMode;
+import org.elasticsearch.common.geo.GeoPoint;
+import org.elasticsearch.common.geo.ShapeRelation;
+import org.elasticsearch.common.unit.DistanceUnit;
+import org.elasticsearch.geometry.Geometry;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.join.query.HasChildQueryBuilder;
+import org.elasticsearch.join.query.HasParentQueryBuilder;
+import org.elasticsearch.join.query.ParentIdQueryBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
@@ -25,13 +36,9 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static cn.easyes.common.constants.BaseEsConstants.DEFAULT_SIZE;
-import static cn.easyes.common.constants.BaseEsConstants.REPEAT_NUM_KEY;
-import static cn.easyes.common.enums.BaseEsParamTypeEnum.*;
-import static cn.easyes.common.enums.EsAttachTypeEnum.*;
-import static org.elasticsearch.index.query.QueryBuilders.geoShapeQuery;
+import static cn.easyes.common.constants.BaseEsConstants.*;
+import static cn.easyes.common.enums.EsQueryTypeEnum.*;
 
 /**
  * 核心 wrpeer处理类
@@ -51,7 +58,6 @@ public class WrapperProcessor {
     public static SearchSourceBuilder buildSearchSourceBuilder(LambdaEsQueryWrapper<?> wrapper, Class<?> entityClass) {
         // 初始化boolQueryBuilder 参数
         BoolQueryBuilder boolQueryBuilder = initBoolQueryBuilder(wrapper.paramList, entityClass);
-        System.out.println(boolQueryBuilder);
 
         // 初始化全表扫描查询参数
         Optional.ofNullable(wrapper.matchAllQuery).ifPresent(p -> boolQueryBuilder.must(QueryBuilders.matchAllQuery()));
@@ -59,13 +65,11 @@ public class WrapperProcessor {
         // 初始化searchSourceBuilder 参数
         SearchSourceBuilder searchSourceBuilder = initSearchSourceBuilder(wrapper, entityClass);
 
-        // 初始化geo相关参数
-        Optional.ofNullable(wrapper.geoParam).ifPresent(geoParam -> setGeoQuery(geoParam, boolQueryBuilder, entityClass));
-
         // 设置boolQuery参数
         searchSourceBuilder.query(boolQueryBuilder);
         return searchSourceBuilder;
     }
+
 
     /**
      * 初始化将树参数转换为BoolQueryBuilder
@@ -73,38 +77,203 @@ public class WrapperProcessor {
      * @param paramList   参数列表
      * @param entityClass 实体类
      */
-    private static BoolQueryBuilder initBoolQueryBuilder(List<Param> paramList, Class<?> entityClass) {
+    public static BoolQueryBuilder initBoolQueryBuilder(List<Param> paramList, Class<?> entityClass) {
+        // 数据预处理
+        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
+        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
+        List<Param> rootList = new ArrayList<>();
+        paramList.forEach(param -> {
+            // 驼峰及自定义字段转换
+            String realField = FieldUtils.getRealField(param.getColumn(), entityInfo.getMappingColumnMap(), dbConfig);
+            param.setColumn(realField);
+            if (ArrayUtils.isNotEmpty(param.getColumns())) {
+                String[] columns = (String[]) Arrays.stream(param.getColumns())
+                        .map(column -> FieldUtils.getRealField(param.getColumn(), entityInfo.getMappingColumnMap(), dbConfig))
+                        .toArray();
+                param.setColumns(columns);
+            }
+            if (NESTED_MATCH.equals(param.getQueryTypeEnum()) || HAS_CHILD.equals(param.getQueryTypeEnum()) || HAS_PARENT.equals(param.getQueryTypeEnum())) {
+                String realPath = FieldUtils.getRealField(param.getExt1().toString(), entityInfo.getMappingColumnMap(), dbConfig);
+                param.setExt1(realPath);
+            }
+            if (param.getParentId() == null) {
+                // 仙人板板
+                rootList.add(param);
+            }
+        });
+
         // 建树
-        List<Param> rootList = paramList.stream().filter(p -> Objects.isNull(p.getParentId())).collect(Collectors.toList());
         TreeBuilder treeBuilder = new TreeBuilder(rootList, paramList);
         List<Param> tree = (List<Param>) treeBuilder.build();
         BoolQueryBuilder rootBool = QueryBuilders.boolQuery();
 
         // 遍历,对森林的每个根节点递归封装
-        tree.forEach(root -> setBool(rootBool, root));
+        EsQueryTypeEnum parentQueryType = getParentQueryType(dbConfig.isEnableMust2Filter());
+        tree.forEach(root -> setBool(rootBool, root, parentQueryType));
         return rootBool;
     }
 
-    private static void setBool(BoolQueryBuilder bool, Param param) {
+    /**
+     * 根据配置获取根节点查询类型
+     *
+     * @param enableMust2Filter 是否开启must转filter配置 true开启 false 否
+     * @return 根节点查询类型
+     */
+    private static EsQueryTypeEnum getParentQueryType(boolean enableMust2Filter) {
+        if (enableMust2Filter) {
+            return EsQueryTypeEnum.FILTER;
+        } else {
+            return EsQueryTypeEnum.AND_MUST;
+        }
+    }
+
+    /**
+     * 递归封装bool查询条件
+     *
+     * @param bool       BoolQueryBuilder
+     * @param param      查询参数
+     * @param parentType 父查询类型
+     */
+    @SneakyThrows
+    private static void setBool(BoolQueryBuilder bool, Param param, EsQueryTypeEnum parentType) {
         List<Param> children = (List<Param>) param.getChildren();
+        QueryBuilder queryBuilder;
         switch (param.getQueryTypeEnum()) {
-            case TERM_QUERY:
-                bool.must(QueryBuilders.termQuery(param.getColumn(), param.getVal()).boost(param.getBoost()));
+            case TERM:
+                queryBuilder = QueryBuilders.termQuery(param.getColumn(), param.getVal()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case MATCH:
+                queryBuilder = QueryBuilders.matchQuery(param.getColumn(), param.getVal()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case MATCH_PHRASE:
+                queryBuilder = QueryBuilders.matchPhraseQuery(param.getColumn(), param.getVal()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case MATCH_PHRASE_PREFIX:
+                queryBuilder = QueryBuilders.matchPhrasePrefixQuery(param.getColumn(), param.getVal()).boost(param.getBoost()).maxExpansions((int) param.getExt1());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case MULTI_MATCH:
+                queryBuilder = QueryBuilders.multiMatchQuery(param.getVal(), param.getColumns()).operator((Operator) param.getExt1()).minimumShouldMatch((String) param.getExt2());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case QUERY_STRING:
+                queryBuilder = QueryBuilders.queryStringQuery(param.getColumn()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case PREFIX:
+                queryBuilder = QueryBuilders.prefixQuery(param.getColumn(), (String) param.getVal()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case GT:
+                queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).gt(param.getVal()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case GE:
+                queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).gte(param.getVal()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case LT:
+                queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).lt(param.getVal()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case LE:
+                queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).lte(param.getVal()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case BETWEEN:
+                queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).gte(param.getExt1()).lte(param.getExt2()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case WILDCARD:
+                queryBuilder = QueryBuilders.wildcardQuery(param.getColumn(), param.getVal().toString());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case TERMS:
+                queryBuilder = QueryBuilders.termsQuery(param.getColumn(), (Object[]) param.getVal());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case EXISTS:
+                queryBuilder = QueryBuilders.existsQuery(param.getColumn()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case GEO_BOUNDING_BOX:
+                queryBuilder = QueryBuilders.geoBoundingBoxQuery(param.getColumn()).setCorners((GeoPoint) param.getExt1(), (GeoPoint) param.getExt2()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case GEO_DISTANCE:
+                GeoDistanceQueryBuilder geoDistance = QueryBuilders.geoDistanceQuery(param.getColumn()).point((GeoPoint) param.getExt2()).boost(param.getBoost());
+                MyOptional.ofNullable(param.getExt1()).ifPresent(ext1 -> geoDistance.distance((Double) param.getVal(), (DistanceUnit) ext1), geoDistance.distance((String) param.getVal()));
+                queryBuilder = geoDistance;
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case GEO_POLYGON:
+                queryBuilder = QueryBuilders.geoPolygonQuery(param.getColumn(), (List<GeoPoint>) param.getVal());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case GEO_SHAPE_ID:
+                queryBuilder = QueryBuilders.geoShapeQuery(param.getColumn(), param.getVal().toString()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case GEO_SHAPE:
+                queryBuilder = QueryBuilders.geoShapeQuery(param.getColumn(), (Geometry) param.getVal()).relation((ShapeRelation) param.getExt1()).boost(param.getBoost());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case NESTED_MATCH:
+                queryBuilder = QueryBuilders.nestedQuery(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + param.getColumn(), param.getVal()).boost(param.getBoost()), (ScoreMode) param.getExt2());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case HAS_CHILD:
+                queryBuilder = new HasChildQueryBuilder(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + param.getColumn(), param.getVal()).boost(param.getBoost()), (ScoreMode) param.getExt2());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case HAS_PARENT:
+                queryBuilder = new HasParentQueryBuilder(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + param.getColumn(), param.getVal()).boost(param.getBoost()), (boolean) param.getExt2());
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case PARENT_ID:
+                queryBuilder = new ParentIdQueryBuilder(param.getColumn(), param.getVal().toString());
+                setChildrenBool(bool, queryBuilder, parentType);
                 break;
             case AND_MUST:
-                bool.must(getChildrenBool(children, QueryBuilders.boolQuery()));
+                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), EsQueryTypeEnum.AND_MUST);
+                setChildrenBool(bool, queryBuilder, parentType);
                 break;
             case FILTER:
-                bool.filter(getChildrenBool(children, QueryBuilders.boolQuery()));
+                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), EsQueryTypeEnum.FILTER);
+                setChildrenBool(bool, queryBuilder, parentType);
                 break;
             case MUST_NOT:
-                bool.mustNot(getChildrenBool(children, QueryBuilders.boolQuery()));
+                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), EsQueryTypeEnum.MUST_NOT);
+                setChildrenBool(bool, queryBuilder, parentType);
                 break;
             case OR_SHOULD:
-                bool.should(getChildrenBool(children, QueryBuilders.boolQuery()));
+                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), EsQueryTypeEnum.OR_SHOULD);
+                setChildrenBool(bool, queryBuilder, parentType);
                 break;
             default:
                 throw ExceptionUtils.eee("非法参数类型");
+        }
+    }
+
+    /**
+     * 设置孩子节点的bool
+     *
+     * @param bool         父节点BoolQueryBuilder
+     * @param queryBuilder 孩子节点BoolQueryBuilder
+     * @param parentType   查询类型
+     */
+    private static void setChildrenBool(BoolQueryBuilder bool, QueryBuilder queryBuilder, EsQueryTypeEnum parentType) {
+        if (EsQueryTypeEnum.AND_MUST.equals(parentType)) {
+            bool.must(queryBuilder);
+        } else if (EsQueryTypeEnum.OR_SHOULD.equals(parentType)) {
+            bool.should(queryBuilder);
+        } else if (EsQueryTypeEnum.FILTER.equals(parentType)) {
+            bool.filter(queryBuilder);
+        } else if (EsQueryTypeEnum.MUST_NOT.equals(parentType)) {
+            bool.mustNot(queryBuilder);
         }
     }
 
@@ -115,141 +284,14 @@ public class WrapperProcessor {
      * @param builder   新的根bool
      * @return 子节点bool合集, 统一封装至入参builder中
      */
-    private static BoolQueryBuilder getChildrenBool(List<Param> paramList, BoolQueryBuilder builder) {
+    private static BoolQueryBuilder getChildrenBool(List<Param> paramList, BoolQueryBuilder builder, EsQueryTypeEnum parentType) {
         if (CollectionUtils.isEmpty(paramList)) {
             return builder;
         }
-        paramList.forEach(param -> setBool(builder, param));
+        paramList.forEach(param -> setBool(builder, param, parentType));
         return builder;
     }
 
-
-    /**
-     * 初始化BoolQueryBuilder 整个框架的核心
-     *
-     * @param baseEsParamList   参数列表
-     * @param enableMust2Filter 是否开启must转换filter
-     * @param entityClass       实体类
-     * @return BoolQueryBuilder
-     */
-    public static BoolQueryBuilder initBoolQueryBuilder(List<BaseEsParam> baseEsParamList, Boolean enableMust2Filter,
-                                                        Class<?> entityClass) {
-        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
-        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
-
-        // 获取内层or和内外层or总数,用于处理 是否有外层or:全部重置; 如果仅内层OR,只重置内层.
-        OrCount orCount = getOrCount(baseEsParamList);
-        // 根节点
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        // 用于连接and,or条件内的多个查询条件,包装成boolQuery
-        BoolQueryBuilder inner = null;
-        //正式封装参数
-        int start = 0;
-        int end = 0;
-        int remainSetUp = orCount.getOrInnerCount();
-        boolean hasSetUp = false;
-        for (int i = 0; i < baseEsParamList.size(); i++) {
-            BaseEsParam baseEsParam = baseEsParamList.get(i);
-            if (orCount.getOrAllCount() > orCount.getOrInnerCount()) {
-                // 存在外层or 统统重置
-                BaseEsParam.setUp(baseEsParam);
-            } else {
-                if (!hasSetUp) {
-                    // 处理or在内层的情况,仅重置括号中的内容
-                    for (int j = i; j < baseEsParamList.size(); j++) {
-                        BaseEsParam andOr = baseEsParamList.get(j);
-                        if (AND_LEFT_BRACKET.getType().equals(andOr.getType()) || OR_LEFT_BRACKET.getType().equals(andOr.getType())) {
-                            // 找到了and/or的开始标志
-                            start = j;
-                        }
-
-                        if (AND_RIGHT_BRACKET.getType().equals(andOr.getType()) || OR_RIGHT_BRACKET.getType().equals(andOr.getType())) {
-                            // 找到了and/or的结束标志
-                            end = j;
-                        }
-                        if (remainSetUp > 0 && end > start) {
-                            // 重置内层or
-                            remainSetUp--;
-                            for (int k = start; k < end; k++) {
-                                BaseEsParam.setUp(baseEsParamList.get(k));
-                                hasSetUp = true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            boolean hasLogicOperator = AND_LEFT_BRACKET.getType().equals(baseEsParam.getType())
-                    || OR_LEFT_BRACKET.getType().equals(baseEsParam.getType());
-            if (hasLogicOperator) {
-                // 说明有and或者or 需要将括号中的内容置入新的boolQuery
-                inner = QueryBuilders.boolQuery();
-            }
-
-            // 处理括号中and和or的最终连接类型 and->must, or->should
-            if (Objects.equals(AND_RIGHT_BRACKET.getType(), baseEsParam.getType())) {
-                boolQueryBuilder.must(inner);
-                inner = null;
-            }
-            if (Objects.equals(OR_RIGHT_BRACKET.getType(), baseEsParam.getType())) {
-                boolQueryBuilder.should(inner);
-                inner = null;
-            }
-
-            // 添加字段名称,值,查询类型等
-            Optional.ofNullable(enableMust2Filter).ifPresent(baseEsParam::setEnableMust2Filter);
-            if (Objects.isNull(inner)) {
-                addQuery(baseEsParam, boolQueryBuilder, entityInfo, dbConfig);
-            } else {
-                addQuery(baseEsParam, inner, entityInfo, dbConfig);
-            }
-        }
-        return boolQueryBuilder;
-    }
-
-    /**
-     * 获取内层or和内外层or总数
-     *
-     * @param baseEsParamList 参数列表
-     * @return 内外侧or总数信息
-     */
-    private static OrCount getOrCount(List<BaseEsParam> baseEsParamList) {
-        OrCount orCount = new OrCount();
-        int start;
-        int end = 0;
-        int orAllCount = 0;
-        int orInnerCount = 0;
-        for (int i = 0; i < baseEsParamList.size(); i++) {
-            BaseEsParam baseEsParam = baseEsParamList.get(i);
-            if (OR_ALL.getType().equals(baseEsParam.getType())) {
-                orAllCount++;
-            }
-            boolean hasLogicOperator = AND_LEFT_BRACKET.getType().equals(baseEsParam.getType())
-                    || OR_LEFT_BRACKET.getType().equals(baseEsParam.getType());
-            if (hasLogicOperator) {
-                start = i;
-                for (int j = i; j < baseEsParamList.size(); j++) {
-                    BaseEsParam andOr = baseEsParamList.get(j);
-                    if (AND_RIGHT_BRACKET.getType().equals(andOr.getType()) || OR_RIGHT_BRACKET.getType().equals(andOr.getType())) {
-                        end = j;
-                    }
-
-                    if (start < end) {
-                        for (int k = start; k < end; k++) {
-                            if (OR_ALL.getType().equals(baseEsParamList.get(k).getType())) {
-                                orInnerCount++;
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-
-        orCount.setOrAllCount(orAllCount);
-        orCount.setOrInnerCount(orInnerCount);
-        return orCount;
-    }
 
     /**
      * 初始化SearchSourceBuilder
@@ -280,230 +322,12 @@ public class WrapperProcessor {
         Optional.ofNullable(wrapper.from).ifPresent(searchSourceBuilder::from);
         MyOptional.ofNullable(wrapper.size).ifPresent(searchSourceBuilder::size, DEFAULT_SIZE);
 
-        // 根据全局配置决定是否开启
+        // 根据全局配置决定是否开启全部查询
         if (GlobalConfigCache.getGlobalConfig().getDbConfig().isEnableTrackTotalHits()) {
             searchSourceBuilder.trackTotalHits(Boolean.TRUE);
         }
 
         return searchSourceBuilder;
-    }
-
-    /**
-     * 初始化GeoBoundingBoxQueryBuilder
-     *
-     * @param geoParam Geo相关参数
-     * @return GeoBoundingBoxQueryBuilder
-     */
-    private static GeoBoundingBoxQueryBuilder initGeoBoundingBoxQueryBuilder(GeoParam geoParam) {
-        // 参数校验
-        boolean invalidParam = Objects.isNull(geoParam)
-                || (Objects.isNull(geoParam.getTopLeft()) || Objects.isNull(geoParam.getBottomRight()));
-        if (invalidParam) {
-            return null;
-        }
-
-        GeoBoundingBoxQueryBuilder builder = QueryBuilders.geoBoundingBoxQuery(geoParam.getField());
-        Optional.ofNullable(geoParam.getBoost()).ifPresent(builder::boost);
-        builder.setCorners(geoParam.getTopLeft(), geoParam.getBottomRight());
-        return builder;
-    }
-
-    /**
-     * 初始化GeoDistanceQueryBuilder
-     *
-     * @param geoParam Geo相关参数
-     * @return GeoDistanceQueryBuilder
-     */
-    private static GeoDistanceQueryBuilder initGeoDistanceQueryBuilder(GeoParam geoParam) {
-        // 参数校验
-        boolean invalidParam = Objects.isNull(geoParam)
-                || (Objects.isNull(geoParam.getDistanceStr()) && Objects.isNull(geoParam.getDistance()));
-        if (invalidParam) {
-            return null;
-        }
-
-        GeoDistanceQueryBuilder builder = QueryBuilders.geoDistanceQuery(geoParam.getField());
-        Optional.ofNullable(geoParam.getBoost()).ifPresent(builder::boost);
-        // 距离来源: 双精度类型+单位或字符串类型
-        Optional.ofNullable(geoParam.getDistanceStr()).ifPresent(builder::distance);
-        Optional.ofNullable(geoParam.getDistance())
-                .ifPresent(distance -> builder.distance(distance, geoParam.getDistanceUnit()));
-        Optional.ofNullable(geoParam.getCentralGeoPoint()).ifPresent(builder::point);
-        return builder;
-    }
-
-    /**
-     * 初始化 GeoPolygonQueryBuilder
-     *
-     * @param geoParam Geo相关参数
-     * @return GeoPolygonQueryBuilder
-     */
-    private static GeoPolygonQueryBuilder initGeoPolygonQueryBuilder(GeoParam geoParam) {
-        // 参数校验
-        boolean invalidParam = Objects.isNull(geoParam) || CollectionUtils.isEmpty(geoParam.getGeoPoints());
-        if (invalidParam) {
-            return null;
-        }
-
-        GeoPolygonQueryBuilder builder = QueryBuilders.geoPolygonQuery(geoParam.getField(), geoParam.getGeoPoints());
-        Optional.ofNullable(geoParam.getBoost()).ifPresent(builder::boost);
-        return builder;
-    }
-
-    /**
-     * 初始化 GeoShapeQueryBuilder
-     *
-     * @param geoParam Geo相关参数
-     * @return GeoShapeQueryBuilder
-     */
-    @SneakyThrows
-    private static GeoShapeQueryBuilder initGeoShapeQueryBuilder(GeoParam geoParam) {
-        // 参数校验
-        boolean invalidParam = Objects.isNull(geoParam)
-                || (Objects.isNull(geoParam.getIndexedShapeId()) && Objects.isNull(geoParam.getGeometry()));
-        if (invalidParam) {
-            return null;
-        }
-
-        // 构造查询参数
-        GeoShapeQueryBuilder builder;
-        if (StringUtils.isNotBlank(geoParam.getIndexedShapeId())) {
-            builder = geoShapeQuery(geoParam.getField(), geoParam.getIndexedShapeId());
-        } else {
-            builder = geoShapeQuery(geoParam.getField(), geoParam.getGeometry());
-        }
-
-        Optional.ofNullable(geoParam.getShapeRelation()).ifPresent(builder::relation);
-        Optional.ofNullable(geoParam.getBoost()).ifPresent(builder::boost);
-        return builder;
-    }
-
-
-    /**
-     * 设置Geo相关查询参数 geoBoundingBox, geoDistance, geoPolygon, geoShape
-     *
-     * @param geoParam         geo参数
-     * @param boolQueryBuilder boolQuery参数建造者
-     * @param entityClass      实体类
-     */
-    public static void setGeoQuery(GeoParam geoParam, BoolQueryBuilder boolQueryBuilder, Class<?> entityClass) {
-        // 获取配置信息
-        Map<String, String> mappingColumnMap = EntityInfoHelper.getEntityInfo(entityClass).getMappingColumnMap();
-        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
-
-        // 使用实际字段名称覆盖实体类字段名称
-        String realField = FieldUtils.getRealField(geoParam.getField(), mappingColumnMap, dbConfig);
-        geoParam.setField(realField);
-
-        GeoBoundingBoxQueryBuilder geoBoundingBox = initGeoBoundingBoxQueryBuilder(geoParam);
-        doGeoSet(geoParam.isIn(), geoBoundingBox, boolQueryBuilder, dbConfig);
-
-        GeoDistanceQueryBuilder geoDistance = initGeoDistanceQueryBuilder(geoParam);
-        doGeoSet(geoParam.isIn(), geoDistance, boolQueryBuilder, dbConfig);
-
-        GeoPolygonQueryBuilder geoPolygon = initGeoPolygonQueryBuilder(geoParam);
-        doGeoSet(geoParam.isIn(), geoPolygon, boolQueryBuilder, dbConfig);
-
-        GeoShapeQueryBuilder geoShape = initGeoShapeQueryBuilder(geoParam);
-        doGeoSet(geoParam.isIn(), geoShape, boolQueryBuilder, dbConfig);
-    }
-
-    /**
-     * 根据查询是否在指定范围内设置geo查询过滤条件
-     *
-     * @param isIn
-     * @param queryBuilder
-     * @param boolQueryBuilder
-     */
-    private static void doGeoSet(Boolean isIn, QueryBuilder queryBuilder, BoolQueryBuilder boolQueryBuilder, GlobalConfig.DbConfig dbConfig) {
-        Optional.ofNullable(queryBuilder)
-                .ifPresent(present -> {
-                    if (isIn) {
-                        if (dbConfig.isEnableMust2Filter()) {
-                            boolQueryBuilder.filter(present);
-                        } else {
-                            boolQueryBuilder.must(present);
-                        }
-                    } else {
-                        boolQueryBuilder.mustNot(present);
-                    }
-                });
-    }
-
-
-    /**
-     * 添加进参数容器
-     *
-     * @param baseEsParam      基础参数
-     * @param boolQueryBuilder es boolQueryBuilder
-     */
-    private static void addQuery(BaseEsParam baseEsParam, BoolQueryBuilder boolQueryBuilder, EntityInfo entityInfo,
-                                 GlobalConfig.DbConfig dbConfig) {
-        // 获取must是否转filter 默认不转,以wrapper中指定的优先级最高,全局次之
-        boolean enableMust2Filter = Objects.isNull(baseEsParam.getEnableMust2Filter()) ? dbConfig.isEnableMust2Filter() :
-                baseEsParam.getEnableMust2Filter();
-
-        baseEsParam.getMustList().forEach(fieldValueModel -> EsQueryTypeUtil.addQueryByType(boolQueryBuilder,
-                MUST.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        // 多字段情形
-        baseEsParam.getMustMultiFieldList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), MUST.getType(),
-                        fieldValueModel.getOriginalAttachType(), enableMust2Filter, FieldUtils.getRealFields(fieldValueModel.getFields(),
-                                entityInfo.getMappingColumnMap()), fieldValueModel.getValue(), fieldValueModel.getExt(),
-                        fieldValueModel.getMinimumShouldMatch(), fieldValueModel.getBoost()));
-
-        baseEsParam.getFilterList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, FILTER.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getShouldList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, SHOULD.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        // 多字段情形
-        baseEsParam.getShouldMultiFieldList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
-                        SHOULD.getType(), fieldValueModel.getOriginalAttachType(), enableMust2Filter,
-                        FieldUtils.getRealFields(fieldValueModel.getFields(), entityInfo.getMappingColumnMap()), fieldValueModel.getValue(),
-                        fieldValueModel.getExt(), fieldValueModel.getMinimumShouldMatch(), fieldValueModel.getBoost()));
-
-        baseEsParam.getMustNotList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, MUST_NOT.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getGtList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, GT.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getLtList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, LT.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getGeList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, GE.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getLeList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, LE.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getBetweenList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, BETWEEN.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getNotBetweenList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, NOT_BETWEEN.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getInList().forEach(fieldValueModel -> EsQueryTypeUtil.addQueryByType(boolQueryBuilder,
-                IN.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getNotInList().forEach(fieldValueModel -> EsQueryTypeUtil.addQueryByType(boolQueryBuilder,
-                NOT_IN.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getIsNullList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, NOT_EXISTS.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getNotNullList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EXISTS.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getLikeLeftList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, LIKE_LEFT.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
-
-        baseEsParam.getLikeRightList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, LIKE_RIGHT.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
     }
 
     /**
@@ -572,28 +396,6 @@ public class WrapperProcessor {
         searchSourceBuilder.highlighter(highlightBuilder);
     }
 
-    /**
-     * 初始化高亮参数建造者
-     *
-     * @param highlightBuilder   高亮参数建造者
-     * @param highLightParamList 高亮参数列表
-     */
-    private static void initHighlightBuilder(HighlightBuilder highlightBuilder, List<HighLightParam> highLightParamList) {
-        if (!CollectionUtils.isEmpty(highLightParamList)) {
-            highLightParamList.forEach(highLightParam -> {
-                if (StringUtils.isNotBlank(highLightParam.getHighLightField())) {
-                    //field
-                    HighlightBuilder.Field field = new HighlightBuilder.Field(highLightParam.getHighLightField());
-                    field.highlighterType(highLightParam.getHighLightType().getValue());
-                    highlightBuilder.field(field);
-
-                    highlightBuilder.field(highLightParam.getHighLightField());
-                    highlightBuilder.preTags(highLightParam.getPreTag());
-                    highlightBuilder.postTags(highLightParam.getPostTag());
-                }
-            });
-        }
-    }
 
     /**
      * 设置排序参数

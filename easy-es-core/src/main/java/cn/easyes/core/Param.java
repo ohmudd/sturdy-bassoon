@@ -27,4 +27,21 @@ public class Param extends Tree {
      * 权重
      */
     private Float boost;
+
+    /**
+     * 多用途拓展字段1
+     */
+    private Object ext1;
+
+    /**
+     * 多用途拓展字段2
+     */
+    private Object ext2;
+
+    /**
+     * 多字段名称
+     */
+    private String[] columns;
+
+
 }

@@ -1,9 +1,14 @@
 package cn.easyes.core.conditions;
 
-import cn.easyes.common.enums.*;
+import cn.easyes.common.enums.AggregationTypeEnum;
+import cn.easyes.common.enums.EsQueryTypeEnum;
+import cn.easyes.common.enums.OrderTypeEnum;
 import cn.easyes.common.utils.*;
 import cn.easyes.core.Param;
-import cn.easyes.core.biz.*;
+import cn.easyes.core.biz.AggregationParam;
+import cn.easyes.core.biz.BaseSortParam;
+import cn.easyes.core.biz.GeoParam;
+import cn.easyes.core.biz.OrderByParam;
 import cn.easyes.core.conditions.interfaces.Compare;
 import cn.easyes.core.conditions.interfaces.Func;
 import cn.easyes.core.conditions.interfaces.Geo;
@@ -22,10 +27,8 @@ import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-import static cn.easyes.common.enums.EsAttachTypeEnum.MUST;
-import static cn.easyes.common.enums.EsAttachTypeEnum.MUST_MULTI_FIELDS;
+import static cn.easyes.common.constants.BaseEsConstants.WILDCARD_SIGN;
 import static cn.easyes.common.enums.EsQueryTypeEnum.*;
-import static cn.easyes.common.enums.JoinTypeEnum.*;
 import static cn.easyes.common.enums.OrderTypeEnum.CUSTOMIZE;
 
 /**
@@ -47,15 +50,13 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      */
     protected String parentId;
     /**
-     *
+     * 参数列表
      */
     protected List<Param> paramList;
-    protected LinkedList<String> queue;
     /**
-     * 基础查询参数列表
+     * 队列 存放父id
      */
-    protected List<BaseEsParam> baseEsParamList;
-
+    protected LinkedList<String> queue;
     /**
      * 基础排序参数列表
      */
@@ -119,7 +120,6 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * 必要的初始化
      */
     protected final void initNeed() {
-        baseEsParamList = new ArrayList<>();
         baseSortParams = new ArrayList<>();
         aggregationParamList = new ArrayList<>();
         paramList = new ArrayList<>();
@@ -130,15 +130,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     @Override
     public <V> Children allEq(boolean condition, Map<String, V> params, boolean null2IsNull) {
         if (condition && CollectionUtils.isNotEmpty(params)) {
-            params.forEach((k, v) -> {
-                if (StringUtils.checkValNotNull(v)) {
-                    eq(k, v);
-                } else {
-                    if (null2IsNull) {
-                        isNull(k);
-                    }
-                }
-            });
+            params.forEach(this::eq);
         }
         return typedThis;
     }
@@ -150,10 +142,6 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                 if (filter.test(k, v)) {
                     if (StringUtils.checkValNotNull(v)) {
                         eq(k, v);
-                    } else {
-                        if (null2IsNull) {
-                            isNull(k);
-                        }
                     }
                 }
             });
@@ -163,51 +151,12 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children eq(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, TERM_QUERY, column, val, boost);
-    }
-
-
-    private Children addParam(boolean condition, EsQueryTypeEnum queryTypeEnum, String column, Object val, Float boost) {
-        if (condition) {
-            Param param = new Param();
-            param.setId(UUID.randomUUID().toString());
-            Optional.ofNullable(parentId).ifPresent(param::setParentId);
-            param.setQueryTypeEnum(queryTypeEnum);
-            param.setVal(val);
-            param.setColumn(column);
-            param.setBoost(boost);
-            paramList.add(param);
-        }
-        return typedThis;
+        return addParam(condition, TERM, column, val, boost);
     }
 
     @Override
     public Children and(boolean condition, Consumer<Children> consumer) {
         return addNested(condition, AND_MUST, consumer);
-    }
-
-    private Children addNested(boolean condition, EsQueryTypeEnum queryTypeEnum, Consumer<Children> consumer) {
-        if (condition) {
-            Param param = new Param();
-            param.setId(UUID.randomUUID().toString());
-            Optional.ofNullable(parentId).ifPresent(param::setParentId);
-            param.setQueryTypeEnum(queryTypeEnum);
-            level++;
-            paramList.add(param);
-            this.parentId = param.getId();
-            queue.push(parentId);
-            consumer.accept(instance());
-            // 深度优先在consumer条件消费完后会来执行这里 此时parentId需要重置 至于为什么 可断点打在consumer前后观察一波 整个框架最难的地方就在此
-            level--;
-            if (!queue.isEmpty()) {
-                this.parentId = queue.pollLast();
-            }
-            if (level == 0) {
-                // 根节点 没爹了
-                this.parentId = null;
-            }
-        }
-        return typedThis;
     }
 
     @Override
@@ -216,29 +165,50 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
+    public Children must(boolean condition, Consumer<Children> consumer) {
+        return addNested(condition, AND_MUST, consumer);
+    }
+
+    @Override
+    public Children should(boolean condition, Consumer<Children> consumer) {
+        return addNested(condition, OR_SHOULD, consumer);
+    }
+
+    @Override
+    public Children filter(boolean condition, Consumer<Children> consumer) {
+        return addNested(condition, FILTER, consumer);
+    }
+
+    @Override
+    public Children mustNot(boolean condition, Consumer<Children> consumer) {
+        return addNested(condition, MUST_NOT, consumer);
+    }
+
+    @Override
     public Children match(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, MATCH_QUERY, column, val, boost);
+        return addParam(condition, MATCH, column, val, boost);
     }
 
     @Override
     public Children nestedMatch(boolean condition, String path, String column, Object val, ScoreMode scoreMode, Float boost) {
-        return doIt(condition, MATCH_QUERY, MUST, NESTED, path, column, val, scoreMode, boost);
+        Assert.notNull(path, "nested query path must not be null");
+        return addParam(condition, NESTED_MATCH, column, val, path, scoreMode, boost);
     }
 
     @Override
     public Children hasChild(boolean condition, String type, String column, Object val, ScoreMode scoreMode, Float boost) {
-        return doIt(condition, MATCH_QUERY, MUST, HAS_CHILD, type, column, val, scoreMode, boost);
+        return addParam(condition, HAS_CHILD, column, val, type, scoreMode, boost);
     }
 
     @Override
     public Children hasParent(boolean condition, String type, String column, Object val, boolean score, Float boost) {
-        return doIt(condition, MATCH_QUERY, MUST, HAS_PARENT, type, column, val, score, boost);
+        return addParam(condition, HAS_PARENT, column, val, type, score, boost);
     }
 
     @Override
     public Children parentId(boolean condition, Object parentId, String type, Float boost) {
         Assert.notNull(parentId, "parentId could not be null");
-        return doIt(condition, MATCH_QUERY, MUST, PARENT_ID, type, null, parentId, null, boost);
+        return addParam(condition, PARENT_ID, type, parentId, boost);
     }
 
     @Override
@@ -256,24 +226,18 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children matchPhrasePrefixQuery(boolean condition, String column, Object val, int maxExpansions, Float boost) {
-        return doIt(condition, MATCH_PHRASE_PREFIX, MUST, column, val, maxExpansions, boost);
+        return addParam(condition, MATCH_PHRASE_PREFIX, column, val, maxExpansions, null, boost);
     }
 
     @SafeVarargs
     @Override
     public final Children multiMatchQuery(boolean condition, Object val, Operator operator, int minimumShouldMatch, Float boost, String... columns) {
-        if (ArrayUtils.isEmpty(columns)) {
-            return typedThis;
-        }
-        return doIt(condition, MULTI_MATCH_QUERY, MUST_MULTI_FIELDS, val, operator, minimumShouldMatch, boost, columns);
+        return addParam(condition, val, operator, minimumShouldMatch, boost, columns);
     }
 
     @Override
     public Children queryStringQuery(boolean condition, String queryString, Float boost) {
-        if (StringUtils.isBlank(queryString)) {
-            throw ExceptionUtils.eee("queryString can't be blank");
-        }
-        return doIt(condition, QUERY_STRING_QUERY, MUST, null, queryString, boost);
+        return addParam(condition, QUERY_STRING, queryString, null, boost);
     }
 
     @Override
@@ -281,53 +245,112 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         if (StringUtils.isBlank(prefix)) {
             throw ExceptionUtils.eee("prefix can't be blank");
         }
-        return addParam(condition, PREFIX_QUERY, column, prefix, boost);
+        return addParam(condition, PREFIX, column, prefix, boost);
     }
 
 
     @Override
     public Children gt(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, RANGE_GT, column, val, boost);
+        return addParam(condition, GT, column, val, boost);
     }
 
     @Override
     public Children ge(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, RANGE_GE, column, val, boost);
+        return addParam(condition, GE, column, val, boost);
     }
 
     @Override
     public Children lt(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, RANGE_LT, column, val, boost);
+        return addParam(condition, LT, column, val, boost);
     }
 
     @Override
     public Children le(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, RANGE_LE, column, val, boost);
+        return addParam(condition, LE, column, val, boost);
     }
 
     @Override
     public Children between(boolean condition, String column, Object val1, Object val2, Float boost) {
-        return doIt(condition, EsAttachTypeEnum.BETWEEN, column, val1, val2, boost);
-    }
-
-    @Override
-    public Children notBetween(boolean condition, String column, Object val1, Object val2, Float boost) {
-        return doIt(condition, EsAttachTypeEnum.NOT_BETWEEN, column, val1, val2, boost);
+        return addParam(condition, BETWEEN, column, null, val1, val2, boost);
     }
 
     @Override
     public Children like(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, WILDCARD_QUERY, column, val, boost);
+        val = Optional.ofNullable(val)
+                .map(v -> WILDCARD_SIGN + v + WILDCARD_SIGN)
+                .orElse(WILDCARD_SIGN);
+        return addParam(condition, WILDCARD, column, val, boost);
     }
 
     @Override
     public Children likeLeft(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, WILDCARD_LEFT_QUERY, column, val, boost);
+        val = Optional.ofNullable(val)
+                .map(v -> WILDCARD_SIGN + v)
+                .orElse(WILDCARD_SIGN);
+        return addParam(condition, WILDCARD, column, val, boost);
     }
 
     @Override
     public Children likeRight(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, WILDCARD_RIGHT_QUERY, column, val, boost);
+        val = Optional.ofNullable(val)
+                .map(v -> v + WILDCARD_SIGN)
+                .orElse(WILDCARD_SIGN);
+        return addParam(condition, WILDCARD, column, val, boost);
+    }
+
+    @Override
+    public Children in(boolean condition, String column, Collection<?> coll, Float boost) {
+        if (CollectionUtils.isEmpty(coll)) {
+            return typedThis;
+        }
+        return addParam(condition, TERMS, column, coll, boost);
+    }
+
+    @Override
+    public Children exists(boolean condition, String column, Float boost) {
+        return addParam(condition, EXISTS, column, null, boost);
+    }
+
+    @Override
+    public Children geoBoundingBox(boolean condition, String column, GeoPoint topLeft, GeoPoint bottomRight, Float boost) {
+        Assert.notNull(topLeft, "TopLeft point must not be null in geoBoundingBox query");
+        Assert.notNull(bottomRight, "BottomRight point must not be null in geoBoundingBox query");
+        return addParam(condition, GEO_BOUNDING_BOX, column, null, topLeft, bottomRight, boost);
+    }
+
+
+    @Override
+    public Children geoDistance(boolean condition, String column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint, Float boost) {
+        Assert.notNull(distance, "Distance must not be null in geoDistance query");
+        Assert.notNull(distanceUnit, "Distance unit must not be null in geoDistance query");
+        Assert.notNull(centralGeoPoint, "CentralGeoPoint must not be null in geoDistance query");
+        return addParam(condition, GEO_DISTANCE, column, distance, distanceUnit, centralGeoPoint, boost);
+    }
+
+    @Override
+    public Children geoDistance(boolean condition, String column, String distance, GeoPoint centralGeoPoint, Float boost) {
+        Assert.notNull(distance, "Distance must not be null in geoDistance query");
+        Assert.notNull(centralGeoPoint, "CentralGeoPoint must not be null in geoDistance query");
+        return addParam(condition, GEO_DISTANCE, column, distance, null, centralGeoPoint, boost);
+    }
+
+    @Override
+    public Children geoPolygon(boolean condition, String column, List<GeoPoint> geoPoints, Float boost) {
+        Assert.notEmpty(geoPoints, "GeoPoints must not be null in geoPolygon query");
+        return addParam(condition, GEO_POLYGON, column, geoPoints, boost);
+    }
+
+    @Override
+    public Children geoShape(boolean condition, String column, String indexedShapeId, Float boost) {
+        Assert.notNull(indexedShapeId, "IndexedShapeId must not be null in geoShape query");
+        return addParam(condition, GEO_SHAPE_ID, column, indexedShapeId, boost);
+    }
+
+    @Override
+    public Children geoShape(boolean condition, String column, Geometry geometry, ShapeRelation shapeRelation, Float boost) {
+        Assert.notNull(geometry, "Geometry must not be null in geoShape query");
+        Assert.notNull(geometry, "ShapeRelation must not be null in geoShape query");
+        return addParam(condition, GEO_SHAPE, column, geometry, shapeRelation, null, boost);
     }
 
     @Override
@@ -424,31 +447,6 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         return typedThis;
     }
 
-    @Override
-    public Children in(boolean condition, String column, Collection<?> coll, Float boost) {
-        if (CollectionUtils.isEmpty(coll)) {
-            return typedThis;
-        }
-        return doIt(condition, EsAttachTypeEnum.IN, column, new ArrayList<>(coll), boost);
-    }
-
-    @Override
-    public Children notIn(boolean condition, String column, Collection<?> coll, Float boost) {
-        if (CollectionUtils.isEmpty(coll)) {
-            return typedThis;
-        }
-        return doIt(condition, EsAttachTypeEnum.NOT_IN, column, new ArrayList<>(coll), boost);
-    }
-
-    @Override
-    public Children isNull(boolean condition, String column, Float boost) {
-        return doIt(condition, EsAttachTypeEnum.NOT_EXISTS, column, boost);
-    }
-
-    @Override
-    public Children isNotNull(boolean condition, String column, Float boost) {
-        return doIt(condition, EsAttachTypeEnum.EXISTS, column, boost);
-    }
 
     @Override
     public final Children groupBy(boolean condition, boolean enablePipeline, String... columns) {
@@ -512,66 +510,6 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         return typedThis;
     }
 
-    @Override
-    public Children geoBoundingBox(boolean condition, String column, GeoPoint topLeft, GeoPoint bottomRight, Float boost) {
-        return doIt(condition, column, topLeft, bottomRight, boost, true);
-    }
-
-    @Override
-    public Children notInGeoBoundingBox(boolean condition, String column, GeoPoint topLeft, GeoPoint bottomRight, Float boost) {
-        return doIt(condition, column, topLeft, bottomRight, boost, false);
-    }
-
-    @Override
-    public Children geoDistance(boolean condition, String column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint, Float boost) {
-        return doIt(condition, column, distance, distanceUnit, centralGeoPoint, boost, true);
-    }
-
-    @Override
-    public Children notInGeoDistance(boolean condition, String column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint, Float boost) {
-        return doIt(condition, column, distance, distanceUnit, centralGeoPoint, boost, false);
-    }
-
-    @Override
-    public Children geoDistance(boolean condition, String column, String distance, GeoPoint centralGeoPoint, Float boost) {
-        return doIt(condition, column, distance, centralGeoPoint, boost, true);
-    }
-
-    @Override
-    public Children notInGeoDistance(boolean condition, String column, String distance, GeoPoint centralGeoPoint, Float boost) {
-        return doIt(condition, column, distance, centralGeoPoint, boost, false);
-    }
-
-    @Override
-    public Children geoPolygon(boolean condition, String column, List<GeoPoint> geoPoints, Float boost) {
-        return doIt(condition, column, geoPoints, boost, true);
-    }
-
-    @Override
-    public Children notInGeoPolygon(boolean condition, String column, Collection<GeoPoint> geoPoints, Float boost) {
-        List<GeoPoint> geoPointList = new ArrayList<>(geoPoints);
-        return doIt(condition, column, geoPointList, boost, false);
-    }
-
-    @Override
-    public Children geoShape(boolean condition, String column, String indexedShapeId, Float boost) {
-        return doIt(condition, column, indexedShapeId, boost, true);
-    }
-
-    @Override
-    public Children notInGeoShape(boolean condition, String column, String indexedShapeId, Float boost) {
-        return doIt(condition, column, indexedShapeId, boost, false);
-    }
-
-    @Override
-    public Children geoShape(boolean condition, String column, Geometry geometry, ShapeRelation shapeRelation, Float boost) {
-        return doIt(condition, column, geometry, shapeRelation, boost, true);
-    }
-
-    @Override
-    public Children notInGeoShape(boolean condition, String column, Geometry geometry, ShapeRelation shapeRelation, Float boost) {
-        return doIt(condition, column, geometry, shapeRelation, boost, false);
-    }
 
     /**
      * 子类返回一个自己的新对象
@@ -579,6 +517,123 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * @return 泛型
      */
     protected abstract Children instance();
+
+
+    /**
+     * 追加基础查询参数
+     *
+     * @param param         被追加的新参数
+     * @param queryTypeEnum 查询类型
+     * @param column        列
+     * @param val           值
+     * @param boost         权重
+     */
+    private void addBaseParam(Param param, EsQueryTypeEnum queryTypeEnum, String column, Object val, Float boost) {
+        param.setId(UUID.randomUUID().toString());
+        Optional.ofNullable(parentId).ifPresent(param::setParentId);
+        param.setQueryTypeEnum(queryTypeEnum);
+        param.setVal(val);
+        param.setColumn(column);
+        param.setBoost(boost);
+        paramList.add(param);
+    }
+
+
+    /**
+     * 追加查询参数
+     *
+     * @param condition     条件
+     * @param queryTypeEnum 查询类型
+     * @param column        列
+     * @param val           值
+     * @param boost         权重
+     * @return 泛型
+     */
+    private Children addParam(boolean condition, EsQueryTypeEnum queryTypeEnum, String column, Object val, Float boost) {
+        if (condition) {
+            Param param = new Param();
+            addBaseParam(param, queryTypeEnum, column, val, boost);
+        }
+        return typedThis;
+    }
+
+    /**
+     * 重载，追加拓展参数
+     *
+     * @param condition     条件
+     * @param queryTypeEnum 查询类型
+     * @param column        列
+     * @param val           值
+     * @param var1          拓展字段1
+     * @param var2          拓展字段2
+     * @param boost         权重
+     * @return 泛型
+     */
+    private Children addParam(boolean condition, EsQueryTypeEnum queryTypeEnum, String column, Object val, Object var1, Object var2, Float boost) {
+        if (condition) {
+            Param param = new Param();
+            param.setExt1(var1);
+            param.setExt2(var2);
+            addBaseParam(param, queryTypeEnum, column, val, boost);
+        }
+        return typedThis;
+    }
+
+    /**
+     * 重载，追加拓展参数
+     *
+     * @param condition          条件
+     * @param val                值
+     * @param operator           操作符
+     * @param minimumShouldMatch 最小匹配值
+     * @param boost              权重
+     * @param columns            列数组
+     * @return 泛型
+     */
+    private Children addParam(boolean condition, Object val, Operator operator, int minimumShouldMatch, Float boost, String... columns) {
+        if (condition) {
+            Param param = new Param();
+            param.setExt1(operator);
+            param.setExt2(minimumShouldMatch);
+            param.setColumns(columns);
+            addBaseParam(param, MULTI_MATCH, null, val, boost);
+        }
+        return typedThis;
+    }
+
+
+    /**
+     * 添加嵌套查询条件
+     *
+     * @param condition     条件
+     * @param queryTypeEnum 查询类型
+     * @param consumer      消费者
+     * @return 泛型
+     */
+    private Children addNested(boolean condition, EsQueryTypeEnum queryTypeEnum, Consumer<Children> consumer) {
+        if (condition) {
+            Param param = new Param();
+            param.setId(UUID.randomUUID().toString());
+            Optional.ofNullable(parentId).ifPresent(param::setParentId);
+            param.setQueryTypeEnum(queryTypeEnum);
+            level++;
+            paramList.add(param);
+            this.parentId = param.getId();
+            queue.push(parentId);
+            consumer.accept(instance());
+            // 深度优先在consumer条件消费完后会来执行这里 此时parentId需要重置 至于为什么 可断点打在consumer前后观察一波 整个框架最难的地方就在此
+            level--;
+            if (!queue.isEmpty()) {
+                this.parentId = queue.pollLast();
+            }
+            if (level == 0) {
+                // 仙人板板
+                this.parentId = null;
+            }
+        }
+        return typedThis;
+    }
+
 
     /**
      * 封装查询参数 聚合类
@@ -599,418 +654,6 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
             aggregationParamList.add(aggregationParam);
         }
         return typedThis;
-    }
-
-    /**
-     * 封装查询参数(含AND,OR这种连接操作)
-     *
-     * @param condition 条件
-     * @param consumer  函数
-     * @param open      左括号
-     * @param close     右括号
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, Consumer<Children> consumer, BaseEsParamTypeEnum open, BaseEsParamTypeEnum close) {
-        if (condition) {
-            BaseEsParam left = new BaseEsParam();
-            left.setType(open.getType());
-            baseEsParamList.add(left);
-            consumer.accept(instance());
-            BaseEsParam right = new BaseEsParam();
-            right.setType(close.getType());
-            baseEsParamList.add(right);
-        }
-        return typedThis;
-    }
-
-    /**
-     * 封装查询参数(普通情况,不带括号)
-     *
-     * @param condition      条件
-     * @param attachTypeEnum 连接类型
-     * @param field          字段
-     * @param values         值列表
-     * @param boost          权重
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, EsAttachTypeEnum attachTypeEnum, String field, List<Object> values, Float boost) {
-        if (condition) {
-            BaseEsParam baseEsParam = new BaseEsParam();
-            BaseEsParam.FieldValueModel model =
-                    BaseEsParam.FieldValueModel
-                            .builder()
-                            .field(field)
-                            .values(values)
-                            .boost(boost)
-//                            .esQueryType(TERMS_QUERY.getType())
-                            .originalAttachType(attachTypeEnum.getType())
-                            .build();
-
-            setModel(baseEsParam, model, attachTypeEnum);
-            baseEsParamList.add(baseEsParam);
-        }
-        return typedThis;
-    }
-
-    /**
-     * 封装查询参数(普通情况,不带括号)
-     *
-     * @param condition      条件
-     * @param queryTypeEnum  查询类型
-     * @param attachTypeEnum 连接类型
-     * @param field          字段
-     * @param val            值
-     * @param boost          权重
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum, String field, Object val, Float boost) {
-        return doIt(condition, queryTypeEnum, attachTypeEnum, field, val, null, boost);
-    }
-
-    /**
-     * 封装查询参数(普通情况,不带括号)
-     *
-     * @param condition      条件
-     * @param queryTypeEnum  查询类型
-     * @param attachTypeEnum 连接类型
-     * @param field          字段
-     * @param val            值
-     * @param boost          权重
-     * @param ext            拓展字段
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum, String field, Object val, Object ext, Float boost) {
-        if (condition) {
-            BaseEsParam baseEsParam = new BaseEsParam();
-            BaseEsParam.FieldValueModel model =
-                    BaseEsParam.FieldValueModel
-                            .builder()
-                            .field(field)
-                            .value(val)
-                            .boost(boost)
-//                            .esQueryType(queryTypeEnum.getType())
-                            .originalAttachType(attachTypeEnum.getType())
-                            .ext(ext)
-                            .build();
-
-            setModel(baseEsParam, model, attachTypeEnum);
-            baseEsParamList.add(baseEsParam);
-        }
-        return typedThis;
-    }
-
-    /**
-     * 封装查询参数针对is Null / not null 这类无值操作
-     *
-     * @param condition      条件
-     * @param attachTypeEnum 连接类型
-     * @param field          字段
-     * @param boost          权重
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, EsAttachTypeEnum attachTypeEnum, String field, Float boost) {
-        if (condition) {
-            BaseEsParam baseEsParam = new BaseEsParam();
-            BaseEsParam.FieldValueModel model =
-                    BaseEsParam.FieldValueModel
-                            .builder()
-                            .field(field)
-                            .boost(boost)
-//                            .esQueryType(EXISTS_QUERY.getType())
-                            .originalAttachType(attachTypeEnum.getType())
-                            .build();
-
-            setModel(baseEsParam, model, attachTypeEnum);
-            baseEsParamList.add(baseEsParam);
-        }
-        return typedThis;
-    }
-
-    /**
-     * 仅针对between的情况
-     *
-     * @param condition      条件
-     * @param attachTypeEnum 连接类型
-     * @param field          字段
-     * @param left           左区间
-     * @param right          右区间
-     * @param boost          权重
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, EsAttachTypeEnum attachTypeEnum, String field, Object left, Object right, Float boost) {
-        if (condition) {
-            BaseEsParam baseEsParam = new BaseEsParam();
-            BaseEsParam.FieldValueModel model =
-                    BaseEsParam.FieldValueModel
-                            .builder()
-                            .field(field)
-                            .leftValue(left)
-                            .rightValue(right)
-                            .boost(boost)
-//                            .esQueryType(INTERVAL_QUERY.getType())
-                            .originalAttachType(attachTypeEnum.getType())
-                            .build();
-
-            setModel(baseEsParam, model, attachTypeEnum);
-            baseEsParamList.add(baseEsParam);
-        }
-        return typedThis;
-    }
-
-    /**
-     * 针对multiMatchQuery
-     *
-     * @param condition      条件
-     * @param queryTypeEnum  查询类型
-     * @param attachTypeEnum 连接类型
-     * @param val            值
-     * @param boost          权重
-     * @param columns        字段列表
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum, Object val,
-                          Operator operator, int minimumShouldMatch, Float boost, String... columns) {
-        if (condition) {
-            BaseEsParam baseEsParam = new BaseEsParam();
-            List<String> fields = Arrays.asList(columns);
-            BaseEsParam.FieldValueModel model =
-                    BaseEsParam.FieldValueModel
-                            .builder()
-                            .fields(fields)
-                            .value(val)
-                            .ext(operator)
-                            .minimumShouldMatch(minimumShouldMatch)
-                            .boost(boost)
-//                            .esQueryType(queryTypeEnum.getType())
-                            .originalAttachType(attachTypeEnum.getType())
-                            .build();
-            setModel(baseEsParam, model, attachTypeEnum);
-            baseEsParamList.add(baseEsParam);
-        }
-        return typedThis;
-    }
-
-    private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum,
-                          JoinTypeEnum joinTypeEnum, String path, String column, Object val, Object scoreMode, Float boost) {
-        if (condition) {
-            BaseEsParam baseEsParam = new BaseEsParam();
-            BaseEsParam.FieldValueModel model =
-                    BaseEsParam.FieldValueModel
-                            .builder()
-                            .field(column)
-                            .path(path)
-                            .scoreMode(scoreMode)
-                            .value(val)
-                            .boost(boost)
-                            .ext(joinTypeEnum)
-//                            .esQueryType(queryTypeEnum.getType())
-                            .originalAttachType(attachTypeEnum.getType())
-                            .build();
-
-            setModel(baseEsParam, model, attachTypeEnum);
-            baseEsParamList.add(baseEsParam);
-        }
-        return typedThis;
-    }
-
-    /**
-     * geoBoundingBox
-     *
-     * @param condition   条件
-     * @param field       字段名
-     * @param topLeft     左上点坐标
-     * @param bottomRight 右下点坐标
-     * @param boost       权重值
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, String field, GeoPoint topLeft, GeoPoint bottomRight, Float boost, boolean isIn) {
-        if (condition) {
-            this.geoParam = GeoParam.builder()
-                    .field(field)
-                    .topLeft(topLeft)
-                    .bottomRight(bottomRight)
-                    .boost(boost)
-                    .isIn(isIn)
-                    .build();
-        }
-        return typedThis;
-    }
-
-    /**
-     * geoDistance 双精度距离类型
-     *
-     * @param condition       条件
-     * @param fieldName       字段名
-     * @param distance        距离
-     * @param distanceUnit    距离单位
-     * @param centralGeoPoint 中心点
-     * @param boost           权重
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, String fieldName, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint, Float boost, boolean isIn) {
-        if (condition) {
-            this.geoParam = GeoParam.builder()
-                    .field(fieldName)
-                    .boost(boost)
-                    .distance(distance)
-                    .distanceUnit(distanceUnit)
-                    .centralGeoPoint(centralGeoPoint)
-                    .isIn(isIn)
-                    .build();
-        }
-        return typedThis;
-    }
-
-    /**
-     * geoDistance 字符串距离类型
-     *
-     * @param condition       条件
-     * @param fieldName       字段名
-     * @param distance        距离 字符串
-     * @param centralGeoPoint 中心点
-     * @param boost           权重值
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, String fieldName, String distance, GeoPoint centralGeoPoint, Float boost, boolean isIn) {
-        if (condition) {
-            this.geoParam = GeoParam.builder()
-                    .field(fieldName)
-                    .boost(boost)
-                    .distanceStr(distance)
-                    .centralGeoPoint(centralGeoPoint)
-                    .isIn(isIn)
-                    .build();
-        }
-        return typedThis;
-    }
-
-    /**
-     * geoPolygon
-     *
-     * @param condition 条件
-     * @param fieldName 字段名
-     * @param geoPoints 多边形点坐标列表
-     * @param boost     权重值
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, String fieldName, List<GeoPoint> geoPoints, Float boost, boolean isIn) {
-        if (condition) {
-            this.geoParam = GeoParam.builder()
-                    .field(fieldName)
-                    .boost(boost)
-                    .geoPoints(geoPoints)
-                    .isIn(isIn)
-                    .build();
-        }
-        return typedThis;
-    }
-
-    /**
-     * 图形 已知图形已被索引的情况
-     *
-     * @param condition      条件
-     * @param fieldName      字段名
-     * @param indexedShapeId 已被索引的图形索引id
-     * @param boost          权重值
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, String fieldName, String indexedShapeId, Float boost, boolean isIn) {
-        if (condition) {
-            this.geoParam = GeoParam.builder()
-                    .field(fieldName)
-                    .boost(boost)
-                    .indexedShapeId(indexedShapeId)
-                    .isIn(isIn)
-                    .build();
-        }
-        return typedThis;
-    }
-
-    /**
-     * 图形 GeoShape
-     *
-     * @param condition 条件
-     * @param fieldName 字段名
-     * @param geometry  图形
-     * @param boost     权重值
-     * @return 泛型
-     */
-    private Children doIt(boolean condition, String fieldName, Geometry geometry, ShapeRelation shapeRelation, Float boost, boolean isIn) {
-        if (condition) {
-            this.geoParam = GeoParam.builder()
-                    .field(fieldName)
-                    .boost(boost)
-                    .geometry(geometry)
-                    .shapeRelation(shapeRelation)
-                    .isIn(isIn)
-                    .build();
-        }
-        return typedThis;
-    }
-
-    /**
-     * 设置查询模型类型
-     *
-     * @param baseEsParam    基础参数
-     * @param model          字段&值模型
-     * @param attachTypeEnum 连接类型
-     */
-    private void setModel(BaseEsParam baseEsParam, BaseEsParam.FieldValueModel model, EsAttachTypeEnum attachTypeEnum) {
-        switch (attachTypeEnum) {
-            case MUST:
-                baseEsParam.getMustList().add(model);
-                break;
-            case FILTER:
-                baseEsParam.getFilterList().add(model);
-                break;
-            case SHOULD:
-                baseEsParam.getShouldList().add(model);
-                break;
-            case MUST_NOT:
-                baseEsParam.getMustNotList().add(model);
-                break;
-            case GT:
-                baseEsParam.getGtList().add(model);
-                break;
-            case LT:
-                baseEsParam.getLtList().add(model);
-                break;
-            case GE:
-                baseEsParam.getGeList().add(model);
-                break;
-            case LE:
-                baseEsParam.getLeList().add(model);
-                break;
-            case IN:
-                baseEsParam.getInList().add(model);
-                break;
-            case NOT_IN:
-                baseEsParam.getNotInList().add(model);
-                break;
-            case EXISTS:
-                baseEsParam.getNotNullList().add(model);
-                break;
-            case NOT_EXISTS:
-                baseEsParam.getIsNullList().add(model);
-                break;
-            case BETWEEN:
-                baseEsParam.getBetweenList().add(model);
-                break;
-            case NOT_BETWEEN:
-                baseEsParam.getNotBetweenList().add(model);
-                break;
-            case LIKE_LEFT:
-                baseEsParam.getLikeLeftList().add(model);
-                break;
-            case LIKE_RIGHT:
-                baseEsParam.getLikeRightList().add(model);
-                break;
-            case MUST_MULTI_FIELDS:
-                baseEsParam.getMustMultiFieldList().add(model);
-                break;
-            default:
-                throw new UnsupportedOperationException("不支持的连接类型,请参见EsAttachTypeEnum");
-        }
     }
 
 }

@@ -1,7 +1,7 @@
 package cn.easyes.core.conditions;
 
 import cn.easyes.common.params.SFunction;
-import cn.easyes.core.biz.BaseEsParam;
+import cn.easyes.core.Param;
 import cn.easyes.core.biz.EsUpdateParam;
 import cn.easyes.core.conditions.interfaces.Update;
 import org.elasticsearch.action.search.SearchRequest;
@@ -40,9 +40,9 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
         updateParamList = new ArrayList<>();
     }
 
-    LambdaEsUpdateWrapper(T entity, List<BaseEsParam> baseEsParamList, List<EsUpdateParam> updateParamList) {
+    LambdaEsUpdateWrapper(T entity, List<Param> paramList, List<EsUpdateParam> updateParamList) {
         super.setEntity(entity);
-        this.baseEsParamList = baseEsParamList;
+        this.paramList = paramList;
         this.updateParamList = updateParamList;
     }
 
@@ -65,7 +65,7 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
 
     @Override
     protected LambdaEsUpdateWrapper<T> instance() {
-        return new LambdaEsUpdateWrapper<>(entity, baseEsParamList, updateParamList);
+        return new LambdaEsUpdateWrapper<>(entity, paramList, updateParamList);
     }
 
     @Override
@@ -74,11 +74,5 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
             this.searchSourceBuilder = searchSourceBuilder;
         }
         return typedThis;
-    }
-
-    @Override
-    protected SearchRequest getSearchRequest() {
-        // TODO 待优化 v1.0+
-        return null;
     }
 }

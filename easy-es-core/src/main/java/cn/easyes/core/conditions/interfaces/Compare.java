@@ -515,7 +515,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost              权重
      * @param columns            字段列表
      * @param operator           操作类型 or and
-     * @param minimumShouldMatch 最小匹配度 百分比
+     * @param minimumShouldMatch 最小匹配度 百分比 比如传60 代表60%
      * @return 泛型
      */
     Children multiMatchQuery(boolean condition, Object val, Operator operator, int minimumShouldMatch, Float boost, String... columns);
@@ -777,48 +777,6 @@ public interface Compare<Children, R> extends Serializable {
      * @return 泛型
      */
     Children between(boolean condition, String column, Object val1, Object val2, Float boost);
-
-
-    default Children notBetween(R column, Object val1, Object val2) {
-        return notBetween(true, column, val1, val2);
-    }
-
-    default Children notBetween(R column, Object val1, Object val2, Float boost) {
-        return notBetween(true, column, val1, val2, boost);
-    }
-
-    default Children notBetween(boolean condition, R column, Object val1, Object val2) {
-        return notBetween(condition, column, val1, val2, DEFAULT_BOOST);
-    }
-
-    default Children notBetween(String column, Object val1, Object val2) {
-        return notBetween(true, column, val1, val2);
-    }
-
-    default Children notBetween(String column, Object val1, Object val2, Float boost) {
-        return notBetween(true, column, val1, val2, boost);
-    }
-
-    default Children notBetween(boolean condition, String column, Object val1, Object val2) {
-        return notBetween(condition, column, val1, val2, DEFAULT_BOOST);
-    }
-
-    default Children notBetween(boolean condition, R column, Object val1, Object val2, Float boost) {
-        return notBetween(condition, FieldUtils.getFieldName(column), val1, val2, boost);
-    }
-
-    /**
-     * NOT BETWEEN 值1 AND 值2
-     *
-     * @param condition 条件
-     * @param column    列
-     * @param val1      左区间值
-     * @param val2      右区间值
-     * @param boost     权重
-     * @return 泛型
-     */
-    Children notBetween(boolean condition, String column, Object val1, Object val2, Float boost);
-
 
     default Children like(R column, Object val) {
         return like(true, column, val);

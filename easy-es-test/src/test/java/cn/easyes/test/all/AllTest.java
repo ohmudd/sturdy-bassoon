@@ -62,8 +62,8 @@ public class AllTest {
         Document document = new Document();
         document.setEsId("1");
         document.setTitle("测试文档1");
-        document.setContent("测试内容1");
-        document.setCreator("老汉1");
+        document.setContent("阿凡达");
+        document.setCreator("流量");
         document.setLocation("40.171975,116.587105");
         document.setGmtCreate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         document.setCustomField("自定义字段1");
@@ -268,15 +268,6 @@ public class AllTest {
 
     @Test
     @Order(6)
-    public void testConditionNotBetween() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.notBetween(Document::getStarNum, 1, 10);
-        List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals(12, documents.size());
-    }
-
-    @Test
-    @Order(6)
     public void testConditionLike() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.like(Document::getTitle, "试文档");
@@ -304,15 +295,6 @@ public class AllTest {
 
     @Test
     @Order(6)
-    public void testConditionIsNull() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.isNull(Document::getNullField);
-        List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals(21, documents.size());
-    }
-
-    @Test
-    @Order(6)
     public void testConditionIsNotNull() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.isNotNull(Document::getNullField);
@@ -332,15 +314,6 @@ public class AllTest {
         wrapper1.in(Document::getStarNum, 7, 8);
         List<Document> documents1 = documentMapper.selectList(wrapper1);
         Assertions.assertEquals(2, documents1.size());
-    }
-
-    @Test
-    @Order(6)
-    public void testConditionNotIn() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.notIn(Document::getStarNum, 1, 2);
-        List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals(20, documents.size());
     }
 
     @Test
@@ -717,16 +690,6 @@ public class AllTest {
         Assertions.assertEquals(4, documents.size());
     }
 
-    @Test
-    @Order(6)
-    public void testNotInGeoBoundingBox() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        GeoPoint leftTop = new GeoPoint(41.187328D, 115.498353D);
-        GeoPoint bottomRight = new GeoPoint(39.084509D, 117.610461D);
-        wrapper.notInGeoBoundingBox(Document::getLocation, leftTop, bottomRight);
-        List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals(18, documents.size());
-    }
 
     @Test
     @Order(6)
