@@ -13,6 +13,7 @@ import cn.easyes.core.toolkit.EsQueryTypeUtil;
 import cn.easyes.core.toolkit.FieldUtils;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
+import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -20,6 +21,8 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.*;
@@ -598,6 +601,17 @@ public class WrapperProcessor {
         // 设置得分排序规则
         Optional.ofNullable(wrapper.sortOrder)
                 .ifPresent(sortOrder -> searchSourceBuilder.sort(SCORE_FIELD, sortOrder));
+
+        // 设置距离排序
+        Optional.ofNullable(wrapper.distanceOrderByParam)
+                .ifPresent(distanceOrderByParam -> {
+                    GeoDistanceSortBuilder geoDistanceSortBuilder =
+                            SortBuilders.geoDistanceSort(distanceOrderByParam.getFieldName(), distanceOrderByParam.getGeoPoints())
+                                    .order(distanceOrderByParam.getSortOrder())
+                                    .geoDistance(distanceOrderByParam.getGeoDistance())
+                                    .unit(distanceOrderByParam.getUnit());
+                    searchSourceBuilder.sort(geoDistanceSortBuilder);
+                });
     }
 
 
