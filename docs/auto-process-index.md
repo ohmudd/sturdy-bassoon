@@ -126,7 +126,7 @@ public class Document {
 easy-es:
   global-config:
     process_index_mode: smoothly #smoothly:平滑模式, not_smoothly:非平滑模式, manual:手动模式
-    async-process-index-blocking: true # 异步处理索引是否阻塞主线程 默认阻塞,
+    async-process-index-blocking: true # 异步处理索引是否阻塞主线程 默认阻塞
     distributed: false # 项目是否分布式环境部署,默认为true, 如果是单机运行可填false,将不加分布式锁,效率更高.
 ```
 若缺省此行配置,则默认开启平滑模式.
