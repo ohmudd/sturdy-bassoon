@@ -52,4 +52,6 @@ private Long id;
 ```
 当然也有个别用户反馈说已经加了Id还是报错,不妨去掉@TableId(value="id")注解中的value="id",因为id字段在es中的命名为_id,这点差异我已在框架中做了屏蔽处理,所以用户无需再去指定value.最简单的方式就是直接复制我上面提供的代码.
 
-还有另外一种情况也会出现NoSuchMethod,就是用户在wrapper条件中指定了高亮字段,但是未添加高亮返回值映射的新字段及注解@HighLightMappingField(value="高亮返回的新字段"),导致找不到高亮映射字段而报错. 关于高亮的用法,如果实在不会,可以参考下我提供的文档:[高亮查询](highlight.md)
+还有另外一种情况也会出现NoSuchMethod,就是用户在wrapper条件中指定了高亮字段,但是未添加高亮返回值映射的新字段及注解@HighLightMappingField(value="高亮返回的新字段"),导致找不到高亮映射字段而报错. 
+
+关于高亮的用法,如果实在不会,不妨先参考下我提供的文档:[高亮查询](highlight.md)
