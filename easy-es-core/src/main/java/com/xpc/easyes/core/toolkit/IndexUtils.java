@@ -44,6 +44,13 @@ import static com.xpc.easyes.core.constants.BaseEsConstants.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class IndexUtils {
 
+    /**
+     * 是否存在索引
+     *
+     * @param client    RestHighLevelClient
+     * @param indexName 索引名
+     * @return 是否存在
+     */
     public static boolean existsIndex(RestHighLevelClient client, String indexName) {
         GetIndexRequest request = new GetIndexRequest(indexName);
         try {
@@ -53,7 +60,13 @@ public class IndexUtils {
         }
     }
 
-
+    /**
+     * 创建索引
+     *
+     * @param client     RestHighLevelClient
+     * @param indexParam 创建索引参数
+     * @return 是否创建成功
+     */
     public static boolean createIndex(RestHighLevelClient client, CreateIndexParam indexParam) {
         CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexParam.getIndexName());
 
@@ -64,9 +77,11 @@ public class IndexUtils {
         createIndexRequest.settings(settings);
 
         // mapping信息
-        if (!CollectionUtils.isEmpty(indexParam.getEsIndexParamList())) {
+        if (Objects.isNull(indexParam.getMapping())) {
             Map<String, Object> mapping = initMapping(indexParam.getEsIndexParamList());
             createIndexRequest.mapping(mapping);
+        } else {
+            createIndexRequest.mapping(indexParam.getMapping());
         }
 
         // 别名信息
@@ -80,11 +95,17 @@ public class IndexUtils {
             CreateIndexResponse createIndexResponse = client.indices().create(createIndexRequest, RequestOptions.DEFAULT);
             return createIndexResponse.isAcknowledged();
         } catch (IOException e) {
-            throw ExceptionUtils.eee("create index async exception ", createIndexRequest, e);
+            throw ExceptionUtils.eee("create index exception ", createIndexRequest, e);
         }
     }
 
-
+    /**
+     * 创建空索引,不含字段,仅框架内部使用
+     *
+     * @param client    RestHighLevelClient
+     * @param indexName 索引名
+     * @return 是否创建成功
+     */
     public static boolean createEmptyIndex(RestHighLevelClient client, String indexName) {
         CreateIndexRequest request = new CreateIndexRequest(indexName);
         CreateIndexResponse createIndexResponse;
@@ -97,6 +118,13 @@ public class IndexUtils {
         return createIndexResponse.isAcknowledged();
     }
 
+    /**
+     * 获取索引信息
+     *
+     * @param client    RestHighLevelClient
+     * @param indexName 索引名
+     * @return 索引信息
+     */
     public static EsIndexInfo getIndex(RestHighLevelClient client, String indexName) {
         GetIndexRequest request = new GetIndexRequest(indexName);
         GetIndexResponse getIndexResponse;
@@ -108,6 +136,12 @@ public class IndexUtils {
         return parseGetIndexResponse(getIndexResponse, indexName);
     }
 
+    /**
+     * 添加默认索引别名
+     *
+     * @param client    RestHighLevelClient
+     * @param indexName 索引名
+     */
     public static void addDefaultAlias(RestHighLevelClient client, String indexName) {
         IndicesAliasesRequest indicesAliasesRequest = new IndicesAliasesRequest();
         IndicesAliasesRequest.AliasActions aliasActions =
@@ -123,6 +157,14 @@ public class IndexUtils {
 
     }
 
+    /**
+     * 重建索引时的数据迁移,从旧索引迁移至新索引
+     *
+     * @param client           RestHighLevelClient
+     * @param oldIndexName     旧索引名
+     * @param releaseIndexName 新索引名
+     * @return 是否操作成功
+     */
     public static boolean reindex(RestHighLevelClient client, String oldIndexName, String releaseIndexName) {
         ReindexRequest reindexRequest = new ReindexRequest();
         reindexRequest.setSourceIndices(oldIndexName);
@@ -142,6 +184,13 @@ public class IndexUtils {
         }
     }
 
+    /**
+     * 解析索引信息
+     *
+     * @param getIndexResponse es返回的response
+     * @param indexName        索引名
+     * @return 索引信息
+     */
     public static EsIndexInfo parseGetIndexResponse(GetIndexResponse getIndexResponse, String indexName) {
         EsIndexInfo esIndexInfo = new EsIndexInfo();
 
@@ -241,6 +290,9 @@ public class IndexUtils {
      */
     public static Map<String, Object> initMapping(List<EsIndexParam> indexParamList) {
         Map<String, Object> mapping = new HashMap<>(1);
+        if (CollectionUtils.isEmpty(indexParamList)) {
+            return mapping;
+        }
         Map<String, Object> properties = new HashMap<>(indexParamList.size());
         GlobalConfig.DbConfig dbConfig = Optional.ofNullable(GlobalConfigCache.getGlobalConfig())
                 .map(GlobalConfig::getDbConfig)
@@ -271,6 +323,14 @@ public class IndexUtils {
         return mapping;
     }
 
+    /**
+     * 原子操作: 删除旧索引别名,将旧索的引别名添加至新索引
+     *
+     * @param client           RestHighLevelClient
+     * @param oldIndexName     旧索引
+     * @param releaseIndexName 新索引
+     * @return
+     */
     public static boolean changeAliasAtomic(RestHighLevelClient client, String oldIndexName, String releaseIndexName) {
         IndicesAliasesRequest.AliasActions addIndexAction = new IndicesAliasesRequest.AliasActions(
                 IndicesAliasesRequest.AliasActions.Type.ADD).index(releaseIndexName).alias(DEFAULT_ALIAS);
@@ -289,6 +349,13 @@ public class IndexUtils {
         }
     }
 
+    /**
+     * 删除索引
+     *
+     * @param client    RestHighLevelClient
+     * @param indexName 索引名
+     * @return 是否删除成功
+     */
     public static boolean deleteIndex(RestHighLevelClient client, String indexName) {
         DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
         deleteIndexRequest.indicesOptions(IndicesOptions.LENIENT_EXPAND_OPEN);
@@ -300,6 +367,12 @@ public class IndexUtils {
         }
     }
 
+    /**
+     * 根据配置生成创建索引参数
+     *
+     * @param entityInfo 配置信息
+     * @return 创建索引参数
+     */
     public static CreateIndexParam getCreateIndexParam(EntityInfo entityInfo) {
         // 初始化字段信息参数
         List<EntityFieldInfo> fieldList = entityInfo.getFieldList();
@@ -318,6 +391,12 @@ public class IndexUtils {
         return createIndexParam;
     }
 
+    /**
+     * 初始化索引参数
+     *
+     * @param fieldList 字段列表
+     * @return 索引参数列表
+     */
     public static List<EsIndexParam> initIndexParam(List<EntityFieldInfo> fieldList) {
         List<EsIndexParam> esIndexParamList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(fieldList)) {
@@ -338,6 +417,13 @@ public class IndexUtils {
         return esIndexParamList;
     }
 
+    /**
+     * 判断索引是否需要变更
+     *
+     * @param esIndexInfo es中的索引信息
+     * @param entityInfo  配置中的索引信息
+     * @return 是否需要更新索引
+     */
     public static boolean isIndexNeedChange(EsIndexInfo esIndexInfo, EntityInfo entityInfo) {
         if (!entityInfo.getShardsNum().equals(esIndexInfo.getShardsNum())) {
             return Boolean.TRUE;
@@ -356,6 +442,13 @@ public class IndexUtils {
         return !mapping.equals(esIndexInfoMapping);
     }
 
+    /**
+     * 追加后缀重试是否存在索引,若存在,则更新当前被激活的索引名
+     *
+     * @param entityInfo 配置信息
+     * @param client     RestHighLevelClient
+     * @return 是否存在索引
+     */
     public static boolean existsIndexWithRetryAndSetActiveIndex(EntityInfo entityInfo, RestHighLevelClient client) {
         boolean exists = IndexUtils.existsIndex(client, entityInfo.getIndexName());
         if (exists) {
@@ -374,6 +467,13 @@ public class IndexUtils {
         return exists;
     }
 
+    /**
+     * 异步执行索引托管操作
+     *
+     * @param biFunction  索引变更方法
+     * @param entityClass 实体类
+     * @param client      RestHighLevelClient
+     */
     public static void supplyAsync(BiFunction<Class<?>, RestHighLevelClient, Boolean> biFunction, Class<?> entityClass, RestHighLevelClient client) {
         CompletableFuture.supplyAsync(() -> {
             GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();

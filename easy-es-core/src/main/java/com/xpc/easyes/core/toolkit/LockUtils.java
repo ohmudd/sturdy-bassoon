@@ -36,6 +36,14 @@ public class LockUtils {
      */
     private final static Integer WAIT_SECONDS = 60;
 
+    /**
+     * 尝试获取es分布式锁
+     *
+     * @param client   RestHighLevelClient
+     * @param idValue  id字段值实际未entityClass名,一个entity对应一把锁
+     * @param maxRetry 最大重试次数
+     * @return 是否获取成功
+     */
     public static synchronized boolean tryLock(RestHighLevelClient client, String idValue, Integer maxRetry) {
         boolean existsIndex = IndexUtils.existsIndex(client, LOCK_INDEX);
         if (!existsIndex) {
@@ -58,6 +66,13 @@ public class LockUtils {
         }
     }
 
+    /**
+     * 创建锁
+     *
+     * @param client  RestHighLevelClient
+     * @param idValue id字段值实际未entityClass名,一个entity对应一把锁
+     * @return 是否创建成功
+     */
     private static boolean createLock(RestHighLevelClient client, String idValue) {
         IndexRequest indexRequest = new IndexRequest(LOCK_INDEX);
         indexRequest.id(idValue);
@@ -72,6 +87,14 @@ public class LockUtils {
         return response.status().equals(RestStatus.CREATED);
     }
 
+    /**
+     * 释放锁
+     *
+     * @param client   RestHighLevelClient
+     * @param idValue  id字段值实际未entityClass名,一个entity对应一把锁
+     * @param maxRetry 最大重试次数
+     * @return 是否释放成功
+     */
     public synchronized static boolean release(RestHighLevelClient client, String idValue, Integer maxRetry) {
         DeleteRequest deleteRequest = new DeleteRequest(LOCK_INDEX);
         deleteRequest.id(idValue);
@@ -93,6 +116,14 @@ public class LockUtils {
         }
     }
 
+    /**
+     * 重试释放
+     *
+     * @param client   RestHighLevelClient
+     * @param idValue  id字段值实际未entityClass名,一个entity对应一把锁
+     * @param maxRetry 最大重试次数
+     * @return 是否重试成功
+     */
     private static boolean retryRelease(RestHighLevelClient client, String idValue, Integer maxRetry) {
         try {
             Thread.sleep(WAIT_SECONDS / maxRetry);
@@ -102,6 +133,13 @@ public class LockUtils {
         return release(client, idValue, --maxRetry);
     }
 
+    /**
+     * 获取个数
+     *
+     * @param client  RestHighLevelClient
+     * @param idValue id字段值实际未entityClass名,一个entity对应一把锁
+     * @return 该id对应的锁的个数, 如果>0 说明已有锁,需重试获取,否则认为无锁
+     */
     private static Integer getCount(RestHighLevelClient client, String idValue) {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices(LOCK_INDEX);

@@ -4,6 +4,7 @@ package com.xpc.easyes.core.params;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 创建索引参数
@@ -36,4 +37,8 @@ public class CreateIndexParam {
      * 索引字段及类型分词器等信息
      */
     private List<EsIndexParam> esIndexParamList;
+    /**
+     * 用户手动指定的mapping信息,优先级最高
+     */
+    protected Map<String, Object> mapping;
 }
