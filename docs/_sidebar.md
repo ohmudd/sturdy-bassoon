@@ -19,6 +19,7 @@
   	  - [Insert](insert.md)
   	- [条件构造器](condition.md)
   	  - [eq](eq.md)
+          - [allEq](allEq.md)
   	  - [ne](ne.md)
   	  - [gt](gt.md)
   	  - [ge](ge.md)
