@@ -31,13 +31,13 @@ public class InsertTest {
     public void testInsert() {
         // 测试插入数据
         Document document = new Document();
-        document.setId("7");
+        document.setId("13");
         document.setTitle("老汉");
         document.setContent("推*技术过硬");
         document.setCreator("吃饭");
         document.setLocation("40.171975,116.587105");
         document.setGmtCreate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        document.setCustomField("mmp");
+        document.setCustomField("俄罗斯方块");
         Point point = new Point(13.400544, 52.530286);
         document.setGeoLocation(point.toString());
         document.setStarNum(1);

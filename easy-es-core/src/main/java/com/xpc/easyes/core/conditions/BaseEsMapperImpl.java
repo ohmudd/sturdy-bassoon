@@ -217,6 +217,8 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         // 兼容分页参数
         pageNum = pageNum == null || pageNum <= ZERO ? BaseEsConstants.PAGE_NUM : pageNum;
         pageSize = pageSize == null || pageSize <= ZERO ? BaseEsConstants.PAGE_SIZE : pageSize;
+        wrapper.from((pageNum - 1) * pageSize);
+        wrapper.size(pageSize);
 
         // 请求es获取数据
         SearchResponse response = getSearchResponse(wrapper);
@@ -355,6 +357,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         // 构建更新请求参数
         UpdateRequest updateRequest = buildUpdateRequest(entity, idValue);
 
+        // 执行更新
         try {
             UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
             if (Objects.equals(updateResponse.status(), RestStatus.OK)) {
@@ -558,26 +561,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         String jsonData = buildJsonIndexSource(entity);
         updateRequest.doc(jsonData, XContentType.JSON);
         return updateRequest;
-    }
-
-
-    /**
-     * 初始化分页数据
-     *
-     * @param wrapper  条件
-     * @param pageNum  当前页
-     * @param pageSize 每页条数
-     * @return 分页数据
-     */
-    private PageInfo<T> initPageInfo(LambdaEsQueryWrapper<T> wrapper, Integer pageNum, Integer pageSize) {
-
-
-//        // 解析请求结果
-//        List<T> list = Arrays.stream(searchHitArray)
-//                .map(searchHit -> parseOne(searchHit, wrapper))
-//                .collect(Collectors.toList());
-//        return PageHelper.getPageInfo(list, total, pageNum, pageSize);
-        return null;
     }
 
     /**

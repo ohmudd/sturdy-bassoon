@@ -62,7 +62,7 @@ public class Document {
     /**
      * 自定义字段名称
      */
-    @TableField(value = "wu-la")
+    @TableField(value = "wu-la",fieldType = FieldType.TEXT,analyzer = Analyzer.IK_SMART,searchAnalyzer = Analyzer.IK_SMART)
     private String customField;
 
     /**

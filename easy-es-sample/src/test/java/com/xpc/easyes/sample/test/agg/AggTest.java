@@ -12,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * 聚合测试
@@ -43,16 +42,6 @@ public class AggTest {
         wrapper.eq(Document::getTitle, "老汉")
                 .groupBy(Document::getCreator)
                 .max(Document::getStarNum);
-        SearchResponse response = documentMapper.search(wrapper);
-        System.out.println(response);
-    }
-
-    @Test
-    public void multiFieldAgg() {
-        // 多字段聚合,可用于多字段去重,多字段合并桶聚合
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.eq(Document::getStarNum, 1)
-                .groupBy(Document::getTitle, Document::getCreator);
         SearchResponse response = documentMapper.search(wrapper);
         System.out.println(response);
     }
