@@ -24,7 +24,9 @@ ES中的keyword类型,和MySQL中的字段基本上差不多,当我们需要对�
 ![image3](https://iknow.hs.net/87335e55-1fe3-44ed-920b-61354383e85a.png)
 
 
-3.字段id由于框架很多功能都是借助id实现的,比如selectById,update,deleteById...,而且ES中也必须有一列作为数据id,因此我们强制要求用户封装的实体类中包含字段id列,否则框架不少功能无法正常使用.
+3.字段id
+
+由于框架很多功能都是借助id实现的,比如selectById,update,deleteById...,而且ES中也必须有一列作为数据id,因此我们强制要求用户封装的实体类中包含字段id列,否则框架不少功能无法正常使用.
 ```java
 public class Document {
     /**
@@ -38,7 +40,10 @@ public class Document {
 
 在调用insert方法时,如果该id数据在es中不存在,则新增该数据,如果已有该id数据,则即便你调用的是insert方法,实际上的效果也是更新该id对应的数据,这点需要区别于MP和MySQL.
 
-4.and和or的使用需要区别于MySQL和MP,因为ES的查询参数是树形数据结构,和MySQL平铺的不一样,具体可参考[and&or](and-or.md)章节,有详细节省
+4.and和or的使用
+
+需要区别于MySQL和MP,因为ES的查询参数是树形数据结构,和MySQL平铺的不一样,具体可参考[and&or](and-or.md)章节,有详细节省
+
 
 关于闭坑暂时先讲这么多,后续如果有补充再追加,祝各位主公使用愉快,使用过程中有任何疑问及建议,可添加我微信252645816反馈,我们也有专门的答疑群为各位主公们免费服务.
 
