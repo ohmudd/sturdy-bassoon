@@ -43,6 +43,10 @@ public enum EsQueryTypeEnum {
      *     <li>2-2-2、epoch_millis： epoch 以来的毫秒数，即：1970.1.1 零点到现在的毫秒数</li>
      *     <li>2-2-1-1、ISO dateOptionalTimeParser: https://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateOptionalTimeParser-- </li>
      *     <li>2-2-1-2、如：yyyy-MM-dd、yyyy-MM-dd HH:mm:ss、yyyy-MM-dd HH:mm:ss.SSS、yyyy-MM-dd'T'HH:mm:ssZ、yyyy-MM-dd'T'HH:mm:ss.SSSZ</li>
+     *     <li>2-3、如果value是：日期{@link Date}、java8日期/日期时间{@link java.time}，format可以全指定为:yyyy-MM-dd'T'HH:mm:ss.SSSz</li>
+     *     <li>3、value: 中字符串未包含时区，或者是：未包含时区的日期对象，需要手工指定日期的时区，不指定就是UTC(0时区的日期)，通过{@link RangeQueryBuilder#timeZone(String)}指定</li>
+     *     <li>3-1: ZoneId.of("UTC").toString() 0时区、ZoneId.of("Asia/Shanghai").toString() 东八区、ZoneId.of("Europe/Paris").toString()东一区</li>
+     *     <li>3-2: 我们一般应该使用，东八区，Asia/Shanghai</li>
      * </ul>
      */
     RANGE_QUERY(4),
