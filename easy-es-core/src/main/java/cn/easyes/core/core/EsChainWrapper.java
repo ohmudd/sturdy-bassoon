@@ -1,6 +1,4 @@
-package cn.easyes.core.conditions.interfaces;
-
-import cn.easyes.core.conditions.Wrapper;
+package cn.easyes.core.core;
 
 /**
  * 链式基类

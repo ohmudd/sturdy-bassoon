@@ -1,16 +1,18 @@
-package cn.easyes.core.conditions;
+package cn.easyes.core.core;
 
+import cn.easyes.annotation.rely.FieldType;
 import cn.easyes.common.enums.AggregationTypeEnum;
 import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.enums.OrderTypeEnum;
 import cn.easyes.common.utils.*;
 import cn.easyes.core.biz.*;
-import cn.easyes.core.conditions.interfaces.*;
+import cn.easyes.core.conditions.function.*;
 import cn.easyes.core.toolkit.EntityInfoHelper;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.geometry.Geometry;
 import org.elasticsearch.index.query.Operator;
@@ -35,7 +37,7 @@ import static cn.easyes.common.enums.OrderTypeEnum.CUSTOMIZE;
  **/
 public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, R, Children>> extends Wrapper<T>
         implements Compare<Children, R>, Nested<Children, Children>, Func<Children, R>, Join<Children>, Geo<Children, R>
-        , Query<Children, T, R>, Update<Children, R> {
+        , Query<Children, T, R>, Update<Children, R>, Index<Children, R> {
 
     protected final Children typedThis = (Children) this;
     /**
@@ -88,7 +90,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     protected final void initNeed() {
         baseSortParams = new ArrayList<>();
         aggregationParamList = new ArrayList<>();
-        paramList = new LinkedList<>();
+        paramQueue = new LinkedList<>();
         prevQueryType = AND_MUST;
         parentIdQueue = new LinkedList<>();
         prevQueryTypeQueue = new LinkedList<>();
@@ -133,8 +135,8 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children or(boolean condition) {
-        if (!paramList.isEmpty()) {
-            Param param = paramList.peekLast();
+        if (!paramQueue.isEmpty()) {
+            Param param = paramQueue.peekLast();
             if (Objects.equals(level, param.getLevel())) {
                 param.setPrevQueryType(OR_SHOULD);
             }
@@ -568,6 +570,72 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         return typedThis;
     }
 
+    @Override
+    public Children indexName(String... indexNames) {
+        if (ArrayUtils.isEmpty(indexNames)) {
+            throw new RuntimeException("indexNames can not be empty");
+        }
+        this.indexNames = indexNames;
+        return typedThis;
+    }
+
+    @Override
+    public Children maxResultWindow(Integer maxResultWindow) {
+        Optional.ofNullable(maxResultWindow).ifPresent(max -> this.maxResultWindow = maxResultWindow);
+        return typedThis;
+    }
+
+    @Override
+    public Children settings(Integer shards, Integer replicas) {
+        if (Objects.nonNull(shards)) {
+            this.shardsNum = shards;
+        }
+        if (Objects.nonNull(replicas)) {
+            this.replicasNum = replicas;
+        }
+        return typedThis;
+    }
+
+    @Override
+    public Children settings(Settings settings) {
+        this.settings = settings;
+        return typedThis;
+    }
+
+    @Override
+    public Children mapping(Map<String, Object> mapping) {
+        this.mapping = mapping;
+        return typedThis;
+    }
+
+    @Override
+    public Children mapping(String column, FieldType fieldType, String analyzer, String searchAnalyzer, String dateFormat, Boolean fieldData, Float boost) {
+        addEsIndexParam(column, fieldType, analyzer, searchAnalyzer, dateFormat, fieldData, boost);
+        return typedThis;
+    }
+
+    @Override
+    public Children createAlias(String aliasName) {
+        if (ArrayUtils.isEmpty(indexNames)) {
+            throw new RuntimeException("indexNames can not be empty");
+        }
+        if (StringUtils.isEmpty(aliasName)) {
+            throw new RuntimeException("aliasName can not be empty");
+        }
+        this.aliasName = aliasName;
+        return typedThis;
+    }
+
+    @Override
+    public Children join(String column, String parentName, String childName) {
+        EsIndexParam esIndexParam = new EsIndexParam();
+        esIndexParam.setFieldName(column);
+        esIndexParam.setParentName(parentName);
+        esIndexParam.setChildName(childName);
+        esIndexParam.setFieldType(FieldType.JOIN.getType());
+        esIndexParamList.add(esIndexParam);
+        return typedThis;
+    }
 
     /**
      * 子类返回一个自己的新对象
@@ -596,14 +664,14 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         param.setBoost(boost);
 
         // 入队之前需要先对MP中的拼接or()特殊处理之所以在此处处理,是因为可以少遍历一遍树 节省OLog(N) 时间复杂度
-        if (!paramList.isEmpty()) {
-            Param prev = paramList.peekLast();
+        if (!paramQueue.isEmpty()) {
+            Param prev = paramQueue.peekLast();
             if (OR.equals(prev.getQueryTypeEnum())) {
                 // 上一节点是拼接or() 则修改当前节点的prevQueryType为OR_SHOULD 让其走should查询
                 param.setPrevQueryType(OR_SHOULD);
             }
         }
-        paramList.add(param);
+        paramQueue.add(param);
     }
 
 
@@ -708,7 +776,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         param.setQueryTypeEnum(queryTypeEnum);
         level++;
         param.setLevel(level);
-        paramList.add(param);
+        paramQueue.add(param);
         this.parentId = param.getId();
         parentIdQueue.push(parentId);
         prevQueryTypeQueue.push(queryTypeEnum);
@@ -783,6 +851,29 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
             aggregationParamList.add(aggregationParam);
         }
         return typedThis;
+    }
+
+    /**
+     * 添加索引参数
+     *
+     * @param fieldName      字段名
+     * @param fieldType      字段类型
+     * @param analyzer       查询分词器
+     * @param searchAnalyzer 索引分词器
+     * @param dateFormat     日期格式化规则
+     * @param fieldData      是否将text类型字段添加fieldData,fieldData为true时,则text字段也支持聚合
+     * @param boost          权重
+     */
+    private void addEsIndexParam(String fieldName, FieldType fieldType, String analyzer, String searchAnalyzer, String dateFormat, Boolean fieldData, Float boost) {
+        EsIndexParam esIndexParam = new EsIndexParam();
+        esIndexParam.setFieldName(fieldName);
+        esIndexParam.setFieldType(fieldType.getType());
+        esIndexParam.setAnalyzer(analyzer);
+        esIndexParam.setSearchAnalyzer(searchAnalyzer);
+        esIndexParam.setDateFormat(dateFormat);
+        esIndexParam.setFieldData(fieldData);
+        esIndexParam.setBoost(boost);
+        esIndexParamList.add(esIndexParam);
     }
 
 }

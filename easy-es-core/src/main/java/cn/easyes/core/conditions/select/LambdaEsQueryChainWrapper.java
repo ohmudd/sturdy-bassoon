@@ -1,9 +1,9 @@
 package cn.easyes.core.conditions.select;
 
 import cn.easyes.common.params.SFunction;
-import cn.easyes.core.conditions.AbstractChainWrapper;
-import cn.easyes.core.conditions.interfaces.BaseEsMapper;
-import cn.easyes.core.conditions.interfaces.Query;
+import cn.easyes.core.core.AbstractChainWrapper;
+import cn.easyes.core.core.BaseEsMapper;
+import cn.easyes.core.conditions.function.Query;
 
 /**
  * 链式调用Lambda表达式

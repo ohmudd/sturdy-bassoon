@@ -1,4 +1,4 @@
-package cn.easyes.core.conditions.interfaces;
+package cn.easyes.core.conditions.function;
 
 import java.io.Serializable;
 

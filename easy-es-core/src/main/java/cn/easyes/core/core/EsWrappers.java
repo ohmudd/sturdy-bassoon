@@ -1,7 +1,7 @@
-package cn.easyes.core.conditions;
+package cn.easyes.core.core;
 
+import cn.easyes.core.conditions.index.LambdaEsIndexChainWrapper;
 import cn.easyes.core.conditions.index.LambdaEsIndexWrapper;
-import cn.easyes.core.conditions.interfaces.BaseEsMapper;
 import cn.easyes.core.conditions.select.LambdaEsQueryChainWrapper;
 import cn.easyes.core.conditions.select.LambdaEsQueryWrapper;
 import cn.easyes.core.conditions.update.LambdaEsUpdateChainWrapper;
@@ -71,4 +71,14 @@ public class EsWrappers {
         return new LambdaEsIndexWrapper<>(entityClass);
     }
 
+    /**
+     * 获取链式LambdaEsIndexChainWrapper
+     *
+     * @param baseEsMapper 当前操作对应的mapper
+     * @param <T>          泛型
+     * @return LambdaEsIndexChainWrapper
+     */
+    public static <T> LambdaEsIndexChainWrapper<T> lambdaChainIndex(BaseEsMapper<T> baseEsMapper) {
+        return new LambdaEsIndexChainWrapper<>(baseEsMapper);
+    }
 }

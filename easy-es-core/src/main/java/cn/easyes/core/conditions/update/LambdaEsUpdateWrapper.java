@@ -4,7 +4,7 @@ import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.params.SFunction;
 import cn.easyes.core.biz.EsUpdateParam;
 import cn.easyes.core.biz.Param;
-import cn.easyes.core.conditions.interfaces.Update;
+import cn.easyes.core.conditions.function.Update;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -29,15 +29,16 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
         super.initNeed();
         super.setEntityClass(entityClass);
         updateParamList = new ArrayList<>();
+        paramQueue = new LinkedList<>();
     }
 
-    LambdaEsUpdateWrapper(T entity, int level, String parentId, EsQueryTypeEnum pervQueryType, LinkedList<Param> paramList,
+    LambdaEsUpdateWrapper(T entity, int level, String parentId, EsQueryTypeEnum pervQueryType, LinkedList<Param> paramQueue,
                           LinkedList<String> parentIdQueue, LinkedList<EsQueryTypeEnum> prevQueryTypeQueue, List<EsUpdateParam> updateParamList) {
         super.setEntity(entity);
         this.level = level;
         this.parentId = parentId;
         this.prevQueryType = pervQueryType;
-        this.paramList = paramList;
+        this.paramQueue = paramQueue;
         this.parentIdQueue = parentIdQueue;
         this.prevQueryTypeQueue = prevQueryTypeQueue;
         this.updateParamList = updateParamList;
@@ -45,7 +46,7 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
 
     @Override
     protected LambdaEsUpdateWrapper<T> instance() {
-        return new LambdaEsUpdateWrapper<>(entity, level, parentId, prevQueryType, paramList, parentIdQueue, prevQueryTypeQueue, updateParamList);
+        return new LambdaEsUpdateWrapper<>(entity, level, parentId, prevQueryType, paramQueue, parentIdQueue, prevQueryTypeQueue, updateParamList);
     }
 
 }

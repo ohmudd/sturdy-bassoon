@@ -5,7 +5,7 @@ import cn.easyes.common.constants.BaseEsConstants;
 import cn.easyes.core.conditions.index.LambdaEsIndexWrapper;
 import cn.easyes.core.conditions.select.LambdaEsQueryWrapper;
 import cn.easyes.core.toolkit.EntityInfoHelper;
-import cn.easyes.core.conditions.EsWrappers;
+import cn.easyes.core.core.EsWrappers;
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;

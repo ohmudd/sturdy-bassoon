@@ -1,7 +1,7 @@
 package cn.easyes.core.conditions.select;
 
 import cn.easyes.common.params.SFunction;
-import cn.easyes.core.conditions.AbstractWrapper;
+import cn.easyes.core.core.AbstractWrapper;
 
 /**
  * 抽象Lambda表达式父类

@@ -37,7 +37,7 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
         this.level = level;
         this.parentId = parentId;
         this.prevQueryType = pervQueryType;
-        this.paramList = paramList;
+        this.paramQueue = paramList;
         this.parentIdQueue = parentIdQueue;
         this.prevQueryTypeQueue = prevQueryTypeQueue;
         this.baseSortParams = baseSortParams;
@@ -46,7 +46,7 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
 
     @Override
     protected LambdaEsQueryWrapper<T> instance() {
-        return new LambdaEsQueryWrapper<>(entity, level, parentId, prevQueryType, paramList, parentIdQueue, prevQueryTypeQueue, baseSortParams, aggregationParamList);
+        return new LambdaEsQueryWrapper<>(entity, level, parentId, prevQueryType, paramQueue, parentIdQueue, prevQueryTypeQueue, baseSortParams, aggregationParamList);
     }
 
 }

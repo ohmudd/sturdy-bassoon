@@ -1,4 +1,4 @@
-package cn.easyes.core.conditions.interfaces;
+package cn.easyes.core.conditions.function;
 
 import cn.easyes.common.utils.CollectionUtils;
 import cn.easyes.common.utils.ExceptionUtils;
@@ -9,7 +9,6 @@ import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.geometry.Geometry;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -1,12 +1,14 @@
-package cn.easyes.core.conditions;
+package cn.easyes.core.core;
 
+import cn.easyes.annotation.rely.FieldType;
 import cn.easyes.core.biz.EntityFieldInfo;
 import cn.easyes.core.biz.OrderByParam;
-import cn.easyes.core.conditions.interfaces.*;
+import cn.easyes.core.conditions.function.*;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.geometry.Geometry;
 import org.elasticsearch.index.query.Operator;
@@ -23,14 +25,14 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * 链式
+ * 链式抽象条件构造器
  * <p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 @SuppressWarnings({"serial", "unchecked"})
 public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainWrapper<T, R, Children, Param>, Param>
         extends Wrapper<T> implements Compare<Children, R>, Join<Children>, Func<Children, R>, Nested<Param, Children>,
-        Geo<Children, R>, Query<Children, T, R>, Update<Children, R> {
+        Geo<Children, R>, Query<Children, T, R>, Update<Children, R>, Index<Children, R> {
 
     protected final Children typedThis = (Children) this;
     /**
@@ -665,7 +667,55 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
 
     @Override
     public Children set(boolean condition, String column, Object val) {
-        getWrapper().set(condition,column,val);
+        getWrapper().set(condition, column, val);
+        return typedThis;
+    }
+
+    @Override
+    public Children indexName(String... indexNames) {
+        getWrapper().indexName(indexNames);
+        return typedThis;
+    }
+
+    @Override
+    public Children maxResultWindow(Integer maxResultWindow) {
+        getWrapper().maxResultWindow(maxResultWindow);
+        return typedThis;
+    }
+
+    @Override
+    public Children settings(Integer shards, Integer replicas) {
+        getWrapper().settings(shards, replicas);
+        return typedThis;
+    }
+
+    @Override
+    public Children settings(Settings settings) {
+        getWrapper().settings(settings);
+        return typedThis;
+    }
+
+    @Override
+    public Children mapping(Map<String, Object> mapping) {
+        getWrapper().mapping(mapping);
+        return typedThis;
+    }
+
+    @Override
+    public Children mapping(String column, FieldType fieldType, String analyzer, String searchAnalyzer, String dateFormat, Boolean fieldData, Float boost) {
+        getWrapper().mapping(column, fieldType, analyzer, searchAnalyzer, dateFormat, fieldData, boost);
+        return typedThis;
+    }
+
+    @Override
+    public Children createAlias(String aliasName) {
+        getWrapper().createAlias(aliasName);
+        return typedThis;
+    }
+
+    @Override
+    public Children join(String column, String parentName, String childName) {
+        getWrapper().join(column, parentName, childName);
         return typedThis;
     }
 }

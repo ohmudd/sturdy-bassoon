@@ -1,14 +1,14 @@
-package cn.easyes.core.conditions;
+package cn.easyes.core.core;
 
 import cn.easyes.annotation.rely.FieldStrategy;
 import cn.easyes.annotation.rely.IdType;
 import cn.easyes.common.constants.BaseEsConstants;
 import cn.easyes.common.enums.EsQueryTypeEnum;
+import cn.easyes.common.enums.MethodEnum;
 import cn.easyes.common.utils.*;
 import cn.easyes.core.biz.*;
 import cn.easyes.core.cache.BaseCache;
 import cn.easyes.core.cache.GlobalConfigCache;
-import cn.easyes.core.conditions.interfaces.BaseEsMapper;
 import cn.easyes.core.toolkit.EntityInfoHelper;
 import cn.easyes.core.toolkit.FieldUtils;
 import cn.easyes.core.toolkit.IndexUtils;
@@ -19,6 +19,8 @@ import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import lombok.Setter;
+import lombok.SneakyThrows;
+import org.apache.http.util.EntityUtils;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -34,7 +36,9 @@ import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.client.core.CountResponse;
@@ -150,13 +154,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public Boolean refresh(String indexName) {
-        String[] indexNames = new String[1];
-        indexNames[0] = indexName;
-        return this.refresh(indexNames);
-    }
-
-    @Override
     public Boolean refresh(String... indexNames) {
         RefreshRequest request = new RefreshRequest(indexNames);
         try {
@@ -166,6 +163,24 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             e.printStackTrace();
             throw ExceptionUtils.eee("refresh index exception e", e);
         }
+    }
+
+    @Override
+    @SneakyThrows
+    public String executeDSL(String dsl, MethodEnum method) {
+        String indexName = EntityInfoHelper.getEntityInfo(entityClass).getIndexName();
+        Request request = new Request(method.toString(), indexName);
+        Response response = client.getLowLevelClient().performRequest(request);
+        return EntityUtils.toString(response.getEntity());
+    }
+
+    @Override
+    @SneakyThrows
+    public String executeDSL(String dsl, MethodEnum method, String indexName) {
+        Assert.notNull(indexName, "indexName must not null");
+        Request request = new Request(method.toString(), indexName);
+        Response response = client.getLowLevelClient().performRequest(request);
+        return EntityUtils.toString(response.getEntity());
     }
 
     @Override
@@ -279,7 +294,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             CountRequest countRequest = new CountRequest(getIndexNames(wrapper.indexNames));
             QueryBuilder queryBuilder = Optional.ofNullable(wrapper.searchSourceBuilder)
                     .map(SearchSourceBuilder::query)
-                    .orElseGet(() -> WrapperProcessor.initBoolQueryBuilder(wrapper.paramList, entityClass));
+                    .orElseGet(() -> WrapperProcessor.initBoolQueryBuilder(wrapper.paramQueue, entityClass));
             countRequest.query(queryBuilder);
             CountResponse count;
             try {
@@ -354,7 +369,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     @Override
     public Integer delete(Wrapper<T> wrapper) {
         DeleteByQueryRequest request = new DeleteByQueryRequest(getIndexNames(wrapper.indexNames));
-        BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.paramList, entityClass);
+        BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.paramQueue, entityClass);
         request.setQuery(boolQueryBuilder);
         BulkByScrollResponse bulkResponse;
         try {
@@ -857,7 +872,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             searchSourceBuilder.fetchSource(includes, null);
             searchSourceBuilder.trackTotalHits(true);
             searchSourceBuilder.size(GlobalConfigCache.getGlobalConfig().getDbConfig().getBatchUpdateThreshold());
-            BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.paramList, entityClass);
+            BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.paramQueue, entityClass);
             searchSourceBuilder.query(boolQueryBuilder);
         } else {
             // 用户在wrapper中指定的混合查询条件优先级最高

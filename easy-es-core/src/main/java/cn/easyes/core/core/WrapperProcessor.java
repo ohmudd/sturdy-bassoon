@@ -1,4 +1,4 @@
-package cn.easyes.core.conditions;
+package cn.easyes.core.core;
 
 import cn.easyes.annotation.rely.FieldType;
 import cn.easyes.common.enums.AggregationTypeEnum;
@@ -56,7 +56,7 @@ public class WrapperProcessor {
      */
     public static SearchSourceBuilder buildSearchSourceBuilder(Wrapper<?> wrapper, Class<?> entityClass) {
         // 初始化boolQueryBuilder 参数
-        BoolQueryBuilder boolQueryBuilder = initBoolQueryBuilder(wrapper.paramList, entityClass);
+        BoolQueryBuilder boolQueryBuilder = initBoolQueryBuilder(wrapper.paramQueue, entityClass);
 
         // 初始化searchSourceBuilder 参数
         SearchSourceBuilder searchSourceBuilder = initSearchSourceBuilder(wrapper, entityClass);

@@ -1,4 +1,4 @@
-package cn.easyes.core.conditions;
+package cn.easyes.core.core;
 
 import cn.easyes.core.biz.*;
 import org.elasticsearch.common.settings.Settings;
@@ -49,7 +49,7 @@ public abstract class Wrapper<T> implements Cloneable {
     /**
      * 参数列表
      */
-    protected LinkedList<Param> paramList;
+    protected LinkedList<Param> paramQueue;
     /**
      * 基础排序参数列表
      */

@@ -1,7 +1,6 @@
-package cn.easyes.core.conditions.interfaces;
+package cn.easyes.core.conditions.function;
 
 import cn.easyes.core.toolkit.FieldUtils;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.Serializable;
 
@@ -24,7 +23,7 @@ public interface Update<Children, R> extends Serializable {
     }
 
     /**
-     * 设置 更新 SQL 的 SET 片段
+     * 设置 更新 字段 的 SET 片段
      *
      * @param condition 条件
      * @param column    列

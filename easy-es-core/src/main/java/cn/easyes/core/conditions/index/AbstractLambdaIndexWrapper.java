@@ -1,4 +1,4 @@
-package cn.easyes.core.conditions.update;
+package cn.easyes.core.conditions.index;
 
 import cn.easyes.common.params.SFunction;
 import cn.easyes.core.core.AbstractWrapper;
@@ -8,6 +8,6 @@ import cn.easyes.core.core.AbstractWrapper;
  * <p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
-public abstract class AbstractLambdaUpdateWrapper<T, Children extends AbstractLambdaUpdateWrapper<T, Children>>
+public abstract class AbstractLambdaIndexWrapper<T, Children extends AbstractLambdaIndexWrapper<T, Children>>
         extends AbstractWrapper<T, SFunction<T, ?>, Children> {
 }

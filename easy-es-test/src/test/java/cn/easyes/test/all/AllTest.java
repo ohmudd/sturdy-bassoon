@@ -8,7 +8,7 @@ import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.conditions.select.LambdaEsQueryWrapper;
 import cn.easyes.core.conditions.update.LambdaEsUpdateWrapper;
 import cn.easyes.core.toolkit.EntityInfoHelper;
-import cn.easyes.core.conditions.EsWrappers;
+import cn.easyes.core.core.EsWrappers;
 import cn.easyes.core.toolkit.FieldUtils;
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
@@ -129,6 +129,16 @@ public class AllTest {
 
     @Test
     @Order(4)
+    public void testUpdateByChainWrapper(){
+        int count = EsWrappers.lambdaChainUpdate(documentMapper)
+                .eq(Document::getTitle, "测试文档3")
+                .set(Document::getContent, "测试文档内容3的内容被修改了")
+                .update();
+        Assertions.assertEquals(1, count);
+    }
+
+    @Test
+    @Order(4)
     public void testUpdateBySetSearchSourceBuilder() {
         LambdaEsUpdateWrapper<Document> wrapper = new LambdaEsUpdateWrapper<>();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -168,9 +178,9 @@ public class AllTest {
     public void testOne() {
         // 链式调用
         Document document = EsWrappers.lambdaChainQuery(documentMapper)
-                .eq(Document::getEsId,"1")
+                .eq(Document::getTitle,"测试文档3")
                 .one();
-        Assertions.assertNotNull(document);
+        Assertions.assertEquals(document.getContent(),"测试文档内容3的内容被修改了");
     }
 
     @Test
@@ -493,6 +503,17 @@ public class AllTest {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.match(Document::getCreator, "老汉");
         EsPageInfo<Document> pageInfo = documentMapper.pageQuery(wrapper, 1, 5);
+        Assertions.assertEquals(5, pageInfo.getSize());
+        Assertions.assertEquals(22, pageInfo.getTotal());
+    }
+
+    @Test
+    @Order(6)
+    public void testChainPage(){
+        // 链式
+        EsPageInfo<Document> pageInfo = EsWrappers.lambdaChainQuery(documentMapper)
+                .match(Document::getCreator, "老汉")
+                .page(1, 5);
         Assertions.assertEquals(5, pageInfo.getSize());
         Assertions.assertEquals(22, pageInfo.getTotal());
     }

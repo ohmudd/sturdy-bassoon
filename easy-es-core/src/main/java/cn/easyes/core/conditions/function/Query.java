@@ -1,4 +1,4 @@
-package cn.easyes.core.conditions.interfaces;
+package cn.easyes.core.conditions.function;
 
 import cn.easyes.core.biz.EntityFieldInfo;
 import cn.easyes.core.toolkit.FieldUtils;

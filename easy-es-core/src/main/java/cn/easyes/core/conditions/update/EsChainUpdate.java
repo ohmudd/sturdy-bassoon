@@ -1,7 +1,6 @@
-
 package cn.easyes.core.conditions.update;
 
-import cn.easyes.core.conditions.interfaces.EsChainWrapper;
+import cn.easyes.core.core.EsChainWrapper;
 
 /**
  * 链式更新方法
