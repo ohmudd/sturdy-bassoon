@@ -122,4 +122,18 @@ public interface Index<Children, R> extends Serializable {
      * @return 泛型
      */
     Children createAlias(String aliasName);
+
+
+    default Children join(R column, String parentName, String childName) {
+        return join(FieldUtils.getFieldName(childName), parentName, childName);
+    }
+
+    /**
+     * 设置父子类型信息
+     *
+     * @param parentName 父名称
+     * @param childName  子名称
+     * @return 泛型
+     */
+    Children join(String column, String parentName, String childName);
 }

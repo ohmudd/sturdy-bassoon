@@ -128,6 +128,16 @@ public class LambdaEsIndexWrapper<T> extends Wrapper<T> implements Index<LambdaE
         return typedThis;
     }
 
+    @Override
+    public LambdaEsIndexWrapper<T> join(String column, String parentName, String childName) {
+        EsIndexParam esIndexParam = new EsIndexParam();
+        esIndexParam.setFieldName(column);
+        esIndexParam.setParentName(parentName);
+        esIndexParam.setChildName(childName);
+        esIndexParamList.add(esIndexParam);
+        return typedThis;
+    }
+
     private void addEsIndexParam(String fieldName, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat) {
         EsIndexParam esIndexParam = new EsIndexParam();
         esIndexParam.setFieldName(fieldName);

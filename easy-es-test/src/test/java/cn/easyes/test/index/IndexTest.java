@@ -3,6 +3,7 @@ package cn.easyes.test.index;
 import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.core.conditions.LambdaEsIndexWrapper;
+import cn.easyes.core.toolkit.FieldUtils;
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;
@@ -52,6 +53,9 @@ public class IndexTest {
         // 设置别名信息,可缺省
         String aliasName = "daily";
         wrapper.createAlias(aliasName);
+
+        // 设置父子信息,若无父子文档关系则无需设置
+        wrapper.join(Document::getJoinField,"document","comment");
 
         // 创建索引
         boolean isOk = documentMapper.createIndex(wrapper);
