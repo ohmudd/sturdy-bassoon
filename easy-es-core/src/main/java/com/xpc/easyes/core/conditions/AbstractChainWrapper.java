@@ -208,6 +208,18 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
+    public Children sort(boolean condition, List<SortBuilder<?>> sortBuilders) {
+        getWrapper().sort(condition, sortBuilders);
+        return typedThis;
+    }
+
+    @Override
+    public Children distinct(boolean condition, R column) {
+        getWrapper().distinct(condition, column);
+        return typedThis;
+    }
+
+    @Override
     public Children or(boolean condition, Function<Param, Param> func) {
         return null;
     }

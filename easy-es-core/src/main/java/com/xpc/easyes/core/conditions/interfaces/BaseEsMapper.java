@@ -16,6 +16,9 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
+import static com.xpc.easyes.core.constants.BaseEsConstants.PAGE_NUM;
+import static com.xpc.easyes.core.constants.BaseEsConstants.PAGE_SIZE;
+
 /**
  * 核心 所有支持方法接口
  * <p>
@@ -100,16 +103,17 @@ public interface BaseEsMapper<T> {
     String getSource(LambdaEsQueryWrapper<T> wrapper);
 
     /**
-     * 未指定返回类型,未指定分页参数
+     * 未指定返回类型,未指定分页参数 将在下个版本移除
      *
      * @param wrapper 条件
      * @return 原生分页返回
      * @throws IOException IO异常
      */
+    @Deprecated
     PageInfo<SearchHit> pageQueryOriginal(LambdaEsQueryWrapper<T> wrapper) throws IOException;
 
     /**
-     * 未指定返回类型,指定分页参数
+     * 未指定返回类型,指定分页参数, 将在下个版本移除
      *
      * @param wrapper  条件
      * @param pageNum  当前页
@@ -117,15 +121,19 @@ public interface BaseEsMapper<T> {
      * @return 原生分页返回
      * @throws IOException IO异常
      */
+    @Deprecated
     PageInfo<SearchHit> pageQueryOriginal(LambdaEsQueryWrapper<T> wrapper, Integer pageNum, Integer pageSize) throws IOException;
 
     /**
-     * 指定返回类型,但未指定分页参数
+     * 指定返回类型,但未指定分页参数 将在下个版本移除
      *
      * @param wrapper 条件
      * @return 指定的返回类型
      */
-    PageInfo<T> pageQuery(LambdaEsQueryWrapper<T> wrapper);
+    @Deprecated
+    default PageInfo<T> pageQuery(LambdaEsQueryWrapper<T> wrapper) {
+        return pageQuery(wrapper, PAGE_NUM, PAGE_SIZE);
+    }
 
     /**
      * 指定返回类型及分页参数
@@ -138,12 +146,23 @@ public interface BaseEsMapper<T> {
     PageInfo<T> pageQuery(LambdaEsQueryWrapper<T> wrapper, Integer pageNum, Integer pageSize);
 
     /**
-     * 获取总数
+     * 获取总数 默认根据折叠参数去重
      *
      * @param wrapper 条件
      * @return 总数
      */
-    Long selectCount(LambdaEsQueryWrapper<T> wrapper);
+    default Long selectCount(LambdaEsQueryWrapper<T> wrapper) {
+        return selectCount(wrapper, true);
+    }
+
+    /**
+     * 是否去重获取总数
+     *
+     * @param wrapper  条件
+     * @param distinct 是否去重
+     * @return 总数
+     */
+    Long selectCount(LambdaEsQueryWrapper<T> wrapper, boolean distinct);
 
     /**
      * 插入一条记录

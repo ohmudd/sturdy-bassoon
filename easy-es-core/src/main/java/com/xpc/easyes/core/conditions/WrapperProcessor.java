@@ -3,6 +3,7 @@ package com.xpc.easyes.core.conditions;
 import com.xpc.easyes.core.cache.GlobalConfigCache;
 import com.xpc.easyes.core.common.EntityInfo;
 import com.xpc.easyes.core.config.GlobalConfig;
+import com.xpc.easyes.core.enums.AggregationTypeEnum;
 import com.xpc.easyes.core.enums.BaseEsParamTypeEnum;
 import com.xpc.easyes.core.enums.EsAttachTypeEnum;
 import com.xpc.easyes.core.params.AggregationParam;
@@ -12,13 +13,10 @@ import com.xpc.easyes.core.toolkit.*;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
-import org.elasticsearch.search.aggregations.metrics.AvgAggregationBuilder;
-import org.elasticsearch.search.aggregations.metrics.MaxAggregationBuilder;
-import org.elasticsearch.search.aggregations.metrics.MinAggregationBuilder;
-import org.elasticsearch.search.aggregations.metrics.SumAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -26,8 +24,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.xpc.easyes.core.constants.BaseEsConstants.DEFAULT_SIZE;
-import static com.xpc.easyes.core.constants.BaseEsConstants.SCORE_FIELD;
+import static com.xpc.easyes.core.constants.BaseEsConstants.*;
 import static com.xpc.easyes.core.enums.BaseEsParamTypeEnum.*;
 
 /**
@@ -76,7 +73,9 @@ public class WrapperProcessor {
         boolean hasOuterOr = false;
         for (int i = 0; i < baseEsParamList.size(); i++) {
             BaseEsParam baseEsParam = baseEsParamList.get(i);
-            if (Objects.equals(BaseEsParamTypeEnum.AND_LEFT_BRACKET.getType(), baseEsParam.getType()) || Objects.equals(OR_LEFT_BRACKET.getType(), baseEsParam.getType())) {
+            boolean hasLogicOperator = Objects.equals(BaseEsParamTypeEnum.AND_LEFT_BRACKET.getType(), baseEsParam.getType())
+                    || Objects.equals(OR_LEFT_BRACKET.getType(), baseEsParam.getType());
+            if (hasLogicOperator) {
                 // 说明有and或者or
                 for (int j = i + 1; j < baseEsParamList.size(); j++) {
                     if (Objects.equals(baseEsParamList.get(j).getType(), OR_ALL.getType())) {
@@ -533,6 +532,14 @@ public class WrapperProcessor {
      */
     private static void setAggregations(LambdaEsQueryWrapper<?> wrapper, Map<String, String> mappingColumnMap,
                                         SearchSourceBuilder searchSourceBuilder) {
+        // 设置折叠(去重)字段
+        Optional.ofNullable(wrapper.distinctField)
+                .ifPresent(distinctField -> {
+                    searchSourceBuilder.collapse(new CollapseBuilder(distinctField));
+                    searchSourceBuilder.aggregation(AggregationBuilders.cardinality(REPEAT_NUM_KEY).field(distinctField));
+                });
+
+        // 其它聚合
         List<AggregationParam> aggregationParamList = wrapper.aggregationParamList;
         if (CollectionUtils.isEmpty(aggregationParamList)) {
             return;
@@ -541,37 +548,54 @@ public class WrapperProcessor {
         // 获取配置
         GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
 
-        // 批量封装聚合参数
-        aggregationParamList.forEach(aggregationParam -> {
-            String realField = getRealField(aggregationParam.getField(), mappingColumnMap, dbConfig);
-            switch (aggregationParam.getAggregationType()) {
-                case AVG:
-                    AvgAggregationBuilder avg = AggregationBuilders.avg(aggregationParam.getName()).field(realField);
-                    searchSourceBuilder.aggregation(avg);
-                    break;
-                case MIN:
-                    MinAggregationBuilder min = AggregationBuilders.min(aggregationParam.getName()).field(realField);
-                    searchSourceBuilder.aggregation(min);
-                    break;
-                case MAX:
-                    MaxAggregationBuilder max = AggregationBuilders.max(aggregationParam.getName()).field(realField);
-                    searchSourceBuilder.aggregation(max);
-                    break;
-                case SUM:
-                    SumAggregationBuilder sum = AggregationBuilders.sum(aggregationParam.getName()).field(realField);
-                    searchSourceBuilder.aggregation(sum);
-                    break;
-                case TERMS:
-                    TermsAggregationBuilder terms = AggregationBuilders.terms(aggregationParam.getName()).field(realField);
-                    searchSourceBuilder.aggregation(terms);
-                    break;
-                default:
-                    throw new UnsupportedOperationException("不支持的聚合类型,参见AggregationTypeEnum");
+        // 构建聚合树
+        AggregationBuilder root = null;
+        AggregationBuilder cursor = null;
+        for (AggregationParam aggParam : aggregationParamList) {
+            String realField = getRealField(aggParam.getField(), mappingColumnMap, dbConfig);
+            AggregationBuilder builder = getRealAggregationBuilder(aggParam.getAggregationType(), aggParam.getName(), realField);
+            if (root == null) {
+                root = builder;
+                cursor = root;
+            } else {
+                cursor.subAggregation(builder);
+                cursor = builder;
             }
-
-        });
+        }
+        searchSourceBuilder.aggregation(root);
     }
 
+    /**
+     * 根据聚合类型获取具体的聚合建造者
+     *
+     * @param aggType   聚合类型
+     * @param name      聚合返回桶的名称 保持原字段名称
+     * @param realField 原字段名称
+     * @return 聚合建造者
+     */
+    private static AggregationBuilder getRealAggregationBuilder(AggregationTypeEnum aggType, String name, String realField) {
+        AggregationBuilder aggregationBuilder;
+        switch (aggType) {
+            case AVG:
+                aggregationBuilder = AggregationBuilders.avg(name).field(realField);
+                break;
+            case MIN:
+                aggregationBuilder = AggregationBuilders.min(name).field(realField);
+                break;
+            case MAX:
+                aggregationBuilder = AggregationBuilders.max(name).field(realField);
+                break;
+            case SUM:
+                aggregationBuilder = AggregationBuilders.sum(name).field(realField);
+                break;
+            case TERMS:
+                aggregationBuilder = AggregationBuilders.terms(name).field(realField).size(Integer.MAX_VALUE);
+                break;
+            default:
+                throw new UnsupportedOperationException("不支持的聚合类型,参见AggregationTypeEnum");
+        }
+        return aggregationBuilder;
+    }
 
     /**
      * 获取实际字段名

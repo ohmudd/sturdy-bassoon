@@ -54,6 +54,10 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      */
     protected List<AggregationParam> aggregationParamList;
     /**
+     * 折叠去重字段
+     */
+    protected String distinctField;
+    /**
      * geo相关参数
      */
     protected GeoParam geoParam;
@@ -297,6 +301,14 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     @Override
     public Children sum(boolean condition, String returnName, R column) {
         return doIt(condition, AggregationTypeEnum.SUM, returnName, column);
+    }
+
+    @Override
+    public Children distinct(boolean condition, R column) {
+        if (condition) {
+            this.distinctField = FieldUtils.getFieldName(column);
+        }
+        return typedThis;
     }
 
     @Override

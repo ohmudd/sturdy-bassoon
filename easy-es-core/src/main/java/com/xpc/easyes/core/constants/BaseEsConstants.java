@@ -162,4 +162,12 @@ public interface BaseEsConstants {
      * 默认副本数
      */
     int DEFAULT_REPLICAS = 1;
+    /**
+     * 被折叠的重复数据数量的key
+     */
+    String REPEAT_NUM_KEY = "repeat_num";
+    /**
+     * 获取折叠重复数据数量key
+     */
+    String CARDINALITY_AGG = "cardinality";
 }
