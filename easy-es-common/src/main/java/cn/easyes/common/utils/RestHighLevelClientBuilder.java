@@ -20,7 +20,7 @@ public class RestHighLevelClientBuilder {
     public static RestHighLevelClient build(RestClientBuilder builder) {
         RestHighLevelClient restHighLevelClient = new RestHighLevelClient(builder);
         // 检验es版本是否对应
-        EsVersionUtil.verify(restHighLevelClient);
+        EEVersionUtil.verify(restHighLevelClient);
         return restHighLevelClient;
     }
 

@@ -7,17 +7,31 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.MainResponse;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
- * elasticsearch 版本工具类
+ * ee 版本工具类
+ *
+ * @author dys
+ * @since 0.9.80
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class EsVersionUtil {
+public class EEVersionUtil {
 
     /**
      * 支持的版本 目前支持版本为7.xx 推荐7.14.0
      */
     private final static String supportedVersion = "7";
+
+    /**
+     * 获取EE版本号
+     *
+     * @return ee version
+     */
+    public static String getEEVersion() {
+        return Optional.ofNullable(EEVersionUtil.class.getPackage().getImplementationVersion()).
+                orElse("unknown");
+    }
 
     /**
      * 获取es jar包版本
