@@ -19,13 +19,34 @@
 
 ![非平滑模式.png](https://iknow.hs.net/0b1b4d41-cac5-410f-bae1-9a0b3557da75.png)
 > 以上两种自动模式中,索引信息主要依托于实体类,如果用户未对该实体类进行任何配置,EE依然能够根据字段类型智能推断出该字段在ES中的存储类型,此举可进一步减轻开发者负担,对刚接触ES的小白更是福音.
+
 >当然,仅靠框架自动推断是不够的,我们仍然建议您在使用中尽量进行详细的配置,以便框架能自动创建出生产级的索引.举个例子,例如String类型字段,框架无法推断出您实际查询中对该字段是精确查询还是分词查询,所以它无法推断出该字段到底用keyword类型还是text类型,倘若是text类型,用户期望的分词器是什么? 这些都需要用户通过配置告诉框架,否则框架只能按默认值进行创建,届时将不能很好地完成您的期望.
+
 自动推断映射表:
+| JAVA | ES |
+| --- | --- |
+| byte | byte |
+| short | short|
+| int | integer|
+| long | long |
+| float | float |
+| double | double |
+| BigDecimal | keyword |
+| char | keyword |
+| String | keyword |
+| boolean | boolean |
+| Date | date |
+| LocalDate | date |
+| LocalDateTime | date |
+| List | text |
+| ... | ... |
+
+> Tips:自动推断类型的优先级 < 用户通过注解指定的类型优先级
 
 "自动挡"模式下的最佳实践示例:
 ```java
 @Data
-@TableName(shardsNum = 3,replicasNum = 2)
+@TableName(shardsNum = 3,replicasNum = 2) // 可指定分片数,副本数,若缺省则默认均为1
 public class Document {
     /**
      * es中的唯一id,如果你想自定义es中的id为你提供的id,比如MySQL中的id,请将注解中的type指定为customize,如此id便支持任意数据类型)
