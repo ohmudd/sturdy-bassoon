@@ -81,7 +81,7 @@ CRUD示例:
         comment.setId("2");
         comment.setCommentContent("我是文档的评论1");
 
-        // 这里特别注意,子文档必须指定其父亲的id,否则找不到父文档别怪我没提醒
+        // 这里特别注意,子文档必须指定其父文档的id,否则找不到父文档别怪我没提醒
         joinField.setParent("1");
         joinField.setName("comment");
         comment.setJoinField(joinField);
@@ -123,12 +123,12 @@ CRUD示例:
         // case1: 父文档/子文档 根据各自的id更新
         Document document = new Document();
         document.setId("1");
-        document.setTitle("我是隔壁old王标题");
+        document.setTitle("我是ge壁old王标题");
         documentMapper.updateById(document);
 
         // case2: 父文档/子文档 根据各自条件更新
         Comment comment = new Comment();
-        comment.setCommentContent("我是隔壁old王的评论");
+        comment.setCommentContent("我是ge壁old王的评论");
         LambdaEsUpdateWrapper<Comment> wrapper = new LambdaEsUpdateWrapper<>();
         wrapper.match(Comment::getCommentContent, "评论");
         commentMapper.update(comment, wrapper);
