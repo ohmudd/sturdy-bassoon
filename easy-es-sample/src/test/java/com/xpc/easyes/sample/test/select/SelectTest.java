@@ -32,6 +32,9 @@ public class SelectTest {
         String title = "老汉";
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.eq(Document::getTitle, title);
+        // 字段名亦可指定为字符串,不推荐
+//        wrapper.eq("title",title);
+
         wrapper.limit(1);
         Document document = documentMapper.selectOne(wrapper);
         System.out.println(document);

@@ -70,6 +70,7 @@ public class InsertTest {
         document.setContent("推*技术过硬");
         document.setCreator("隔壁老王");
 
+
         document.setGmtCreate(now);
         document.setCustomField("乌拉巴拉小魔仙");
         document.setLocation("40.17836693398477,116.64002551005981");

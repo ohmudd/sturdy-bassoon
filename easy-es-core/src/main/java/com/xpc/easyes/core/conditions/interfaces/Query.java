@@ -1,8 +1,10 @@
 package com.xpc.easyes.core.conditions.interfaces;
 
 import com.xpc.easyes.core.common.EntityFieldInfo;
+import com.xpc.easyes.core.toolkit.FieldUtils;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.function.Predicate;
 
 /**
@@ -12,13 +14,18 @@ import java.util.function.Predicate;
  **/
 public interface Query<Children, T, R> extends Serializable {
 
+    default Children select(R... columns) {
+        return select(Arrays.stream(columns).map(FieldUtils::getFieldName).toArray(String[]::new));
+    }
+
+
     /**
      * 设置查询字段
      *
      * @param columns 查询列,支持多字段
      * @return 泛型
      */
-    Children select(R... columns);
+    Children select(String... columns);
 
     /**
      * 查询字段
@@ -37,13 +44,17 @@ public interface Query<Children, T, R> extends Serializable {
      */
     Children select(Class<T> entityClass, Predicate<EntityFieldInfo> predicate);
 
+    default Children notSelect(R... columns) {
+        return notSelect(Arrays.stream(columns).map(FieldUtils::getFieldName).toArray(String[]::new));
+    }
+
     /**
      * 设置不查询字段
      *
      * @param columns 不查询字段,支持多字段
      * @return 泛型
      */
-    Children notSelect(R... columns);
+    Children notSelect(String... columns);
 
     /**
      * 从第几条数据开始查询

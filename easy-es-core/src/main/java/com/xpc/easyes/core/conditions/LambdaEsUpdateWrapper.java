@@ -4,7 +4,6 @@ import com.xpc.easyes.core.conditions.interfaces.SFunction;
 import com.xpc.easyes.core.conditions.interfaces.Update;
 import com.xpc.easyes.core.params.BaseEsParam;
 import com.xpc.easyes.core.params.EsUpdateParam;
-import com.xpc.easyes.core.toolkit.FieldUtils;
 import org.elasticsearch.action.search.SearchRequest;
 
 import java.util.ArrayList;
@@ -51,10 +50,10 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
     }
 
     @Override
-    public LambdaEsUpdateWrapper<T> set(boolean condition, SFunction<T, ?> column, Object val) {
+    public LambdaEsUpdateWrapper<T> set(boolean condition, String column, Object val) {
         if (condition) {
             EsUpdateParam esUpdateParam = new EsUpdateParam();
-            esUpdateParam.setField(FieldUtils.getFieldName(column));
+            esUpdateParam.setField(column);
             esUpdateParam.setValue(val);
             updateParamList.add(esUpdateParam);
         }

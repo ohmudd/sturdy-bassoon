@@ -1,9 +1,11 @@
 package com.xpc.easyes.core.conditions.interfaces;
 
+import com.xpc.easyes.core.toolkit.FieldUtils;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.Operator;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import static com.xpc.easyes.core.constants.BaseEsConstants.*;
 
@@ -26,6 +28,22 @@ public interface Compare<Children, R> extends Serializable {
         return eq(condition, column, val, DEFAULT_BOOST);
     }
 
+    default Children eq(String column, Object val) {
+        return eq(true, column, val);
+    }
+
+    default Children eq(String column, Object val, Float boost) {
+        return eq(true, column, val, boost);
+    }
+
+    default Children eq(boolean condition, String column, Object val) {
+        return eq(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children eq(boolean condition, R column, Object val, Float boost) {
+        return eq(condition, FieldUtils.getFieldName(column), val, boost);
+    }
+
     /**
      * 等于
      *
@@ -35,7 +53,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children eq(boolean condition, R column, Object val, Float boost);
+    Children eq(boolean condition, String column, Object val, Float boost);
 
     default Children ne(R column, Object val) {
         return ne(true, column, val);
@@ -49,6 +67,22 @@ public interface Compare<Children, R> extends Serializable {
         return ne(condition, column, val, DEFAULT_BOOST);
     }
 
+    default Children ne(String column, Object val) {
+        return ne(true, column, val);
+    }
+
+    default Children ne(String column, Object val, Float boost) {
+        return ne(true, column, val, boost);
+    }
+
+    default Children ne(boolean condition, String column, Object val) {
+        return ne(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children ne(boolean condition, R column, Object val, Float boost) {
+        return ne(condition, FieldUtils.getFieldName(column), val, boost);
+    }
+
     /**
      * 不等于
      *
@@ -58,7 +92,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重值
      * @return 泛型
      */
-    Children ne(boolean condition, R column, Object val, Float boost);
+    Children ne(boolean condition, String column, Object val, Float boost);
 
     default Children match(R column, Object val) {
         return match(true, column, val);
@@ -71,6 +105,34 @@ public interface Compare<Children, R> extends Serializable {
     default Children match(boolean condition, R column, Object val) {
         return match(condition, column, val, DEFAULT_BOOST);
     }
+
+    default Children match(String column, Object val) {
+        return match(true, column, val);
+    }
+
+    default Children match(String column, Object val, Float boost) {
+        return match(true, column, val, boost);
+    }
+
+    default Children match(boolean condition, String column, Object val) {
+        return match(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children match(boolean condition, R column, Object val, Float boost) {
+        return match(condition, FieldUtils.getFieldName(column), val, boost);
+    }
+
+    /**
+     * match 分词匹配
+     *
+     * @param condition 条件
+     * @param column    列
+     * @param val       值
+     * @param boost     权重值
+     * @return 泛型
+     */
+    Children match(boolean condition, String column, Object val, Float boost);
+
 
     default Children nestedMatch(R path, String column, Object val) {
         return nestedMatch(true, path, column, val, ScoreMode.Avg, DEFAULT_BOOST);
@@ -100,18 +162,9 @@ public interface Compare<Children, R> extends Serializable {
         return nestedMatch(true, path, column, val, scoreMode, boost);
     }
 
-    /**
-     * 嵌套查询
-     *
-     * @param condition 条件
-     * @param path      路径
-     * @param column    列名
-     * @param val       值
-     * @param scoreMode 得分模式 默认为均值
-     * @param boost     权重
-     * @return 泛型
-     */
-    Children nestedMatch(boolean condition, R path, String column, Object val, ScoreMode scoreMode, Float boost);
+    default Children nestedMatch(boolean condition, R path, String column, Object val, ScoreMode scoreMode, Float boost) {
+        return nestedMatch(condition, FieldUtils.getFieldName(path), column, val, scoreMode, boost);
+    }
 
     default Children nestedMatch(String path, String column, Object val) {
         return nestedMatch(true, path, column, val, ScoreMode.Avg, DEFAULT_BOOST);
@@ -154,29 +207,32 @@ public interface Compare<Children, R> extends Serializable {
      */
     Children nestedMatch(boolean condition, String path, String column, Object val, ScoreMode scoreMode, Float boost);
 
-
-    /**
-     * match 分词匹配
-     *
-     * @param condition 条件
-     * @param column    列
-     * @param val       值
-     * @param boost     权重值
-     * @return 泛型
-     */
-    Children match(boolean condition, R column, Object val, Float boost);
-
-
     default Children matchPhase(R column, Object val) {
         return matchPhase(true, column, val, DEFAULT_BOOST);
     }
 
-    default Children matchPhase(boolean condition, R colmun, Object val) {
-        return matchPhase(condition, colmun, val, DEFAULT_BOOST);
+    default Children matchPhase(boolean condition, R column, Object val) {
+        return matchPhase(condition, column, val, DEFAULT_BOOST);
     }
 
     default Children matchPhase(R column, Object val, Float boost) {
         return matchPhase(true, column, val, boost);
+    }
+
+    default Children matchPhase(String column, Object val) {
+        return matchPhase(true, column, val, DEFAULT_BOOST);
+    }
+
+    default Children matchPhase(boolean condition, String column, Object val) {
+        return matchPhase(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children matchPhase(String column, Object val, Float boost) {
+        return matchPhase(true, column, val, boost);
+    }
+
+    default Children matchPhase(boolean condition, R column, Object val, Float boost) {
+        return matchPhase(condition, FieldUtils.getFieldName(column), val, boost);
     }
 
     /**
@@ -188,7 +244,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重值
      * @return 泛型
      */
-    Children matchPhase(boolean condition, R column, Object val, Float boost);
+    Children matchPhase(boolean condition, String column, Object val, Float boost);
 
 
     default Children matchAllQuery() {
@@ -224,6 +280,31 @@ public interface Compare<Children, R> extends Serializable {
         return matchPhrasePrefixQuery(true, column, val, maxExpansions, boost);
     }
 
+
+    default Children matchPhrasePrefixQuery(String column, Object val) {
+        return matchPhrasePrefixQuery(true, column, val, DEFAULT_MAX_EXPANSIONS, DEFAULT_BOOST);
+    }
+
+    default Children matchPhrasePrefixQuery(boolean condition, String column, Object val) {
+        return matchPhrasePrefixQuery(condition, column, val, DEFAULT_MAX_EXPANSIONS, DEFAULT_BOOST);
+    }
+
+    default Children matchPhrasePrefixQuery(String column, Object val, Float boost) {
+        return matchPhrasePrefixQuery(true, column, val, DEFAULT_MAX_EXPANSIONS, boost);
+    }
+
+    default Children matchPhrasePrefixQuery(String column, Object val, int maxExpansions) {
+        return matchPhrasePrefixQuery(true, column, val, maxExpansions, DEFAULT_BOOST);
+    }
+
+    default Children matchPhrasePrefixQuery(String column, Object val, int maxExpansions, Float boost) {
+        return matchPhrasePrefixQuery(true, column, val, maxExpansions, boost);
+    }
+
+    default Children matchPhrasePrefixQuery(boolean condition, R column, Object val, int maxExpansions, Float boost) {
+        return matchPhrasePrefixQuery(condition, FieldUtils.getFieldName(column), val, maxExpansions, boost);
+    }
+
     /**
      * 前缀匹配
      *
@@ -234,7 +315,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost         权重值
      * @return 泛型
      */
-    Children matchPhrasePrefixQuery(boolean condition, R column, Object val, int maxExpansions, Float boost);
+    Children matchPhrasePrefixQuery(boolean condition, String column, Object val, int maxExpansions, Float boost);
 
 
     default Children multiMatchQuery(Object val, R... columns) {
@@ -273,6 +354,47 @@ public interface Compare<Children, R> extends Serializable {
         return multiMatchQuery(true, val, operator, minimumShouldMatch, boost, columns);
     }
 
+    default Children multiMatchQuery(Object val, String... columns) {
+        return multiMatchQuery(true, val, columns);
+    }
+
+    default Children multiMatchQuery(boolean condition, Object val, String... columns) {
+        return multiMatchQuery(condition, val, Operator.OR, DEFAULT_MIN_SHOULD_MATCH, DEFAULT_BOOST, columns);
+    }
+
+    default Children multiMatchQuery(Object val, Float boost, String... columns) {
+        return multiMatchQuery(true, val, Operator.OR, DEFAULT_MIN_SHOULD_MATCH, boost, columns);
+    }
+
+    default Children multiMatchQuery(Object val, int minimumShouldMatch, String... columns) {
+        return multiMatchQuery(true, val, Operator.OR, minimumShouldMatch, DEFAULT_BOOST, columns);
+    }
+
+    default Children multiMatchQuery(Object val, Operator operator, int minimumShouldMatch, String... columns) {
+        return multiMatchQuery(true, val, operator, minimumShouldMatch, DEFAULT_BOOST, columns);
+    }
+
+    default Children multiMatchQuery(Object val, Operator operator, String... columns) {
+        return multiMatchQuery(true, val, operator, DEFAULT_MIN_SHOULD_MATCH, DEFAULT_BOOST, columns);
+    }
+
+    default Children multiMatchQuery(Object val, int minimumShouldMatch, Float boost, String... columns) {
+        return multiMatchQuery(true, val, Operator.OR, minimumShouldMatch, boost, columns);
+    }
+
+    default Children multiMatchQuery(Object val, Operator operator, Float boost, String... columns) {
+        return multiMatchQuery(true, val, operator, DEFAULT_MIN_SHOULD_MATCH, boost, columns);
+    }
+
+    default Children multiMatchQuery(Object val, Operator operator, int minimumShouldMatch, Float boost, String... columns) {
+        return multiMatchQuery(true, val, operator, minimumShouldMatch, boost, columns);
+    }
+
+    default Children multiMatchQuery(boolean condition, Object val, Operator operator, int minimumShouldMatch, Float boost, R... columns) {
+        String[] fields = Arrays.stream(columns).map(FieldUtils::getFieldName).toArray(String[]::new);
+        return multiMatchQuery(condition, val, operator, minimumShouldMatch, boost, fields);
+    }
+
     /**
      * 多字段匹配
      *
@@ -284,7 +406,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param minimumShouldMatch 最小匹配度 百分比
      * @return 泛型
      */
-    Children multiMatchQuery(boolean condition, Object val, Operator operator, int minimumShouldMatch, Float boost, R... columns);
+    Children multiMatchQuery(boolean condition, Object val, Operator operator, int minimumShouldMatch, Float boost, String... columns);
 
 
     default Children queryStringQuery(String queryString) {
@@ -318,6 +440,22 @@ public interface Compare<Children, R> extends Serializable {
         return prefixQuery(true, column, prefix, boost);
     }
 
+    default Children prefixQuery(String column, String prefix) {
+        return prefixQuery(true, column, prefix);
+    }
+
+    default Children prefixQuery(boolean condition, String column, String prefix) {
+        return prefixQuery(true, column, prefix, DEFAULT_BOOST);
+    }
+
+    default Children prefixQuery(String column, String prefix, Float boost) {
+        return prefixQuery(true, column, prefix, boost);
+    }
+
+    default Children prefixQuery(boolean condition, R column, String prefix, Float boost) {
+        return prefixQuery(condition, FieldUtils.getFieldName(column), prefix, boost);
+    }
+
     /**
      * 前缀匹配搜索
      *
@@ -327,7 +465,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重值
      * @return 泛型
      */
-    Children prefixQuery(boolean condition, R column, String prefix, Float boost);
+    Children prefixQuery(boolean condition, String column, String prefix, Float boost);
 
 
     default Children notMatch(R column, Object val) {
@@ -342,6 +480,22 @@ public interface Compare<Children, R> extends Serializable {
         return notMatch(condition, column, val, DEFAULT_BOOST);
     }
 
+    default Children notMatch(String column, Object val) {
+        return notMatch(true, column, val);
+    }
+
+    default Children notMatch(String column, Object val, Float boost) {
+        return notMatch(true, column, val, boost);
+    }
+
+    default Children notMatch(boolean condition, String column, Object val) {
+        return notMatch(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children notMatch(boolean condition, R column, Object val, Float boost) {
+        return notMatch(condition, FieldUtils.getFieldName(column), val, boost);
+    }
+
     /**
      * NOT MATCH 分词不匹配
      *
@@ -351,7 +505,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children notMatch(boolean condition, R column, Object val, Float boost);
+    Children notMatch(boolean condition, String column, Object val, Float boost);
 
     default Children gt(R column, Object val) {
         return gt(true, column, val);
@@ -365,6 +519,23 @@ public interface Compare<Children, R> extends Serializable {
         return gt(condition, column, val, DEFAULT_BOOST);
     }
 
+
+    default Children gt(String column, Object val) {
+        return gt(true, column, val);
+    }
+
+    default Children gt(String column, Object val, Float boost) {
+        return gt(true, column, val, boost);
+    }
+
+    default Children gt(boolean condition, String column, Object val) {
+        return gt(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children gt(boolean condition, R column, Object val, Float boost) {
+        return gt(condition, FieldUtils.getFieldName(column), val, boost);
+    }
+
     /**
      * 大于
      *
@@ -374,7 +545,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children gt(boolean condition, R column, Object val, Float boost);
+    Children gt(boolean condition, String column, Object val, Float boost);
 
     default Children ge(R column, Object val) {
         return ge(true, column, val);
@@ -388,6 +559,22 @@ public interface Compare<Children, R> extends Serializable {
         return ge(condition, column, val, DEFAULT_BOOST);
     }
 
+    default Children ge(String column, Object val) {
+        return ge(true, column, val);
+    }
+
+    default Children ge(String column, Object val, Float boost) {
+        return ge(true, column, val, boost);
+    }
+
+    default Children ge(boolean condition, String column, Object val) {
+        return ge(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children ge(boolean condition, R column, Object val, Float boost) {
+        return ge(condition, FieldUtils.getFieldName(column), val, boost);
+    }
+
     /**
      * 大于等于
      *
@@ -397,7 +584,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children ge(boolean condition, R column, Object val, Float boost);
+    Children ge(boolean condition, String column, Object val, Float boost);
 
     default Children lt(R column, Object val) {
         return lt(true, column, val);
@@ -411,6 +598,22 @@ public interface Compare<Children, R> extends Serializable {
         return lt(condition, column, val, DEFAULT_BOOST);
     }
 
+    default Children lt(String column, Object val) {
+        return lt(true, column, val);
+    }
+
+    default Children lt(String column, Object val, Float boost) {
+        return lt(true, column, val, boost);
+    }
+
+    default Children lt(boolean condition, String column, Object val) {
+        return lt(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children lt(boolean condition, R column, Object val, Float boost) {
+        return lt(condition, FieldUtils.getFieldName(column), val, boost);
+    }
+
     /**
      * 小于
      *
@@ -420,7 +623,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children lt(boolean condition, R column, Object val, Float boost);
+    Children lt(boolean condition, String column, Object val, Float boost);
 
     default Children le(R column, Object val) {
         return le(true, column, val);
@@ -434,6 +637,22 @@ public interface Compare<Children, R> extends Serializable {
         return le(condition, column, val, DEFAULT_BOOST);
     }
 
+    default Children le(String column, Object val) {
+        return le(true, column, val);
+    }
+
+    default Children le(String column, Object val, Float boost) {
+        return le(true, column, val, boost);
+    }
+
+    default Children le(boolean condition, String column, Object val) {
+        return le(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children le(boolean condition, R column, Object val, Float boost) {
+        return le(condition, FieldUtils.getFieldName(column), val, boost);
+    }
+
     /**
      * 小于等于
      *
@@ -443,7 +662,8 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children le(boolean condition, R column, Object val, Float boost);
+    Children le(boolean condition, String column, Object val, Float boost);
+
 
     default Children between(R column, Object val1, Object val2) {
         return between(true, column, val1, val2);
@@ -457,6 +677,22 @@ public interface Compare<Children, R> extends Serializable {
         return between(condition, column, val1, val2, DEFAULT_BOOST);
     }
 
+    default Children between(String column, Object val1, Object val2) {
+        return between(true, column, val1, val2);
+    }
+
+    default Children between(String column, Object val1, Object val2, Float boost) {
+        return between(true, column, val1, val2, boost);
+    }
+
+    default Children between(boolean condition, String column, Object val1, Object val2) {
+        return between(condition, column, val1, val2, DEFAULT_BOOST);
+    }
+
+    default Children between(boolean condition, R column, Object val1, Object val2, Float boost) {
+        return between(condition, FieldUtils.getFieldName(column), val1, val2, boost);
+    }
+
     /**
      * BETWEEN 值1 AND 值2
      *
@@ -467,7 +703,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children between(boolean condition, R column, Object val1, Object val2, Float boost);
+    Children between(boolean condition, String column, Object val1, Object val2, Float boost);
 
 
     default Children notBetween(R column, Object val1, Object val2) {
@@ -482,6 +718,22 @@ public interface Compare<Children, R> extends Serializable {
         return notBetween(condition, column, val1, val2, DEFAULT_BOOST);
     }
 
+    default Children notBetween(String column, Object val1, Object val2) {
+        return notBetween(true, column, val1, val2);
+    }
+
+    default Children notBetween(String column, Object val1, Object val2, Float boost) {
+        return notBetween(true, column, val1, val2, boost);
+    }
+
+    default Children notBetween(boolean condition, String column, Object val1, Object val2) {
+        return notBetween(condition, column, val1, val2, DEFAULT_BOOST);
+    }
+
+    default Children notBetween(boolean condition, R column, Object val1, Object val2, Float boost) {
+        return notBetween(condition, FieldUtils.getFieldName(column), val1, val2, boost);
+    }
+
     /**
      * NOT BETWEEN 值1 AND 值2
      *
@@ -492,7 +744,8 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children notBetween(boolean condition, R column, Object val1, Object val2, Float boost);
+    Children notBetween(boolean condition, String column, Object val1, Object val2, Float boost);
+
 
     default Children like(R column, Object val) {
         return like(true, column, val);
@@ -506,6 +759,22 @@ public interface Compare<Children, R> extends Serializable {
         return like(condition, column, val, DEFAULT_BOOST);
     }
 
+    default Children like(String column, Object val) {
+        return like(true, column, val);
+    }
+
+    default Children like(String column, Object val, Float boost) {
+        return like(true, column, val, boost);
+    }
+
+    default Children like(boolean condition, String column, Object val) {
+        return like(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children like(boolean condition, R column, Object val, Float boost) {
+        return like(condition, FieldUtils.getFieldName(column), val, boost);
+    }
+
     /**
      * like 左右皆模糊
      *
@@ -515,7 +784,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children like(boolean condition, R column, Object val, Float boost);
+    Children like(boolean condition, String column, Object val, Float boost);
 
     default Children notLike(R column, Object val) {
         return notLike(true, column, val);
@@ -529,6 +798,22 @@ public interface Compare<Children, R> extends Serializable {
         return notLike(condition, column, val, DEFAULT_BOOST);
     }
 
+    default Children notLike(String column, Object val) {
+        return notLike(true, column, val);
+    }
+
+    default Children notLike(String column, Object val, Float boost) {
+        return notLike(true, column, val, boost);
+    }
+
+    default Children notLike(boolean condition, String column, Object val) {
+        return notLike(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children notLike(boolean condition, R column, Object val, Float boost) {
+        return notLike(condition, FieldUtils.getFieldName(column), val, boost);
+    }
+
     /**
      * NOT LIKE
      *
@@ -538,7 +823,7 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children notLike(boolean condition, R column, Object val, Float boost);
+    Children notLike(boolean condition, String column, Object val, Float boost);
 
     default Children likeLeft(R column, Object val) {
         return likeLeft(true, column, val, DEFAULT_BOOST);
@@ -546,6 +831,18 @@ public interface Compare<Children, R> extends Serializable {
 
     default Children likeLeft(R column, Object val, Float boost) {
         return likeLeft(true, column, val, boost);
+    }
+
+    default Children likeLeft(String column, Object val) {
+        return likeLeft(true, column, val, DEFAULT_BOOST);
+    }
+
+    default Children likeLeft(String column, Object val, Float boost) {
+        return likeLeft(true, column, val, boost);
+    }
+
+    default Children likeLeft(boolean condition, R column, Object val, Float boost) {
+        return likeLeft(condition, FieldUtils.getFieldName(column), val, boost);
     }
 
     /**
@@ -557,16 +854,27 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children likeLeft(boolean condition, R column, Object val, Float boost);
+    Children likeLeft(boolean condition, String column, Object val, Float boost);
 
 
     default Children likeRight(R column, Object val) {
         return likeRight(true, column, val, DEFAULT_BOOST);
     }
 
-
     default Children likeRight(R column, Object val, Float boost) {
         return likeRight(true, column, val, boost);
+    }
+
+    default Children likeRight(String column, Object val) {
+        return likeRight(true, column, val, DEFAULT_BOOST);
+    }
+
+    default Children likeRight(String column, Object val, Float boost) {
+        return likeRight(true, column, val, boost);
+    }
+
+    default Children likeRight(boolean condition, R column, Object val, Float boost) {
+        return likeRight(condition, FieldUtils.getFieldName(column), val, boost);
     }
 
     /**
@@ -578,5 +886,5 @@ public interface Compare<Children, R> extends Serializable {
      * @param boost     权重
      * @return 泛型
      */
-    Children likeRight(boolean condition, R column, Object val, Float boost);
+    Children likeRight(boolean condition, String column, Object val, Float boost);
 }

@@ -1,5 +1,7 @@
 package com.xpc.easyes.core.conditions.interfaces;
 
+import com.xpc.easyes.core.toolkit.FieldUtils;
+
 import java.io.Serializable;
 
 /**
@@ -12,6 +14,14 @@ public interface Update<Children, R> extends Serializable {
         return set(true, column, val);
     }
 
+    default Children set(String column, Object val) {
+        return set(true, column, val);
+    }
+
+    default Children set(boolean condition, R column, Object val) {
+        return set(condition, FieldUtils.getFieldName(column), val);
+    }
+
     /**
      * 设置 更新 SQL 的 SET 片段
      *
@@ -20,7 +30,8 @@ public interface Update<Children, R> extends Serializable {
      * @param val       值
      * @return 泛型
      */
-    Children set(boolean condition, R column, Object val);
+    Children set(boolean condition, String column, Object val);
+
 
     default Children index(String indexName) {
         return index(true, indexName);

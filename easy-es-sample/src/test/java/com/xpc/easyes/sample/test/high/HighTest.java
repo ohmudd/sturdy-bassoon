@@ -124,7 +124,7 @@ public class HighTest {
         String customField = "乌拉";
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.match(Document::getCustomField, customField);
-        PageInfo<Document> documentPageInfo = documentMapper.pageQuery(wrapper);
+        PageInfo<Document> documentPageInfo = documentMapper.pageQuery(wrapper,1,10);
         System.out.println(documentPageInfo);
     }
 

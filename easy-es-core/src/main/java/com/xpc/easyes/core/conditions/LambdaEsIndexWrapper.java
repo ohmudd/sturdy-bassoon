@@ -115,13 +115,6 @@ public class LambdaEsIndexWrapper<T> extends Wrapper<T> implements Index<LambdaE
     }
 
     @Override
-    public LambdaEsIndexWrapper<T> mapping(SFunction<T, ?> column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat) {
-        String fieldName = FieldUtils.getFieldName(column);
-        addEsIndexParam(fieldName, fieldType, analyzer, analyzer, dateFormat);
-        return typedThis;
-    }
-
-    @Override
     public LambdaEsIndexWrapper<T> mapping(String column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat) {
         addEsIndexParam(column, fieldType, analyzer, analyzer, dateFormat);
         return typedThis;

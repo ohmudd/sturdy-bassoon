@@ -7,15 +7,11 @@ import com.xpc.easyes.core.params.AggregationParam;
 import com.xpc.easyes.core.params.BaseEsParam;
 import com.xpc.easyes.core.params.HighLightParam;
 import com.xpc.easyes.core.params.SortParam;
-import com.xpc.easyes.core.toolkit.ArrayUtils;
 import com.xpc.easyes.core.toolkit.EntityInfoHelper;
-import com.xpc.easyes.core.toolkit.FieldUtils;
 import org.elasticsearch.action.search.SearchRequest;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * 查询Lambda表达式
@@ -84,13 +80,8 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
     }
 
     @Override
-    public LambdaEsQueryWrapper<T> select(SFunction<T, ?>... columns) {
-        if (ArrayUtils.isNotEmpty(columns)) {
-            List<String> list = Arrays.stream(columns)
-                    .map(FieldUtils::getFieldName)
-                    .collect(Collectors.toList());
-            include = list.toArray(include);
-        }
+    public LambdaEsQueryWrapper<T> select(String... columns) {
+        this.include = columns;
         return typedThis;
     }
 
@@ -108,13 +99,8 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
     }
 
     @Override
-    public LambdaEsQueryWrapper<T> notSelect(SFunction<T, ?>... columns) {
-        if (ArrayUtils.isNotEmpty(columns)) {
-            List<String> list = Arrays.stream(columns)
-                    .map(FieldUtils::getFieldName)
-                    .collect(Collectors.toList());
-            exclude = list.toArray(exclude);
-        }
+    public LambdaEsQueryWrapper<T> notSelect(String... columns) {
+        this.exclude = columns;
         return typedThis;
     }
 
