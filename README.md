@@ -56,6 +56,7 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动�
     List<Document> documents = documentMapper.selectList(EsWrappers.lambdaQuery(Document.class).eq(Document::getTitle, "传统功夫").eq(Document::getCreator, "码保国"));
 ```
 
+
 ```java
     // 传统方式, 直接用RestHighLevelClient进行查询 需要19行代码,还不包含下划线转驼峰,自定义字段处理及_id处理等代码
     String indexName = "document";
