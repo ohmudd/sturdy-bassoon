@@ -632,7 +632,7 @@ public class IndexUtils {
         try {
             client.index(indexRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
-            LogUtils.formatError("saveReleaseIndex error, releaseIndexName:{}, e:{}", releaseIndexName, e.toString());
+            LogUtils.formatError("saveReleaseIndex error, releaseIndexName:%s, e:%s", releaseIndexName, e.toString());
         }
     }
 

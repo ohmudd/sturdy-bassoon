@@ -841,7 +841,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             invokeMethod.invoke(entity, distance);
         } catch (Throwable e) {
             // 遇到异常只提示, 不阻断流程 distance未设置不影核心业务
-            LogUtils.formatError("set distance error, entity:{},sortValues:{},distanceField:{},e:{}", entity, JSON.toJSONString(sortValues), distanceField, e);
+            LogUtils.formatError("set distance error, entity:%s,sortValues:%s,distanceField:%s,e:%s", entity, JSON.toJSONString(sortValues), distanceField, e);
         }
     }
 
@@ -867,7 +867,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             invokeMethod.invoke(entity, score);
         } catch (Throwable e) {
             // 遇到异常只提示, 不阻断流程 score未设置不影核心业务
-            LogUtils.formatError("set score error, entity:{},score:{},scoreField:{},e:{}", entity, score, scoreField, e);
+            LogUtils.formatError("set score error, entity:%s,score:%s,scoreField:%s,e:%s", entity, score, scoreField, e);
         }
     }
 
@@ -1110,7 +1110,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             Method invokeMethod = BaseCache.setterMethod(entityClass, highlightField);
             invokeMethod.invoke(entity, value);
         } catch (Throwable e) {
-            LogUtils.formatError("setHighlightValue error,entity:{},highlightField:{},value:{},e:{}",
+            LogUtils.formatError("setHighlightValue error,entity:%s,highlightField:%s,value:%s,e:%s",
                     entity.toString(), highlightField, value, e.toString());
         }
     }
@@ -1224,7 +1224,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             Object parent = getParentMethod.invoke(joinField);
             return parent.toString();
         } catch (Throwable e) {
-            LogUtils.formatError("build IndexRequest: child routing invoke error, joinFieldClass:{},entity:{},e:{}",
+            LogUtils.formatError("build IndexRequest: child routing invoke error, joinFieldClass:%s,entity:%s,e:%s",
                     joinFieldClass.toString(), entity.toString(), e.toString());
             throw ExceptionUtils.eee("getRouting error", e);
         }
