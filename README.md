@@ -144,10 +144,6 @@ compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Vers
 
 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-# 知识星球
-
-<img alt="zsxq" src="https://iknow.hs.net/3a400598-fb2a-4b91-9a23-d123411cb4ac.jpg">
-
 # 捐赠 | Donate
 ---
 
@@ -163,3 +159,7 @@ compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Vers
 [CSDN博客](https://blog.csdn.net/lovexiaotaozi?spm=3001.5343)
 
 QQ | 微信:252645816
+
+# 知识星球
+---
+<img alt="zsxq" src="https://iknow.hs.net/3a400598-fb2a-4b91-9a23-d123411cb4ac.jpg">
