@@ -9,9 +9,6 @@
         wrapper.mapping(Document::getTitle, FieldType.KEYWORD)
                 .mapping(Document::getContent, FieldType.TEXT);
 
-        // Version 0.9.8+ supports passing in field name String directly
-        wrapper.mapping("wu-la", FieldType.TEX);
-
         // If the above simple mapping cannot meet your business needs, you can customize the mapping
         // wrapper.mapping(Map);
 
