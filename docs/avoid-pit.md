@@ -40,9 +40,15 @@ public class Document {
 
 在调用insert方法时,如果该id数据在es中不存在,则新增该数据,如果已有该id数据,则即便你调用的是insert方法,实际上的效果也是更新该id对应的数据,这点需要区别于MP和MySQL.
 
-4.and和or的使用
+4.项目中同时使用Mybatis-Plus和Easy-Es
+在此场景下,您需要将MP的mapper和EE的mapper分别放在不同的目录下,并在配置扫描路径时各自配各自的扫描路径,如此便可共存使用了,否则两者在SpringBoot启动时都去扫描同一路径,并尝试注册为自己的bean,由于底层实现依赖的类完全不一样,所以会导致其中之一注册失败,整个项目无法正常启动.可参考下图:
+![image4](https://iknow.hs.net/30f08bc4-cb07-4ac6-8a52-59e062105238.png)
+![image5](https://iknow.hs.net/f018fd5b-a932-445f-8ce0-b76d58caf931.png)
+
+5.and和or的使用
 
 需要区别于MySQL和MP,因为ES的查询参数是树形数据结构,和MySQL平铺的不一样,具体可参考[and&or](and-or.md)章节,有详细节省
+
 
 
 关于闭坑暂时先讲这么多,后续如果有补充再追加,祝各位主公使用愉快,使用过程中有任何疑问及建议,可添加我微信252645816反馈,我们也有专门的答疑群为各位主公们免费服务.
