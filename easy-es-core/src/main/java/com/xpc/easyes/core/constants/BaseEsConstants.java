@@ -7,9 +7,9 @@ package com.xpc.easyes.core.constants;
  **/
 public interface BaseEsConstants {
     /**
-     * 配置前缀
+     * 是否启用本框架前缀, 默认启用
      */
-    String CONFIG_PREFIX = "easy-es-test";
+    String ENABLE_PREFIX = "easy-es.enable";
     /**
      * 数字0
      */

@@ -306,7 +306,8 @@ public class WrapperProcessor {
         baseEsParam.getShouldList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
                         EsAttachTypeEnum.SHOULD.getType(), fieldValueModel.getOriginalAttachType(),
-                        entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
+                        entityInfo.getMappingColumn(fieldValueModel.getField()),
+                        fieldValueModel.getValue() == null ? fieldValueModel.getValues() : fieldValueModel.getValue(),
                         fieldValueModel.getBoost()));
 
         baseEsParam.getMustNotList().forEach(fieldValueModel ->

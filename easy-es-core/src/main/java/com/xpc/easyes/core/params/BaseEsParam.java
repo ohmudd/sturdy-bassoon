@@ -1,14 +1,11 @@
 package com.xpc.easyes.core.params;
 
-import com.xpc.easyes.core.common.EntityInfo;
 import lombok.Builder;
 import lombok.Data;
-import org.elasticsearch.common.geo.GeoPoint;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 核心 基本参数

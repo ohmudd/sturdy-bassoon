@@ -31,7 +31,12 @@ public class EsQueryTypeUtil {
             // 封装精确查询参数
             TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery(field, value).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, termQueryBuilder);
-        } else if (Objects.equals(queryType, MATCH_QUERY.getType())) {
+        } else if (Objects.equals(queryType,TERMS_QUERY.getType())){
+            // 此处处理由or转入shouldList的in参数
+            TermsQueryBuilder termsQueryBuilder = QueryBuilders.termsQuery(field, value).boost(boost);
+            setQueryBuilder(boolQueryBuilder, attachType, termsQueryBuilder);
+        }
+        else if (Objects.equals(queryType, MATCH_QUERY.getType())) {
             // 封装模糊分词查询参数
             MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery(field, value).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, matchQueryBuilder);
