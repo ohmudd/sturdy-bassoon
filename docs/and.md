@@ -44,7 +44,7 @@ or(boolean condition, Consumer<Param> consumer)
 
 除此之外,有一部分使用场景是如下图这样的,所有查询字段,查询类型,匹配规则等都是不固定的,由用户自由来选,这种情况下,采用上面的语法代码会非常难写,不妨使用queryStringQuery API来解决,用它来解决,整个语法就更像MySQL了,而且灵活性和效率都很高.
 
-[图1](https://iknow.hs.net/7bcf189a-053a-48fa-85d6-ef8b763d427a.png)
+[image](https://iknow.hs.net/7bcf189a-053a-48fa-85d6-ef8b763d427a.png)
 
 
 >前置知识学习:正式进入主题前,我们先来了解下ES的索引,因为有很多小白不懂ES索引,所以这里简单说一下ES的keyword类型和text类型,以免下面踩坑,已经了解的可直接跳过此段介绍.
