@@ -28,7 +28,7 @@ easy-es:
     db-config:
       map-underscore-to-camel-case: false # 是否开启下划线转驼峰 默认为false(0.9.8+版本支持)
       table-prefix: daily_ # 索引前缀,可用于区分环境  默认为空 用法和MP一样
-      id-type: auto # id生成策略 默认为auto 
+      id-type: customize # id生成策略 customize为自定义,id值由用户生成,比如取MySQL中的数据id,如缺省此项配置,则id默认策略为es自动生成
       field-strategy: not_empty # 字段更新策略 默认为not_null
       enable-track-total-hits: true # 查询超过1w条时可开启,默认为false
       refresh-policy: immediate # 数据刷新策略,默认为不刷新
