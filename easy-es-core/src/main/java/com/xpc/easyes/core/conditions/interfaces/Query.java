@@ -15,7 +15,7 @@ import java.util.function.Predicate;
 public interface Query<Children, T, R> extends Serializable {
 
     default Children select(R... columns) {
-        return select(Arrays.stream(columns).map(FieldUtils::getFieldName).toArray(String[]::new));
+        return select(Arrays.stream(columns).map(FieldUtils::getFieldNameNotConvertId).toArray(String[]::new));
     }
 
 
@@ -45,7 +45,7 @@ public interface Query<Children, T, R> extends Serializable {
     Children select(Class<T> entityClass, Predicate<EntityFieldInfo> predicate);
 
     default Children notSelect(R... columns) {
-        return notSelect(Arrays.stream(columns).map(FieldUtils::getFieldName).toArray(String[]::new));
+        return notSelect(Arrays.stream(columns).map(FieldUtils::getFieldNameNotConvertId).toArray(String[]::new));
     }
 
     /**

@@ -9,7 +9,7 @@ easy-es:
     async-process-index-blocking: true
     print-dsl: true
     db-config:
-      map-underscore-to-camel-case: false
+      map-underscore-to-camel-case: true
       #      table-prefix: dev_
       id-type: customize
       field-strategy: not_empty
