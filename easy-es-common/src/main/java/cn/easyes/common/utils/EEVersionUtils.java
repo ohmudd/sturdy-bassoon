@@ -48,7 +48,7 @@ public class EEVersionUtils {
                     .getVersion()
                     .getNumber();
         } catch (IOException e) {
-            LogUtils.formatWarn(e.getMessage());
+            LogUtils.formatWarn("get client version error");
         }
         return "unknown";
     }
