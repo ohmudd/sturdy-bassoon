@@ -311,7 +311,12 @@ public class WrapperProcessor {
                         entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getValue(),
                         fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
-
+        baseEsParam.getShouldList().forEach(fieldValueModel ->
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
+                        EsAttachTypeEnum.SHOULD.getType(), fieldValueModel.getOriginalAttachType(),
+                        entityInfo.getMappingColumn(fieldValueModel.getField()),
+                        fieldValueModel.getValue() == null ? fieldValueModel.getValues() : fieldValueModel.getValue(),
+                        fieldValueModel.getExt(), fieldValueModel.getBoost()));
 
         // 多字段情形
         baseEsParam.getMustMultiFieldList().forEach(fieldValueModel ->
