@@ -49,7 +49,6 @@ or(boolean condition, Consumer<Param> consumer)
 
 In addition, some usage scenarios are as shown in the figure below. All query fields, query types, matching rules, etc. are not fixed and can be freely selected by the user. In this case, it will be very difficult to use the above syntax code. Write, you might as well use the queryStringQuery API to solve, use it to solve, the whole syntax is more like MySQL, and the flexibility and efficiency are very high.
 
-![image1](https://iknow.hs.net/7bcf189a-053a-48fa-85d6-ef8b763d427a.png)
 
 
 >Preliminary knowledge learning: Before we officially enter the topic, let's first understand the ES index, because many novice do not understand ES index, so here is a brief introduction to the ES keyword type and text type, so as not to step on the pit, already understood You can skip this introduction directly.
