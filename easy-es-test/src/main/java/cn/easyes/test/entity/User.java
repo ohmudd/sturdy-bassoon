@@ -1,6 +1,7 @@
 package cn.easyes.test.entity;
 
 import cn.easyes.annotation.IndexField;
+import cn.easyes.annotation.IndexName;
 import cn.easyes.common.constants.Analyzer;
 import cn.easyes.common.enums.FieldType;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@IndexName("easyes_user")
 public class User {
     @IndexField(value = "user_name", analyzer = Analyzer.IK_SMART)
     private String username;
