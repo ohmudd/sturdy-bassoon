@@ -54,7 +54,7 @@ public class WrapperProcessor {
      * @param entityClass 实体类
      * @return ES查询参数
      */
-    public static SearchSourceBuilder buildSearchSourceBuilder(LambdaEsQueryWrapper<?> wrapper, Class<?> entityClass) {
+    public static SearchSourceBuilder buildSearchSourceBuilder(Wrapper<?> wrapper, Class<?> entityClass) {
         // 初始化boolQueryBuilder 参数
         BoolQueryBuilder boolQueryBuilder = initBoolQueryBuilder(wrapper.paramList, entityClass);
 
@@ -345,7 +345,7 @@ public class WrapperProcessor {
      * @param wrapper 条件
      * @return SearchSourceBuilder
      */
-    private static SearchSourceBuilder initSearchSourceBuilder(LambdaEsQueryWrapper<?> wrapper, Class<?> entityClass) {
+    private static SearchSourceBuilder initSearchSourceBuilder(Wrapper<?> wrapper, Class<?> entityClass) {
         EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
         // 获取自定义字段map
         Map<String, String> mappingColumnMap = entityInfo.getMappingColumnMap();
@@ -383,7 +383,7 @@ public class WrapperProcessor {
      * @param wrapper 条件
      * @return 是否包含的布尔值
      */
-    public static boolean includeId(String idField, LambdaEsQueryWrapper<?> wrapper) {
+    public static boolean includeId(String idField, Wrapper<?> wrapper) {
         if (ArrayUtils.isEmpty(wrapper.include) && ArrayUtils.isEmpty(wrapper.exclude)) {
             // 未设置, 默认返回
             return true;
@@ -401,7 +401,7 @@ public class WrapperProcessor {
      * @param mappingColumnMap    字段映射map
      * @param searchSourceBuilder 查询参数建造者
      */
-    private static void setFetchSource(LambdaEsQueryWrapper<?> wrapper, Map<String, String> mappingColumnMap, SearchSourceBuilder searchSourceBuilder) {
+    private static void setFetchSource(Wrapper<?> wrapper, Map<String, String> mappingColumnMap, SearchSourceBuilder searchSourceBuilder) {
         if (ArrayUtils.isEmpty(wrapper.include) && ArrayUtils.isEmpty(wrapper.exclude)) {
             return;
         }
@@ -450,7 +450,7 @@ public class WrapperProcessor {
      * @param mappingColumnMap    字段映射map
      * @param searchSourceBuilder 查询参数建造者
      */
-    private static void setSort(LambdaEsQueryWrapper<?> wrapper, Map<String, String> mappingColumnMap, SearchSourceBuilder searchSourceBuilder) {
+    private static void setSort(Wrapper<?> wrapper, Map<String, String> mappingColumnMap, SearchSourceBuilder searchSourceBuilder) {
         // 获取配置
         GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
 
@@ -517,7 +517,7 @@ public class WrapperProcessor {
      * @param mappingColumnMap    字段映射map
      * @param searchSourceBuilder 查询参数建造者
      */
-    private static void setAggregations(LambdaEsQueryWrapper<?> wrapper, Map<String, String> mappingColumnMap,
+    private static void setAggregations(Wrapper<?> wrapper, Map<String, String> mappingColumnMap,
                                         SearchSourceBuilder searchSourceBuilder) {
         // 获取配置
         GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();

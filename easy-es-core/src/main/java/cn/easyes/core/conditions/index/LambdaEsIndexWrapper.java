@@ -1,4 +1,4 @@
-package cn.easyes.core.conditions;
+package cn.easyes.core.conditions.index;
 
 
 import cn.easyes.annotation.rely.FieldType;
@@ -6,10 +6,14 @@ import cn.easyes.common.params.SFunction;
 import cn.easyes.common.utils.ArrayUtils;
 import cn.easyes.common.utils.StringUtils;
 import cn.easyes.core.biz.EsIndexParam;
+import cn.easyes.core.conditions.Wrapper;
 import cn.easyes.core.conditions.interfaces.Index;
 import org.elasticsearch.common.settings.Settings;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 索引Lambda表达式
@@ -18,40 +22,6 @@ import java.util.*;
  **/
 @SuppressWarnings("serial")
 public class LambdaEsIndexWrapper<T> extends Wrapper<T> implements Index<LambdaEsIndexWrapper<T>, SFunction<T, ?>> {
-    /**
-     * 别名
-     */
-    protected String aliasName;
-    /**
-     * 分片数
-     */
-    protected Integer shardsNum;
-    /**
-     * 副本数
-     */
-    protected Integer replicasNum;
-    /**
-     * 最大返回数
-     */
-    protected Integer maxResultWindow;
-    /**
-     * 用户手动指定的索引mapping信息,优先级最高
-     */
-    protected Map<String, Object> mapping;
-    /**
-     * 用户手动指定的索引settings,优先级最高
-     */
-    protected Settings settings;
-    /**
-     * 索引相关参数列表
-     */
-    List<EsIndexParam> esIndexParamList;
-    /**
-     * 对应实体类
-     */
-    private final Class<T> entityClass;
-
-
     /**
      * 此包装类本身
      */

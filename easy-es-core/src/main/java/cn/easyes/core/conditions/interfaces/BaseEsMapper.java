@@ -2,9 +2,7 @@ package cn.easyes.core.conditions.interfaces;
 
 import cn.easyes.core.biz.EsPageInfo;
 import cn.easyes.core.biz.SAPageInfo;
-import cn.easyes.core.conditions.LambdaEsIndexWrapper;
-import cn.easyes.core.conditions.LambdaEsQueryWrapper;
-import cn.easyes.core.conditions.LambdaEsUpdateWrapper;
+import cn.easyes.core.conditions.Wrapper;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -67,7 +65,7 @@ public interface BaseEsMapper<T> {
      * @param wrapper 条件
      * @return 是否成功
      */
-    Boolean createIndex(LambdaEsIndexWrapper<T> wrapper);
+    Boolean createIndex(Wrapper<T> wrapper);
 
     /**
      * 更新索引
@@ -75,7 +73,7 @@ public interface BaseEsMapper<T> {
      * @param wrapper 条件
      * @return 是否成功
      */
-    Boolean updateIndex(LambdaEsIndexWrapper<T> wrapper);
+    Boolean updateIndex(Wrapper<T> wrapper);
 
     /**
      * 删除指定索引
@@ -117,7 +115,7 @@ public interface BaseEsMapper<T> {
      * @param wrapper 条件
      * @return es标准结果
      */
-    SearchResponse search(LambdaEsQueryWrapper<T> wrapper);
+    SearchResponse search(Wrapper<T> wrapper);
 
     /**
      * 获取SearchSourceBuilder,可用于本框架生成基础查询条件,不支持的高阶语法用户可通过SearchSourceBuilder 进一步封装
@@ -125,7 +123,7 @@ public interface BaseEsMapper<T> {
      * @param wrapper 条件
      * @return 查询参数
      */
-    SearchSourceBuilder getSearchSourceBuilder(LambdaEsQueryWrapper<T> wrapper);
+    SearchSourceBuilder getSearchSourceBuilder(Wrapper<T> wrapper);
 
     /**
      * es原生查询
@@ -153,7 +151,7 @@ public interface BaseEsMapper<T> {
      * @param wrapper 条件
      * @return 查询JSON格式参数
      */
-    String getSource(LambdaEsQueryWrapper<T> wrapper);
+    String getSource(Wrapper<T> wrapper);
 
     /**
      * 指定返回类型及分页参数
@@ -163,7 +161,7 @@ public interface BaseEsMapper<T> {
      * @param pageSize 每页条数
      * @return 指定的返回类型
      */
-    EsPageInfo<T> pageQuery(LambdaEsQueryWrapper<T> wrapper, Integer pageNum, Integer pageSize);
+    EsPageInfo<T> pageQuery(Wrapper<T> wrapper, Integer pageNum, Integer pageSize);
 
     /**
      * searchAfter类型分页
@@ -173,7 +171,7 @@ public interface BaseEsMapper<T> {
      * @param pageSize    每页条数
      * @return 指定的返回类型
      */
-    SAPageInfo<T> searchAfterPage(LambdaEsQueryWrapper<T> wrapper, List<Object> searchAfter, Integer pageSize);
+    SAPageInfo<T> searchAfterPage(Wrapper<T> wrapper, List<Object> searchAfter, Integer pageSize);
 
     /**
      * 获取总数(智能推断:若wrapper中指定了去重字段则去重,若未指定则不去重 推荐使用)
@@ -181,7 +179,7 @@ public interface BaseEsMapper<T> {
      * @param wrapper 条件
      * @return 总数
      */
-    Long selectCount(LambdaEsQueryWrapper<T> wrapper);
+    Long selectCount(Wrapper<T> wrapper);
 
 
     /**
@@ -191,7 +189,7 @@ public interface BaseEsMapper<T> {
      * @param distinct 是否去重
      * @return 总数
      */
-    Long selectCount(LambdaEsQueryWrapper<T> wrapper, boolean distinct);
+    Long selectCount(Wrapper<T> wrapper, boolean distinct);
 
     /**
      * 插入一条记录
@@ -268,7 +266,7 @@ public interface BaseEsMapper<T> {
      * @param wrapper 条件
      * @return 总成功条数
      */
-    Integer delete(LambdaEsQueryWrapper<T> wrapper);
+    Integer delete(Wrapper<T> wrapper);
 
     /**
      * 根据 ID 更新
@@ -311,7 +309,7 @@ public interface BaseEsMapper<T> {
      * @param updateWrapper 条件
      * @return 成功条数
      */
-    Integer update(T entity, LambdaEsUpdateWrapper<T> updateWrapper);
+    Integer update(T entity, Wrapper<T> updateWrapper);
 
     /**
      * 根据 ID 查询
@@ -353,7 +351,7 @@ public interface BaseEsMapper<T> {
      * @param wrapper 条件
      * @return 指定的返回对象
      */
-    T selectOne(LambdaEsQueryWrapper<T> wrapper);
+    T selectOne(Wrapper<T> wrapper);
 
     /**
      * 根据 entity 条件，查询全部记录
@@ -361,7 +359,7 @@ public interface BaseEsMapper<T> {
      * @param wrapper 条件
      * @return 指定的返回对象列表
      */
-    List<T> selectList(LambdaEsQueryWrapper<T> wrapper);
+    List<T> selectList(Wrapper<T> wrapper);
 
     /**
      * 设置当前Mapper默认激活的全局索引名称 务必谨慎操作,设置后全局生效,永驻jvm,除非项目重启

@@ -122,13 +122,13 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public Boolean createIndex(LambdaEsIndexWrapper<T> wrapper) {
+    public Boolean createIndex(Wrapper<T> wrapper) {
         Arrays.stream(wrapper.indexNames).forEach(indexName -> doCreateIndex(wrapper, indexName));
         return Boolean.TRUE;
     }
 
     @Override
-    public Boolean updateIndex(LambdaEsIndexWrapper<T> wrapper) {
+    public Boolean updateIndex(Wrapper<T> wrapper) {
         Arrays.stream(wrapper.indexNames).forEach(indexName -> doUpdateIndex(wrapper, indexName));
         return Boolean.TRUE;
     }
@@ -169,7 +169,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public SearchResponse search(LambdaEsQueryWrapper<T> wrapper) {
+    public SearchResponse search(Wrapper<T> wrapper) {
         // 执行普通混合查询, 不含searchAfter分页
         return getSearchResponse(wrapper, null);
     }
@@ -190,12 +190,12 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public SearchSourceBuilder getSearchSourceBuilder(LambdaEsQueryWrapper<T> wrapper) {
+    public SearchSourceBuilder getSearchSourceBuilder(Wrapper<T> wrapper) {
         return WrapperProcessor.buildSearchSourceBuilder(wrapper, entityClass);
     }
 
     @Override
-    public String getSource(LambdaEsQueryWrapper<T> wrapper) {
+    public String getSource(Wrapper<T> wrapper) {
         // 获取由本框架生成的es查询参数 用于验证生成语法的正确性
         SearchRequest searchRequest = new SearchRequest(getIndexNames(wrapper.indexNames));
         SearchSourceBuilder searchSourceBuilder = WrapperProcessor.buildSearchSourceBuilder(wrapper, entityClass);
@@ -206,13 +206,13 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public EsPageInfo<T> pageQuery(LambdaEsQueryWrapper<T> wrapper, Integer pageNum, Integer pageSize) {
+    public EsPageInfo<T> pageQuery(Wrapper<T> wrapper, Integer pageNum, Integer pageSize) {
         // 兼容分页参数
         pageNum = pageNum == null || pageNum <= BaseEsConstants.ZERO ? BaseEsConstants.PAGE_NUM : pageNum;
         pageSize = pageSize == null || pageSize <= BaseEsConstants.ZERO ? BaseEsConstants.PAGE_SIZE : pageSize;
 
-        wrapper.from((pageNum - 1) * pageSize);
-        wrapper.size(pageSize);
+        wrapper.from = (pageNum - 1) * pageSize;
+        wrapper.size = pageSize;
 
         // 请求es获取数据
         SearchResponse response = getSearchResponse(wrapper);
@@ -227,7 +227,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public SAPageInfo<T> searchAfterPage(LambdaEsQueryWrapper<T> wrapper, List<Object> searchAfter, Integer pageSize) {
+    public SAPageInfo<T> searchAfterPage(Wrapper<T> wrapper, List<Object> searchAfter, Integer pageSize) {
         // searchAfter语法规定 或from只允许为0或-1或不传,否则es会报错, 推荐不指定, 直接传null即可
         boolean illegalArg = Objects.nonNull(wrapper.from) && (!wrapper.from.equals(ZERO) || !wrapper.from.equals(MINUS_ONE));
         if (illegalArg) {
@@ -242,7 +242,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
         // 兼容分页参数
         pageSize = pageSize == null || pageSize <= BaseEsConstants.ZERO ? BaseEsConstants.PAGE_SIZE : pageSize;
-        wrapper.size(pageSize);
+        wrapper.size = pageSize;
 
         // 请求es获取数据
         SearchResponse response =
@@ -262,16 +262,16 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public Long selectCount(LambdaEsQueryWrapper<T> wrapper) {
+    public Long selectCount(Wrapper<T> wrapper) {
         return selectCount(wrapper, Objects.nonNull(wrapper.distinctField));
     }
 
     @Override
-    public Long selectCount(LambdaEsQueryWrapper<T> wrapper, boolean distinct) {
+    public Long selectCount(Wrapper<T> wrapper, boolean distinct) {
         if (distinct) {
             // 去重, 总数来源于桶, 只查id列,节省内存 拷贝是防止追加的只查id列影响到count后的其它查询
-            LambdaEsQueryWrapper<T> clone = (LambdaEsQueryWrapper<T>) wrapper.clone();
-            clone.select(DEFAULT_ES_ID_NAME);
+            Wrapper<T> clone = wrapper.clone();
+            clone.include = new String[]{DEFAULT_ES_ID_NAME};
             SearchResponse response = getSearchResponse(clone);
             return parseCount(response, Objects.nonNull(clone.distinctField));
         } else {
@@ -352,7 +352,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public Integer delete(LambdaEsQueryWrapper<T> wrapper) {
+    public Integer delete(Wrapper<T> wrapper) {
         DeleteByQueryRequest request = new DeleteByQueryRequest(getIndexNames(wrapper.indexNames));
         BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.paramList, entityClass);
         request.setQuery(boolQueryBuilder);
@@ -402,7 +402,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public Integer update(T entity, LambdaEsUpdateWrapper<T> updateWrapper) {
+    public Integer update(T entity, Wrapper<T> updateWrapper) {
         if (Objects.isNull(entity) && CollectionUtils.isEmpty(updateWrapper.updateParamList)) {
             return BaseEsConstants.ZERO;
         }
@@ -470,7 +470,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public T selectOne(LambdaEsQueryWrapper<T> wrapper) {
+    public T selectOne(Wrapper<T> wrapper) {
         // 请求es获取数据
         SearchResponse searchResponse = getSearchResponse(wrapper);
         long count = parseCount(searchResponse, Objects.nonNull(wrapper.distinctField));
@@ -490,7 +490,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public List<T> selectList(LambdaEsQueryWrapper<T> wrapper) {
+    public List<T> selectList(Wrapper<T> wrapper) {
         // 请求es获取数据
         SearchHit[] searchHits = getSearchHitArray(wrapper);
         if (ArrayUtils.isEmpty(searchHits)) {
@@ -517,7 +517,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param wrapper   条件
      * @param indexName 索引名
      */
-    private void doCreateIndex(LambdaEsIndexWrapper<T> wrapper, String indexName) {
+    private void doCreateIndex(Wrapper<T> wrapper, String indexName) {
         CreateIndexParam createIndexParam = new CreateIndexParam();
 
         // 设置索引名
@@ -552,7 +552,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param wrapper   条件
      * @param indexName 索引名
      */
-    private void doUpdateIndex(LambdaEsIndexWrapper<T> wrapper, String indexName) {
+    private void doUpdateIndex(Wrapper<T> wrapper, String indexName) {
         // 判断指定索引是否存在
         boolean existsIndex = this.existsIndex(indexName);
         Assert.isTrue(existsIndex, String.format("update index: %s failed, because of this index not exists", indexName));
@@ -719,7 +719,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param indexName     索引名
      * @return 总成功条数
      */
-    private Integer doUpdate(T entity, LambdaEsUpdateWrapper<T> updateWrapper, String indexName) {
+    private Integer doUpdate(T entity, Wrapper<T> updateWrapper, String indexName) {
         // 查询数据列表
         List<T> list = selectListByUpdateWrapper(updateWrapper, indexName);
         if (CollectionUtils.isEmpty(list)) {
@@ -789,7 +789,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param searchAfter searchAfter参数
      * @return es返回体
      */
-    private SearchResponse getSearchResponse(LambdaEsQueryWrapper<T> wrapper, Object[] searchAfter) {
+    private SearchResponse getSearchResponse(Wrapper<T> wrapper, Object[] searchAfter) {
         // 构建es restHighLevelClient 查询参数
         SearchRequest searchRequest = new SearchRequest(getIndexNames(wrapper.indexNames));
 
@@ -841,7 +841,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param indexName 索引名
      * @return 数据列表
      */
-    private List<T> selectListByUpdateWrapper(LambdaEsUpdateWrapper<T> wrapper, String indexName) {
+    private List<T> selectListByUpdateWrapper(Wrapper<T> wrapper, String indexName) {
         // 构建查询条件
         SearchRequest searchRequest = new SearchRequest(indexName);
         SearchSourceBuilder searchSourceBuilder;
@@ -981,7 +981,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param wrapper   参数包装类
      * @return 实际想要的数据
      */
-    private T parseOne(SearchHit searchHit, LambdaEsQueryWrapper<T> wrapper) {
+    private T parseOne(SearchHit searchHit, Wrapper<T> wrapper) {
         EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
         // 解析json
         T entity = JSON.parseObject(searchHit.getSourceAsString(), entityClass, entityInfo.getExtraProcessor());
@@ -1077,7 +1077,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param wrapper 条件
      * @return 搜索响应体
      */
-    private SearchResponse getSearchResponse(LambdaEsQueryWrapper<T> wrapper) {
+    private SearchResponse getSearchResponse(Wrapper<T> wrapper) {
         return search(wrapper);
     }
 
@@ -1106,7 +1106,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param wrapper 参数包装类
      * @return searchHit数组
      */
-    private SearchHit[] getSearchHitArray(LambdaEsQueryWrapper<T> wrapper) {
+    private SearchHit[] getSearchHitArray(Wrapper<T> wrapper) {
         SearchRequest searchRequest = new SearchRequest(getIndexNames(wrapper.indexNames));
 
         // 用户在wrapper中指定的混合查询条件优先级最高
@@ -1184,7 +1184,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param updateWrapper 条件
      * @return json
      */
-    private String buildJsonDoc(LambdaEsUpdateWrapper<T> updateWrapper) {
+    private String buildJsonDoc(Wrapper<T> updateWrapper) {
         List<EsUpdateParam> updateParamList = updateWrapper.updateParamList;
         JSONObject jsonObject = new JSONObject();
 

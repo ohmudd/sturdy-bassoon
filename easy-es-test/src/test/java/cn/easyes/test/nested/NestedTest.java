@@ -1,6 +1,6 @@
 package cn.easyes.test.nested;
 
-import cn.easyes.core.conditions.LambdaEsQueryWrapper;
+import cn.easyes.core.conditions.select.LambdaEsQueryWrapper;
 import cn.easyes.core.toolkit.FieldUtils;
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;

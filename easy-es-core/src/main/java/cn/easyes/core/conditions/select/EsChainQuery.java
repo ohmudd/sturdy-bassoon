@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.easyes.core.conditions.interfaces;
+package cn.easyes.core.conditions.select;
 
 
 import cn.easyes.core.biz.EsPageInfo;
+import cn.easyes.core.conditions.interfaces.EsChainWrapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +27,7 @@ import java.util.Optional;
  * <p>
  * Copyright © 2023 xpc1024 All Rights Reserved
  **/
-public interface ChainQuery<T> extends ChainWrapper<T> {
+public interface EsChainQuery<T> extends EsChainWrapper<T> {
 
     /**
      * 获取集合
@@ -34,7 +35,7 @@ public interface ChainQuery<T> extends ChainWrapper<T> {
      * @return 集合
      */
     default List<T> list() {
-        return getBaseMapper().selectList(getWrapper());
+        return getBaseEsMapper().selectList(getWrapper());
     }
 
     /**
@@ -43,7 +44,7 @@ public interface ChainQuery<T> extends ChainWrapper<T> {
      * @return 单个
      */
     default T one() {
-        return getBaseMapper().selectOne(getWrapper());
+        return getBaseEsMapper().selectOne(getWrapper());
     }
 
     /**
@@ -61,7 +62,7 @@ public interface ChainQuery<T> extends ChainWrapper<T> {
      * @return count
      */
     default Long count() {
-        return (getBaseMapper().selectCount(getWrapper()));
+        return (getBaseEsMapper().selectCount(getWrapper()));
     }
 
     /**
@@ -81,7 +82,6 @@ public interface ChainQuery<T> extends ChainWrapper<T> {
      * @return 分页数据
      */
     default EsPageInfo<T> page(Integer pageNum, Integer pageSize) {
-        return getBaseMapper().pageQuery(getWrapper(), pageNum, pageSize);
+        return getBaseEsMapper().pageQuery(getWrapper(), pageNum, pageSize);
     }
-
 }

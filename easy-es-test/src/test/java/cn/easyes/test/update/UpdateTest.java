@@ -1,6 +1,6 @@
 package cn.easyes.test.update;
 
-import cn.easyes.core.conditions.LambdaEsUpdateWrapper;
+import cn.easyes.core.conditions.update.LambdaEsUpdateWrapper;
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;

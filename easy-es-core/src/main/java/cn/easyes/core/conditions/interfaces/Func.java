@@ -6,6 +6,7 @@ import cn.easyes.core.toolkit.FieldUtils;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.unit.DistanceUnit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
@@ -725,4 +726,51 @@ public interface Func<Children, R> extends Serializable {
      * @return 泛型
      */
     Children distinct(boolean condition, String column);
+
+
+    /**
+     * 从第几条数据开始查询
+     *
+     * @param from 起始
+     * @return 泛型
+     */
+    Children from(Integer from);
+
+    /**
+     * 总共查询多少条数据
+     *
+     * @param size 查询多少条
+     * @return 泛型
+     */
+    Children size(Integer size);
+
+    /**
+     * 兼容MySQL语法 作用同size
+     *
+     * @param n 查询条数
+     * @return 泛型
+     */
+    Children limit(Integer n);
+
+    /**
+     * 兼容MySQL语法 作用同from+size
+     *
+     * @param m offset偏移量,从第几条开始取,作用同from
+     * @param n 查询条数,作用同size
+     * @return 泛型
+     */
+    Children limit(Integer m, Integer n);
+
+    default Children setSearchSourceBuilder(SearchSourceBuilder searchSourceBuilder) {
+        return setSearchSourceBuilder(true, searchSourceBuilder);
+    }
+
+    /**
+     * 用户自定义SearchSourceBuilder 用于混合查询
+     *
+     * @param condition           条件
+     * @param searchSourceBuilder 用户自定义的SearchSourceBuilder
+     * @return 泛型
+     */
+    Children setSearchSourceBuilder(boolean condition, SearchSourceBuilder searchSourceBuilder);
 }

@@ -4,11 +4,9 @@ import cn.easyes.common.enums.AggregationTypeEnum;
 import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.enums.OrderTypeEnum;
 import cn.easyes.common.utils.*;
-import cn.easyes.core.biz.AggregationParam;
-import cn.easyes.core.biz.BaseSortParam;
-import cn.easyes.core.biz.OrderByParam;
-import cn.easyes.core.biz.Param;
+import cn.easyes.core.biz.*;
 import cn.easyes.core.conditions.interfaces.*;
+import cn.easyes.core.toolkit.EntityInfoHelper;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
@@ -16,6 +14,7 @@ import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.geometry.Geometry;
 import org.elasticsearch.index.query.Operator;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
@@ -23,6 +22,7 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static cn.easyes.common.constants.BaseEsConstants.WILDCARD_SIGN;
 import static cn.easyes.common.enums.EsQueryTypeEnum.*;
@@ -34,13 +34,10 @@ import static cn.easyes.common.enums.OrderTypeEnum.CUSTOMIZE;
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, R, Children>> extends Wrapper<T>
-        implements Compare<Children, R>, Nested<Children, Children>, Func<Children, R>, Join<Children>, Geo<Children, R> {
+        implements Compare<Children, R>, Nested<Children, Children>, Func<Children, R>, Join<Children>, Geo<Children, R>
+        , Query<Children, T, R>, Update<Children, R> {
 
     protected final Children typedThis = (Children) this;
-    /**
-     * 折叠去重字段
-     */
-    protected String distinctField;
     /**
      * 存放树的高度
      */
@@ -54,10 +51,6 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      */
     protected EsQueryTypeEnum prevQueryType;
     /**
-     * 参数列表
-     */
-    protected LinkedList<Param> paramList;
-    /**
      * 队列 存放父id
      */
     protected LinkedList<String> parentIdQueue;
@@ -65,29 +58,6 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * 队列 存放上一节点类型
      */
     protected LinkedList<EsQueryTypeEnum> prevQueryTypeQueue;
-    /**
-     * 基础排序参数列表
-     */
-    protected List<BaseSortParam> baseSortParams;
-
-    /**
-     * 聚合查询参数列表
-     */
-    protected List<AggregationParam> aggregationParamList;
-
-    /**
-     * 排序参数列表
-     */
-    protected List<OrderByParam> orderByParams;
-
-    /**
-     * 实体对象
-     */
-    protected T entity;
-    /**
-     * 实体类型
-     */
-    protected Class<T> entityClass;
 
     public Children setEntity(T entity) {
         this.entity = entity;
@@ -513,6 +483,87 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     public Children distinct(boolean condition, String column) {
         if (condition) {
             this.distinctField = column;
+        }
+        return typedThis;
+    }
+
+    @Override
+    public Children from(Integer from) {
+        this.from = from;
+        return typedThis;
+    }
+
+    @Override
+    public Children size(Integer size) {
+        this.size = size;
+        return typedThis;
+    }
+
+    @Override
+    public Children limit(Integer m) {
+        this.size = m;
+        return typedThis;
+    }
+
+    @Override
+    public Children limit(Integer m, Integer n) {
+        this.from = m;
+        this.size = n;
+        return typedThis;
+    }
+
+    @Override
+    public Children index(boolean condition, String... indexNames) {
+        if (ArrayUtils.isEmpty(indexNames)) {
+            throw ExceptionUtils.eee("indexNames can not be empty");
+        }
+        if (condition) {
+            this.indexNames = indexNames;
+        }
+        return typedThis;
+    }
+
+    @Override
+    public Children setSearchSourceBuilder(boolean condition, SearchSourceBuilder searchSourceBuilder) {
+        if (condition) {
+            this.searchSourceBuilder = searchSourceBuilder;
+        }
+        return typedThis;
+    }
+
+    @Override
+    public Children select(String... columns) {
+        this.include = columns;
+        return typedThis;
+    }
+
+    @Override
+    public Children select(Predicate<EntityFieldInfo> predicate) {
+        return select(entityClass, predicate);
+    }
+
+    @Override
+    public Children select(Class<T> entityClass, Predicate<EntityFieldInfo> predicate) {
+        this.entityClass = entityClass;
+        List<String> list = EntityInfoHelper.getEntityInfo(getCheckEntityClass()).chooseSelect(predicate);
+        include = list.toArray(include);
+        return typedThis;
+    }
+
+    @Override
+    public Children notSelect(String... columns) {
+        this.exclude = columns;
+        return typedThis;
+    }
+
+
+    @Override
+    public Children set(boolean condition, String column, Object val) {
+        if (condition) {
+            EsUpdateParam esUpdateParam = new EsUpdateParam();
+            esUpdateParam.setField(column);
+            esUpdateParam.setValue(val);
+            updateParamList.add(esUpdateParam);
         }
         return typedThis;
     }

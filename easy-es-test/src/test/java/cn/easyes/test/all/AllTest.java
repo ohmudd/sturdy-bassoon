@@ -5,10 +5,10 @@ import cn.easyes.core.biz.EsPageInfo;
 import cn.easyes.core.biz.OrderByParam;
 import cn.easyes.core.biz.SAPageInfo;
 import cn.easyes.core.cache.GlobalConfigCache;
-import cn.easyes.core.conditions.LambdaEsQueryWrapper;
-import cn.easyes.core.conditions.LambdaEsUpdateWrapper;
+import cn.easyes.core.conditions.select.LambdaEsQueryWrapper;
+import cn.easyes.core.conditions.update.LambdaEsUpdateWrapper;
 import cn.easyes.core.toolkit.EntityInfoHelper;
-import cn.easyes.core.toolkit.EsWrappers;
+import cn.easyes.core.conditions.EsWrappers;
 import cn.easyes.core.toolkit.FieldUtils;
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
@@ -161,6 +161,16 @@ public class AllTest {
                 .limit(1);
         Document document = documentMapper.selectOne(wrapper);
         Assertions.assertEquals("测试文档1标题被更新了", document.getTitle());
+    }
+
+    @Test
+    @Order(6)
+    public void testOne() {
+        // 链式调用
+        Document document = EsWrappers.lambdaChainQuery(documentMapper)
+                .eq(Document::getEsId,"1")
+                .one();
+        Assertions.assertNotNull(document);
     }
 
     @Test

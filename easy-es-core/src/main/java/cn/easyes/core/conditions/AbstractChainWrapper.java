@@ -1,5 +1,6 @@
 package cn.easyes.core.conditions;
 
+import cn.easyes.core.biz.EntityFieldInfo;
 import cn.easyes.core.biz.OrderByParam;
 import cn.easyes.core.conditions.interfaces.*;
 import org.apache.lucene.search.join.ScoreMode;
@@ -9,6 +10,7 @@ import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.geometry.Geometry;
 import org.elasticsearch.index.query.Operator;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * 链式
@@ -27,7 +30,7 @@ import java.util.function.Consumer;
 @SuppressWarnings({"serial", "unchecked"})
 public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainWrapper<T, R, Children, Param>, Param>
         extends Wrapper<T> implements Compare<Children, R>, Join<Children>, Func<Children, R>, Nested<Param, Children>,
-        Geo<Children, R> {
+        Geo<Children, R>, Query<Children, T, R>, Update<Children, R> {
 
     protected final Children typedThis = (Children) this;
     /**
@@ -44,6 +47,7 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     public AbstractWrapper getWrapper() {
         return (AbstractWrapper) wrapperChildren;
     }
+
 
     @Override
     public <V> Children allEq(boolean condition, Map<String, V> params) {
@@ -596,6 +600,72 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     @Override
     public Children nested(boolean condition, String path, Consumer<Param> consumer, ScoreMode scoreMode) {
         getWrapper().nested(condition, path, consumer, scoreMode);
+        return typedThis;
+    }
+
+    @Override
+    public Children from(Integer from) {
+        getWrapper().from(from);
+        return typedThis;
+    }
+
+    @Override
+    public Children size(Integer size) {
+        getWrapper().size(size);
+        return typedThis;
+    }
+
+    @Override
+    public Children limit(Integer n) {
+        getWrapper().limit(n);
+        return typedThis;
+    }
+
+    @Override
+    public Children limit(Integer m, Integer n) {
+        getWrapper().limit(m, n);
+        return typedThis;
+    }
+
+    @Override
+    public Children setSearchSourceBuilder(boolean condition, SearchSourceBuilder searchSourceBuilder) {
+        getWrapper().setSearchSourceBuilder(condition, searchSourceBuilder);
+        return typedThis;
+    }
+
+    @Override
+    public Children select(String... columns) {
+        getWrapper().select(columns);
+        return typedThis;
+    }
+
+    @Override
+    public Children select(Predicate<EntityFieldInfo> predicate) {
+        getWrapper().select(predicate);
+        return typedThis;
+    }
+
+    @Override
+    public Children select(Class<T> entityClass, Predicate<EntityFieldInfo> predicate) {
+        getWrapper().select(entityClass, predicate);
+        return typedThis;
+    }
+
+    @Override
+    public Children notSelect(String... columns) {
+        getWrapper().notSelect(columns);
+        return typedThis;
+    }
+
+    @Override
+    public Children index(boolean condition, String... indexNames) {
+        getWrapper().index(condition, indexNames);
+        return typedThis;
+    }
+
+    @Override
+    public Children set(boolean condition, String column, Object val) {
+        getWrapper().set(condition,column,val);
         return typedThis;
     }
 }

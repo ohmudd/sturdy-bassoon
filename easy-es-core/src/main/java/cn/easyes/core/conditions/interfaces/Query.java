@@ -2,7 +2,6 @@ package cn.easyes.core.conditions.interfaces;
 
 import cn.easyes.core.biz.EntityFieldInfo;
 import cn.easyes.core.toolkit.FieldUtils;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -65,39 +64,6 @@ public interface Query<Children, T, R> extends Serializable {
      */
     Children notSelect(String... columns);
 
-    /**
-     * 从第几条数据开始查询
-     *
-     * @param from 起始
-     * @return 泛型
-     */
-    Children from(Integer from);
-
-    /**
-     * 总共查询多少条数据
-     *
-     * @param size 查询多少条
-     * @return 泛型
-     */
-    Children size(Integer size);
-
-    /**
-     * 兼容MySQL语法 作用同size
-     *
-     * @param n 查询条数
-     * @return 泛型
-     */
-    Children limit(Integer n);
-
-    /**
-     * 兼容MySQL语法 作用同from+size
-     *
-     * @param m offset偏移量,从第几条开始取,作用同from
-     * @param n 查询条数,作用同size
-     * @return 泛型
-     */
-    Children limit(Integer m, Integer n);
-
     default Children index(String indexName) {
         return index(true, indexName);
     }
@@ -107,26 +73,12 @@ public interface Query<Children, T, R> extends Serializable {
     }
 
     /**
-     * 设置当前查询的索引名称
+     * 设置当前操作的索引名称
      *
      * @param condition  条件
      * @param indexNames 索引名
      * @return 泛型
      */
     Children index(boolean condition, String... indexNames);
-
-
-    default Children setSearchSourceBuilder(SearchSourceBuilder searchSourceBuilder) {
-        return setSearchSourceBuilder(true, searchSourceBuilder);
-    }
-
-    /**
-     * 用户自定义SearchSourceBuilder 用于混合查询
-     *
-     * @param condition           条件
-     * @param searchSourceBuilder 用户自定义的SearchSourceBuilder
-     * @return 泛型
-     */
-    Children setSearchSourceBuilder(boolean condition, SearchSourceBuilder searchSourceBuilder);
 
 }

@@ -32,33 +32,4 @@ public interface Update<Children, R> extends Serializable {
      * @return 泛型
      */
     Children set(boolean condition, String column, Object val);
-
-
-    default Children index(String indexName) {
-        return index(true, indexName);
-    }
-
-    /**
-     * 设置当前更新操作作用的索引
-     *
-     * @param condition  条件
-     * @param indexNames 索引名
-     * @return 泛型
-     */
-    Children index(boolean condition, String... indexNames);
-
-
-    default Children setSearchSourceBuilder(SearchSourceBuilder searchSourceBuilder) {
-        return setSearchSourceBuilder(true, searchSourceBuilder);
-    }
-
-    /**
-     * 用户自定义SearchSourceBuilder 用于更新时采用混合查询
-     *
-     * @param condition           条件
-     * @param searchSourceBuilder 用户自定义的SearchSourceBuilder
-     * @return 泛型
-     */
-    Children setSearchSourceBuilder(boolean condition, SearchSourceBuilder searchSourceBuilder);
-
 }
