@@ -2,6 +2,7 @@ package com.xpc.easyes.sample.entity;
 
 import com.xpc.easyes.core.anno.HighLightMappingField;
 import com.xpc.easyes.core.anno.TableField;
+import com.xpc.easyes.core.anno.TableName;
 import com.xpc.easyes.core.enums.FieldStrategy;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
  **/
 @Data
 @Accessors(chain = true)
+@TableName("my_doc")
 public class Document {
     /**
      * es中的唯一id

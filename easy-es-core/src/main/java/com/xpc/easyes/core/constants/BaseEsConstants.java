@@ -15,6 +15,10 @@ public interface BaseEsConstants {
      */
     Integer ONE = 1;
     /**
+     * 默认索引别名
+     */
+    String DEFAULT_ALIAS = "default_alias";
+    /**
      * 高亮默认前缀标签
      */
     String HIGH_LIGHT_PRE_TAG = "<em>";

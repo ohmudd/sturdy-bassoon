@@ -3,6 +3,7 @@ package com.xpc.easyes.core.common;
 import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.parser.deserializer.ExtraProcessor;
 import com.alibaba.fastjson.serializer.SerializeFilter;
+import com.xpc.easyes.core.enums.FieldType;
 import com.xpc.easyes.core.enums.IdType;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -52,6 +53,18 @@ public class EntityInfo {
      */
     private String keyColumn;
     /**
+     * 分片数
+     */
+    private Integer shardsNum;
+    /**
+     * 副本数
+     */
+    private Integer replicasNum;
+    /**
+     * 索引别名
+     */
+    private String aliasName;
+    /**
      * 表字段信息列表
      */
     private List<EntityFieldInfo> fieldList;
@@ -69,8 +82,14 @@ public class EntityInfo {
      */
     private SerializeFilter serializeFilter;
 
+    /**
+     * fastjson 字段命名策略
+     */
     private PropertyNamingStrategy propertyNamingStrategy;
 
+    /**
+     * fastjson 实体中不存在的字段处理器
+     */
     private ExtraProcessor extraProcessor;
 
     /**
