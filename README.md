@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  为简化开发工作、提高生产效率而生
+  傻瓜级ElasticSearch搜索引擎ORM框架,您的Star是我继续前进的动力，如果喜欢EE请右上角帮忙点个Star
 </p>
 
 <p align="center">
