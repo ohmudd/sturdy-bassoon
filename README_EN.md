@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/xpc1024/easy-es">
+  <a href="https://en.easy-es.cn/">
    <img alt="East-Es-Logo" src="https://iknow.hs.net/9fa0407f-30ff-4d8b-82da-a4990e41a04b.png">
   </a>
 </p>
@@ -32,7 +32,7 @@ https://en.easy-es.cn/
 ---
 - [中文版](https://github.com/xpc1024/easy-es/blob/main/README-ZH.md)
 - [Samples](https://github.com/xpc1024/easy-es/tree/main/easy-es-sample)
-- [Demo in Springboot](https://github.com/xpc1024/easy-es-springboot-demo-en)
+- [Demo in Springboot](https://en.easy-es.cn/pages/658abb/#_2-pom)
 
 ## Features
 ---
@@ -168,7 +168,7 @@ String indexName = "document";
 
 ## Donate
 ---
-[Donate Easy-Es](https://easy-es.cn/#/en/donate)
+[Donate Easy-Es](https://en.easy-es.cn/pages/fb291d/)
 
 
 ## License
