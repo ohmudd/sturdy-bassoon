@@ -13,7 +13,7 @@ import java.util.List;
  **/
 @Data
 @NoArgsConstructor
-public class PageInfo<T> extends PageSerializable<T> {
+public class EsPageInfo<T> extends PageSerializable<T> {
     /**
      * 当前页
      */
@@ -87,7 +87,7 @@ public class PageInfo<T> extends PageSerializable<T> {
      *
      * @param list 数据
      */
-    public PageInfo(List<T> list) {
+    public EsPageInfo(List<T> list) {
         this(list, 8);
     }
 
@@ -97,7 +97,7 @@ public class PageInfo<T> extends PageSerializable<T> {
      * @param list          数据
      * @param navigatePages 导航页
      */
-    public PageInfo(List<T> list, int navigatePages) {
+    public EsPageInfo(List<T> list, int navigatePages) {
         super(list);
         this.pageNum = 1;
         this.pageSize = list.size();
@@ -116,12 +116,12 @@ public class PageInfo<T> extends PageSerializable<T> {
         judgePageBoudary();
     }
 
-    public static <T> PageInfo<T> of(List<T> list) {
-        return new PageInfo<T>(list);
+    public static <T> EsPageInfo<T> of(List<T> list) {
+        return new EsPageInfo<T>(list);
     }
 
-    public static <T> PageInfo<T> of(List<T> list, int navigatePages) {
-        return new PageInfo<T>(list, navigatePages);
+    public static <T> EsPageInfo<T> of(List<T> list, int navigatePages) {
+        return new EsPageInfo<T>(list, navigatePages);
     }
 
     /**

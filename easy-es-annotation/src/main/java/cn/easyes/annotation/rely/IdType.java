@@ -1,4 +1,4 @@
-package cn.easyes.common.enums;
+package cn.easyes.annotation.rely;
 
 /**
  * 主键类型枚举

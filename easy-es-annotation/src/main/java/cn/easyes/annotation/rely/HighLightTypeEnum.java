@@ -1,15 +1,11 @@
-package cn.easyes.common.enums;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+package cn.easyes.annotation.rely;
 
 /**
  * 高亮类型枚举
  * <p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
-@Getter
-@AllArgsConstructor
+
 public enum HighLightTypeEnum {
     /**
      * unified（通用高亮策略,缺省配置时,默认采用此策略）
@@ -34,4 +30,12 @@ public enum HighLightTypeEnum {
      * 聚合类型英文名
      */
     private final String value;
+
+    HighLightTypeEnum(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

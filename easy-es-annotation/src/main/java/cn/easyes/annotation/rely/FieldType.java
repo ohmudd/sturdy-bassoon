@@ -1,14 +1,10 @@
-package cn.easyes.common.enums;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+package cn.easyes.annotation.rely;
 
 /**
  * Es支持的数据类型枚举
  * <p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
-@AllArgsConstructor
 public enum FieldType {
     /**
      * none Required inside the framework, do not use 框架内部需要,切勿使用,若不慎使用则会被当做keyword类型
@@ -52,8 +48,14 @@ public enum FieldType {
     TOKEN("token"),
     ATTACHMENT("attachment"),
     PERCOLATOR("percolator");
-    @Getter
+
     private String type;
 
+    FieldType(String type) {
+        this.type = type;
+    }
 
+    public String getType() {
+        return type;
+    }
 }

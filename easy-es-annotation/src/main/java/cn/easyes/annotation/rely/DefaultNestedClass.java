@@ -1,4 +1,4 @@
-package cn.easyes.common.params;
+package cn.easyes.annotation.rely;
 
 /**
  * 默认嵌套类

@@ -1,4 +1,4 @@
-package cn.easyes.common.constants;
+package cn.easyes.annotation.rely;
 
 /**
  * 分词器 如果不包含用户所需分词器,可自行指定传入字符串

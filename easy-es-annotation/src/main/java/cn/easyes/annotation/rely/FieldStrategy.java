@@ -1,4 +1,4 @@
-package cn.easyes.common.enums;
+package cn.easyes.annotation.rely;
 
 /**
  * 字段策略枚举
