@@ -142,17 +142,16 @@ public interface BaseEsMapper<T> {
     SAPageInfo<T> searchAfterPage(LambdaEsQueryWrapper<T> wrapper, List<Object> searchAfter, Integer pageSize);
 
     /**
-     * 获取总数 默认根据折叠参数去重
+     * 获取总数(智能推断:若wrapper中指定了去重字段则去重,若未指定则不去重 推荐使用)
      *
      * @param wrapper 条件
      * @return 总数
      */
-    default Long selectCount(LambdaEsQueryWrapper<T> wrapper) {
-        return selectCount(wrapper, true);
-    }
+    Long selectCount(LambdaEsQueryWrapper<T> wrapper);
+
 
     /**
-     * 是否去重获取总数
+     * 无论wrapper中是否指定去重字段,都以用户传入的distinct布尔值作为是否去重的条件
      *
      * @param wrapper  条件
      * @param distinct 是否去重

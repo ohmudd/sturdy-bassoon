@@ -17,7 +17,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static cn.easyes.common.enums.BaseEsParamTypeEnum.*;
 import static cn.easyes.common.enums.EsAttachTypeEnum.*;
@@ -537,7 +536,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * 封装查询参数(含AND,OR这种连接操作)
      *
      * @param condition 条件
-     * @param consumer      函数
+     * @param consumer  函数
      * @param open      左括号
      * @param close     右括号
      * @return 泛型
