@@ -33,7 +33,7 @@ public interface Index<Children, R> extends Serializable {
     /**
      * 用户手动指定的settings
      *
-     * @param settings
+     * @param settings settings
      * @return 泛型
      */
     Children settings(Settings settings);

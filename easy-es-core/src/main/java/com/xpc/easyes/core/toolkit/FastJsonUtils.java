@@ -18,7 +18,7 @@ public class FastJsonUtils {
      *
      * @param clazz  类
      * @param fields 字段列表
-     * @return
+     * @return 前置过滤器
      */
     public static SimplePropertyPreFilter getSimplePropertyPreFilter(Class<?> clazz, Set<String> fields) {
         SimplePropertyPreFilter simplePropertyPreFilter = new SimplePropertyPreFilter(clazz);

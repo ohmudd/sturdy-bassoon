@@ -50,9 +50,9 @@ public class FieldUtils {
     /**
      * 获取字段名
      *
-     * @param func
-     * @param <T>
-     * @return
+     * @param func 函数
+     * @param <T>  泛型
+     * @return 字段名称
      */
     public static <T> String val(SFunction<T, ?> func) {
         try {

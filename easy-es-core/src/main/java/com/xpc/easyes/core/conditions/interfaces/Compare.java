@@ -142,7 +142,7 @@ public interface Compare<Children, R> extends Serializable {
     }
 
     /**
-     * 嵌套查询 嵌套层级>1级时适用
+     * 嵌套查询 嵌套层级大于1级时适用
      *
      * @param condition 条件
      * @param path      路径

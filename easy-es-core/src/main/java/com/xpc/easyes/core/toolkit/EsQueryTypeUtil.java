@@ -25,6 +25,8 @@ public class EsQueryTypeUtil {
      * @param boolQueryBuilder 参数连接器
      * @param attachType       连接类型
      * @param model            参数
+     * @param entityInfo       实体信息
+     * @param dbConfig         全局配置
      */
     public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer attachType, BaseEsParam.FieldValueModel
             model, EntityInfo entityInfo, GlobalConfig.DbConfig dbConfig) {
