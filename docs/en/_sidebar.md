@@ -57,6 +57,7 @@
   	- [Sort](/en/sort.md)
           - [Custom sort](/en/custom-sort.md)
   	- [Aggregate query](/en/aggregation.md)
+        - [Distinct](/en/distinct.md)
   	- [Word segmentation query](/en/particple.md)
   	- [Weight](/en/weight.md)
   	- [Highlight query](/en/highlight.md)
