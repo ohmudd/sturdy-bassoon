@@ -38,7 +38,7 @@ public class Document {
     /**
      * 文档内容,指定了类型及存储/查询分词器
      */
-    @HighLight(mappingField = "highlightContent", fragmentSize = 2,highLightType = HighLightTypeEnum.UNIFIED)
+    @HighLight(mappingField = "highlightContent", fragmentSize = 2)
     @IndexField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_SMART)
     private String content;
     /**

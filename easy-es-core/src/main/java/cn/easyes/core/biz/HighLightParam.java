@@ -29,7 +29,7 @@ public class HighLightParam {
      */
     private String highLightField;
     /**
-     * 高亮字段类型，默认
+     * 高亮字段类型
      */
     private HighLightTypeEnum highLightType;
 }

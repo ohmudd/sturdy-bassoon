@@ -30,7 +30,6 @@ public enum EsQueryTypeEnum {
     MATCH_QUERY(3),
     /**
      * 范围查询
-     * <br/>
      * <p>
      * 范围查询内部使用{@link RangeQueryBuilder}
      * <h1>如果是对于日期类型的比较，进行说明:</h1>
