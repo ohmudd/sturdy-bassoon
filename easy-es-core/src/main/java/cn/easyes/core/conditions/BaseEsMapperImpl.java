@@ -1199,7 +1199,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             Object parent = getParentMethod.invoke(joinField);
             return parent.toString();
         } catch (Throwable e) {
-            LogUtils.error("build IndexRequest: child routing invoke error, joinFieldClass:{},entity:{},e:{}",
+            LogUtils.formatError("build IndexRequest: child routing invoke error, joinFieldClass:{},entity:{},e:{}",
                     joinFieldClass.toString(), entity.toString(), e.toString());
             throw ExceptionUtils.eee("getRouting error", e);
         }
