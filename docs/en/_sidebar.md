@@ -3,8 +3,8 @@
   - [Worry-free](/en/worry-free.md)
   - [Quick start](/en/quick-start.md)
     - [Springboot integration demo](/en/demo.md)
+  - [Automatically hosted indexes](/en/auto-process-index.md)
   - Core Function
-    - [Automatically hosted indexes](/en/auto-process-index.md)
   	- [index Api](/en/index.md)
   	  - [exists index](/en/exists-index.md)
   	  - [delete index](/en/del-index.md)
