@@ -5,12 +5,14 @@ import com.xpc.easyes.core.conditions.LambdaEsQueryWrapper;
 import com.xpc.easyes.sample.entity.Document;
 import com.xpc.easyes.sample.mapper.DocumentMapper;
 import com.xpc.easyes.sample.test.TestEasyEsApplication;
+import org.elasticsearch.action.search.SearchResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 聚合测试
@@ -41,10 +43,19 @@ public class AggTest {
         wrapper.eq(Document::getTitle, "老汉")
                 .groupBy(Document::getCreator)
                 .max(Document::getStarNum);
-        String source = documentMapper.getSource(wrapper);
-        System.out.println(source);
+        SearchResponse response = documentMapper.search(wrapper);
+        System.out.println(response);
     }
 
+    @Test
+    public void multiFieldAgg() {
+        // 多字段聚合,可用于多字段去重,多字段合并桶聚合
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.eq(Document::getStarNum, 1)
+                .groupBy(Document::getTitle, Document::getCreator);
+        SearchResponse response = documentMapper.search(wrapper);
+        System.out.println(response);
+    }
 
 }
 

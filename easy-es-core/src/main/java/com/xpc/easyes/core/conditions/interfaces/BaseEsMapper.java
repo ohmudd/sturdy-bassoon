@@ -62,9 +62,8 @@ public interface BaseEsMapper<T> {
      *
      * @param wrapper 条件
      * @return es标准结果
-     * @throws IOException IO异常
      */
-    SearchResponse search(LambdaEsQueryWrapper<T> wrapper) throws IOException;
+    SearchResponse search(LambdaEsQueryWrapper<T> wrapper);
 
     /**
      * 获取SearchSourceBuilder,可用于本框架生成基础查询条件,不支持的高阶语法用户可通过SearchSourceBuilder 进一步封装

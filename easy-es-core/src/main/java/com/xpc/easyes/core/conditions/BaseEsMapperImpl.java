@@ -149,14 +149,20 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
-    public SearchResponse search(LambdaEsQueryWrapper<T> wrapper) throws IOException {
+    public SearchResponse search(LambdaEsQueryWrapper<T> wrapper) {
         // 构建es restHighLevel 查询参数
         SearchRequest searchRequest = new SearchRequest(getIndexName());
         SearchSourceBuilder searchSourceBuilder = buildSearchSourceBuilder(wrapper, entityClass);
         searchRequest.source(searchSourceBuilder);
         printDSL(wrapper);
         // 执行查询
-        return client.search(searchRequest, RequestOptions.DEFAULT);
+        SearchResponse response;
+        try {
+            response = client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw ExceptionUtils.eee("search exception", e);
+        }
+        return response;
     }
 
     @Override
@@ -650,13 +656,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @return 搜索响应体
      */
     private SearchResponse getSearchResponse(LambdaEsQueryWrapper<T> wrapper) {
-        SearchResponse response;
-        try {
-            response = search(wrapper);
-        } catch (IOException e) {
-            throw ExceptionUtils.eee("getSearchResponse exception", e);
-        }
-        return response;
+        return search(wrapper);
     }
 
     /**
