@@ -24,10 +24,11 @@ import java.util.List;
 @IndexName(shardsNum = 3, replicasNum = 2, keepGlobalPrefix = true, childClass = Comment.class)
 public class Document {
     /**
-     * es中的唯一id,如果你想自定义es中的id为你提供的id,比如MySQL中的id,请将注解中的type指定为customize或直接在全局配置文件中指定,如此id便支持任意数据类型)
+     * es中的唯一id,字段名随便起,我这里演示用esId,你也可以用id(推荐),bizId等.
+     * 如果你想自定义es中的id为你提供的id,比如MySQL中的id,请将注解中的type指定为customize或直接在全局配置文件中指定,如此id便支持任意数据类型)
      */
     @IndexId(type = IdType.CUSTOMIZE)
-    private String id;
+    private String esId;
     /**
      * 文档标题,不指定类型默认被创建为keyword类型,可进行精确查询
      */

@@ -132,7 +132,7 @@ public class HighTest {
         // SearchAfter分页,适合大数据量以及有跳页的场景
         LambdaEsQueryWrapper<Document> lambdaEsQueryWrapper = EsWrappers.lambdaQuery(Document.class);
         lambdaEsQueryWrapper.size(10);
-        lambdaEsQueryWrapper.orderByDesc(Document::getId, Document::getStarNum);
+        lambdaEsQueryWrapper.orderByDesc(Document::getEsId, Document::getStarNum);
         SAPageInfo<Document> saPageInfo = documentMapper.searchAfterPage(lambdaEsQueryWrapper, null, 10);
         //第一页
         System.out.println(saPageInfo);

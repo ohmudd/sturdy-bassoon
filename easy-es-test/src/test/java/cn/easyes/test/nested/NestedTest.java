@@ -36,7 +36,7 @@ public class NestedTest {
     public void testInsert() {
         // 测试插入数据
         Document document = new Document();
-        document.setId("5");
+        document.setEsId("5");
         document.setTitle("老汉");
         document.setContent("人才");
         document.setCreator("吃饭");

@@ -153,7 +153,7 @@ public class PerformanceTest {
     public void testUpdateByEE() {
         StopWatch stopWatch = StopWatch.createStarted();
         Document document = new Document();
-        document.setId("PmF0SH8B0E2Rzy0qcFBz");
+        document.setEsId("PmF0SH8B0E2Rzy0qcFBz");
         document.setTitle("哈哈哈");
         document.setContent("嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿嘿");
         documentMapper.updateById(document);

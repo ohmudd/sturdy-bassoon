@@ -30,7 +30,7 @@ public class InsertTest {
     public void testInsert() {
         // 测试插入数据
         Document document = new Document();
-        document.setId("5");
+        document.setEsId("5");
         document.setTitle("老汉");
         document.setContent("人才");
         document.setCreator("吃饭");
@@ -49,7 +49,7 @@ public class InsertTest {
         List<Document> documentList = new ArrayList<>();
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         Document document = new Document();
-        document.setId("2");
+        document.setEsId("2");
         document.setTitle("老汉");
         document.setContent("推*技术过硬");
         document.setCreator("隔壁老王");
@@ -59,7 +59,7 @@ public class InsertTest {
         document.setLocation("40.17836693398477,116.64002551005981");
 
         Document document1 = new Document();
-        document1.setId("3");
+        document1.setEsId("3");
         document1.setTitle("老王");
         document1.setContent("推*技术过硬");
         document1.setCreator("隔壁老王");
@@ -69,7 +69,7 @@ public class InsertTest {
 
 
         Document document2 = new Document();
-        document2.setId("4");
+        document2.setEsId("4");
         document2.setTitle("老李");
         document2.setContent("推*技术过硬");
         document2.setCreator("大猪蹄子");
@@ -92,7 +92,7 @@ public class InsertTest {
         // 测试用户自行指定id新增,测试前必须先把注解@TableId中的type指定为IdType.CUSTOMIZE 或在配置文件yml中指定
         String id = "muscle";
         Document document = new Document();
-        document.setId(id);
+        document.setEsId(id);
         document.setTitle("测试用户自定义id");
         document.setContent("测试用户自己指定id,如果es中已存在该id就更新该数据,不存在时才新增");
         int successCount = documentMapper.insert(document);

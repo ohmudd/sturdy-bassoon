@@ -34,7 +34,7 @@ public class JoinTest {
         // 测试新增父子文档,此处开启自动挡模式,父子类型索引已被自动处理
         // 新新增父文档,然后再插入子文档
         Document document = new Document();
-        document.setId("1");
+        document.setEsId("1");
         document.setTitle("我是父文档的标题");
         document.setContent("我是父文档的内容");
         JoinField joinField = new JoinField();
@@ -88,7 +88,7 @@ public class JoinTest {
     public void testUpdate() {
         // case1: 父文档/子文档 根据各自的id更新
         Document document = new Document();
-        document.setId("1");
+        document.setEsId("1");
         document.setTitle("我是隔壁老王标题");
         documentMapper.updateById(document);
 

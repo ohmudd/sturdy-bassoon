@@ -56,7 +56,7 @@ public class AllTest {
     public void testInsert() {
         // 测试插入数据
         Document document = new Document();
-        document.setId("1");
+        document.setEsId("1");
         document.setTitle("测试文档1");
         document.setContent("测试内容1");
         document.setCreator("老汉1");
@@ -79,7 +79,7 @@ public class AllTest {
         for (int i = 2; i < 23; i++) {
             Integer sec = i;
             Document document = new Document();
-            document.setId(sec.toString());
+            document.setEsId(sec.toString());
             document.setTitle("测试文档" + i);
             document.setContent("测试内容" + i);
             document.setCreator("老汉" + i);
@@ -107,7 +107,7 @@ public class AllTest {
     @Order(3)
     public void testUpdateById() {
         Document document = new Document();
-        document.setId("1");
+        document.setEsId("1");
         document.setTitle("测试文档1标题被更新了");
         int count = documentMapper.updateById(document);
         Assertions.assertEquals(1, count);
@@ -140,10 +140,27 @@ public class AllTest {
     public void testSelectOne() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.match(Document::getContent, "内容")
-                .orderByAsc(Document::getStarNum, Document::getId)
+                .orderByAsc(Document::getStarNum, Document::getEsId)
                 .limit(1);
         Document document = documentMapper.selectOne(wrapper);
         Assertions.assertEquals("测试文档1标题被更新了", document.getTitle());
+    }
+
+    @Test
+    @Order(6)
+    public void testSelectById() {
+        Document document = documentMapper.selectById(1);
+        Assertions.assertEquals("1", document.getEsId());
+        Assertions.assertEquals("老汉1", document.getCreator());
+    }
+
+    @Test
+    @Order(6)
+    public void testSelectBatchIds() {
+        List<Document> documents = documentMapper.selectBatchIds(Arrays.asList("1", "2"));
+        Assertions.assertEquals(2, documents.size());
+        Assertions.assertEquals("1", documents.get(1).getEsId());
+        Assertions.assertEquals("老汉2", documents.get(0).getCreator());
     }
 
     @Test
@@ -153,6 +170,15 @@ public class AllTest {
         wrapper.match(Document::getCustomField, "字段");
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(22, documents.size());
+    }
+
+    @Test
+    @Order(6)
+    public void testSelectCount() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.match(Document::getCustomField, "字段");
+        Long count = documentMapper.selectCount(wrapper);
+        Assertions.assertEquals(22L, count);
     }
 
     @Test
@@ -300,7 +326,7 @@ public class AllTest {
     @Order(6)
     public void testConditionIn() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.in(Document::getId, "1", "2", "3");
+        wrapper.in(Document::getEsId, "1", "2", "3");
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(3, documents.size());
 
@@ -462,7 +488,7 @@ public class AllTest {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.eq(Document::getTitle, "测试文档10")
                 .or()
-                .in(Document::getId, 1, 2, 3);
+                .in(Document::getEsId, 1, 2, 3);
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(4, documents.size());
     }
@@ -484,7 +510,7 @@ public class AllTest {
     public void testSearchAfter() {
         LambdaEsQueryWrapper<Document> lambdaEsQueryWrapper = EsWrappers.lambdaQuery(Document.class);
         lambdaEsQueryWrapper.size(10);
-        lambdaEsQueryWrapper.orderByDesc(Document::getId, Document::getStarNum);
+        lambdaEsQueryWrapper.orderByDesc(Document::getEsId, Document::getStarNum);
         SAPageInfo<Document> saPageInfo = documentMapper.searchAfterPage(lambdaEsQueryWrapper, null, 10);
         //第一页
         System.out.println(saPageInfo);
@@ -501,10 +527,10 @@ public class AllTest {
     public void testFilterField() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.eq(Document::getTitle, "测试文档10")
-                .select(Document::getId, Document::getContent);
+                .select(Document::getEsId, Document::getContent);
         Document document = documentMapper.selectOne(wrapper);
         Assertions.assertNotNull(document.getContent());
-        Assertions.assertNotNull(document.getId());
+        Assertions.assertNotNull(document.getEsId());
         Assertions.assertNull(document.getTitle());
     }
 
@@ -513,10 +539,10 @@ public class AllTest {
     public void testNotFilterField() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.eq(Document::getTitle, "测试文档10")
-                .notSelect(Document::getId, Document::getContent);
+                .notSelect(Document::getEsId, Document::getContent);
         Document document = documentMapper.selectOne(wrapper);
         Assertions.assertNull(document.getContent());
-        Assertions.assertNull(document.getId());
+        Assertions.assertNull(document.getEsId());
         Assertions.assertNotNull(document.getTitle());
     }
 
@@ -527,8 +553,8 @@ public class AllTest {
         wrapper.match(Document::getCreator, "老汉");
         wrapper.orderByDesc(Document::getStarNum);
         List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals("22", documents.get(0).getId());
-        Assertions.assertEquals("1", documents.get(21).getId());
+        Assertions.assertEquals("22", documents.get(0).getEsId());
+        Assertions.assertEquals("1", documents.get(21).getEsId());
     }
 
     @Test
@@ -536,10 +562,10 @@ public class AllTest {
     public void testOrderByAsc() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.match(Document::getCreator, "老汉");
-        wrapper.orderByAsc(Document::getStarNum, Document::getId);
+        wrapper.orderByAsc(Document::getStarNum, Document::getEsId);
         List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals("1", documents.get(0).getId());
-        Assertions.assertEquals("22", documents.get(21).getId());
+        Assertions.assertEquals("1", documents.get(0).getEsId());
+        Assertions.assertEquals("22", documents.get(21).getEsId());
     }
 
     @Test
@@ -554,8 +580,8 @@ public class AllTest {
         orderByParams.add(orderByParam);
         wrapper.orderBy(orderByParams);
         List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals("22", documents.get(0).getId());
-        Assertions.assertEquals("1", documents.get(21).getId());
+        Assertions.assertEquals("22", documents.get(0).getEsId());
+        Assertions.assertEquals("1", documents.get(21).getEsId());
     }
 
     @Test
@@ -565,7 +591,7 @@ public class AllTest {
         wrapper.match(Document::getCreator, "老汉11");
         wrapper.sortByScore();
         List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals("11",documents.get(0).getId());
+        Assertions.assertEquals("11", documents.get(0).getEsId());
     }
 
     @Test
@@ -581,8 +607,8 @@ public class AllTest {
         fieldSortBuilder.order(SortOrder.DESC);
         wrapper.sort(fieldSortBuilder);
         List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals("22", documents.get(0).getId());
-        Assertions.assertEquals("1", documents.get(21).getId());
+        Assertions.assertEquals("22", documents.get(0).getEsId());
+        Assertions.assertEquals("1", documents.get(21).getEsId());
     }
 
     @Test
@@ -677,7 +703,7 @@ public class AllTest {
                 .match(Document::getCreator, "老汉");
         wrapper.sortByScore();
         List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals("2", documents.get(0).getId());
+        Assertions.assertEquals("2", documents.get(0).getEsId());
     }
 
     @Test
