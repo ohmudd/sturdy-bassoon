@@ -71,6 +71,7 @@ public class WrapperProcessor {
      *
      * @param paramList   参数列表
      * @param entityClass 实体类
+     * @return BoolQueryBuilder
      */
     public static BoolQueryBuilder initBoolQueryBuilder(List<Param> paramList, Class<?> entityClass) {
         // 建立参数森林（无根树）

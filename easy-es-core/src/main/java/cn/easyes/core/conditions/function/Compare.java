@@ -1305,7 +1305,7 @@ public interface Compare<Children, R> extends Serializable {
     /**
      * 大于
      *
-     * @param condition
+     * @param condition 执行条件
      * @param column    列
      * @param val       值
      * @param boost     权重

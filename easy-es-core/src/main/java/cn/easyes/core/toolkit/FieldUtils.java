@@ -167,7 +167,6 @@ public class FieldUtils {
      *
      * @param field                      原字段名
      * @param mappingColumnMap           字段映射关系map
-     * @param isMapUnderscoreToCamelCase 是否开启下划线自动转驼峰
      * @return 实际字段名
      */
     public static String getRealField(String field, Map<String, String> mappingColumnMap) {

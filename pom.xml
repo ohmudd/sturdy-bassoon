@@ -28,7 +28,7 @@
             <dependency>
                 <groupId>cn.easy-es</groupId>
                 <artifactId>easy-es-boot-starter</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
