@@ -1,5 +1,6 @@
 package cn.easyes.common.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -8,6 +9,7 @@ import lombok.Getter;
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 @Getter
+@AllArgsConstructor
 public enum AggregationTypeEnum {
     /**
      * 求均值
@@ -30,9 +32,8 @@ public enum AggregationTypeEnum {
      */
     TERMS("Terms");
 
+    /**
+     * 聚合类型英文名
+     */
     private final String value;
-
-    AggregationTypeEnum(String value) {
-        this.value = value;
-    }
 }

@@ -356,10 +356,8 @@ public class AllTest {
         SearchResponse response = documentMapper.search(wrapper);
         ParsedLongTerms parsedLongTerms = response.getAggregations()
                 .get("starNumTerms");
-        for (Terms.Bucket bucket : parsedLongTerms.getBuckets()) {
-            Assertions.assertTrue(bucket.getKey().equals(1L) && bucket.getDocCount() == 2L);
-            break;
-        }
+        Terms.Bucket bucket = parsedLongTerms.getBuckets().get(0);
+        Assertions.assertTrue(bucket.getKey().equals(1L) && bucket.getDocCount() == 2L);
     }
 
     @Test
@@ -595,8 +593,8 @@ public class AllTest {
                 .geoDistance(Document::getLocation, 168.8, centerPoint)
                 .orderByDistanceAsc(Document::getLocation, centerPoint);
         List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals("3",documents.get(0).getEsId());
-        Assertions.assertEquals("4",documents.get(3).getEsId());
+        Assertions.assertEquals("3", documents.get(0).getEsId());
+        Assertions.assertEquals("4", documents.get(3).getEsId());
     }
 
     @Test
@@ -608,8 +606,8 @@ public class AllTest {
                 .geoDistance(Document::getLocation, 168.8, centerPoint)
                 .orderByDistanceDesc(Document::getLocation, centerPoint);
         List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals("4",documents.get(0).getEsId());
-        Assertions.assertEquals("3",documents.get(3).getEsId());
+        Assertions.assertEquals("4", documents.get(0).getEsId());
+        Assertions.assertEquals("3", documents.get(3).getEsId());
     }
 
     @Test

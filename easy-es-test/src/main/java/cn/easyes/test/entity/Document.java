@@ -31,6 +31,10 @@ public class Document {
      */
     private String title;
     /**
+     * 副标题
+     */
+    private String subTitle;
+    /**
      * 文档内容,指定了类型及存储/查询分词器
      */
     @HighLight(mappingField = "highlightContent", fragmentSize = 2)
