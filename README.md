@@ -88,11 +88,13 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动�
 # 官网地址 | Official website
 ---
 
-**easy-es官网** https://easy-es.cn/ (vue单页面应用，首次访问可能比较慢，请耐心等待一下，后续会很快)
+**easy-es官网** https://easy-es.cn/
 
 **开源社区dromara** https://dromara.org/
 
 **开源社区码云首页** https://gitee.com/dromara/
+
+> **Tip:** 官网是vue单页面应用，首次访问加载可能比较慢🐢，主公们请耐心等待一下，后续会很快🏹。
 
 # 架构 | Architecture
 ---
