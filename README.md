@@ -140,7 +140,7 @@ compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Vers
 # 捐赠 | Donate
 ---
 
-[捐赠记录,感谢你们的支持！](https://easy-es.cn/#/donate-log)
+[捐赠记录,感谢你们的支持！](https://easy-es.cn/pages/b52ac5/)
 
 > 您的支持是鼓励我们前行的动力，无论金额多少都足够表达您这份心意。
 
