@@ -1,6 +1,8 @@
 package cn.easyes.core.conditions;
 
 import cn.easyes.common.params.SFunction;
+import cn.easyes.common.utils.ArrayUtils;
+import cn.easyes.common.utils.ExceptionUtils;
 import cn.easyes.core.biz.AggregationParam;
 import cn.easyes.core.biz.BaseEsParam;
 import cn.easyes.core.biz.EntityFieldInfo;
@@ -128,9 +130,12 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
     }
 
     @Override
-    public LambdaEsQueryWrapper<T> index(boolean condition, String indexName) {
+    public LambdaEsQueryWrapper<T> index(boolean condition, String... indexNames) {
+        if (ArrayUtils.isEmpty(indexNames)) {
+            throw ExceptionUtils.eee("indexNames can not be empty");
+        }
         if (condition) {
-            this.indexName = indexName;
+            this.indexNames = indexNames;
         }
         return typedThis;
     }
