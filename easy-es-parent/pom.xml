@@ -23,6 +23,7 @@
         <module>../easy-es-core</module>
         <module>../easy-es-boot-starter</module>
         <module>../easy-es-extension</module>
+        <module>../easy-es-annotation</module>
     </modules>
 
     <properties>
