@@ -83,8 +83,9 @@ public interface BaseEsMapper<T> {
 
     /**
      * es原生滚动查询
+     *
      * @param searchScrollRequest 查询请求参数
-     * @param requestOptions 类型
+     * @param requestOptions      类型
      * @return es原生返回结果
      * @throws IOException IO异常
      */
