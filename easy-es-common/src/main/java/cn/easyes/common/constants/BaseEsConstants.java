@@ -56,6 +56,10 @@ public interface BaseEsConstants {
      */
     String COLON = ":";
     /**
+     * 百分号
+     */
+    String PERCENT_SIGN = "%";
+    /**
      * ee内置es分布式锁索引名称
      */
     String LOCK_INDEX = "ee-distribute-lock";

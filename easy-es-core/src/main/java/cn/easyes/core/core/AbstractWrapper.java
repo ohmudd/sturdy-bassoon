@@ -53,9 +53,9 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      */
     protected EsQueryTypeEnum prevQueryType;
     /**
-     * 队列 存放父id
+     * 栈 存放父id
      */
-    protected LinkedList<String> parentIdQueue;
+    protected Stack<String> parentIdStack;
     /**
      * 队列 存放上一节点类型
      */
@@ -92,7 +92,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         aggregationParamList = new ArrayList<>();
         paramQueue = new LinkedList<>();
         prevQueryType = NESTED_AND;
-        parentIdQueue = new LinkedList<>();
+        parentIdStack = new Stack<>();
         prevQueryTypeQueue = new LinkedList<>();
     }
 
@@ -709,17 +709,22 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
         paramQueue.add(param);
         this.parentId = param.getId();
-        parentIdQueue.push(parentId);
+        parentIdStack.push(parentId);
         level++;
         consumer.accept(instance());
         // 深度优先在consumer条件消费完后会来执行这里 此时parentId需要重置 至于为什么,比较烧脑 可断点打在consumer前后观察一波
         level--;
-        if (!parentIdQueue.isEmpty()) {
-            this.parentId = parentIdQueue.pollLast();
-        }
-        if (level == 0) {
-            // 仙人板板 根节点
-            this.parentId = null;
+        if (!parentIdStack.isEmpty()) {
+            // 丢弃栈顶 当前id
+            parentIdStack.pop();
+
+            if (parentIdStack.isEmpty()) {
+                // 仙人板板 根节点
+                parentId = null;
+            } else {
+                // 非根节点 取其上一节点id作为爸爸id
+                this.parentId = parentIdStack.peek();
+            }
         }
     }
 

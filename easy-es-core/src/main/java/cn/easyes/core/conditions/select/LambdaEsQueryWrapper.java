@@ -7,6 +7,7 @@ import cn.easyes.core.biz.Param;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * 查询Lambda表达式
@@ -31,14 +32,14 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
     }
 
     LambdaEsQueryWrapper(T entity, int level, String parentId, EsQueryTypeEnum pervQueryType, LinkedList<Param> paramList,
-                         LinkedList<String> parentIdQueue, LinkedList<EsQueryTypeEnum> prevQueryTypeQueue,
+                         Stack<String> parentIdStack, LinkedList<EsQueryTypeEnum> prevQueryTypeQueue,
                          List<BaseSortParam> baseSortParams, List<AggregationParam> aggregationParamList) {
         super.setEntity(entity);
         this.level = level;
         this.parentId = parentId;
         this.prevQueryType = pervQueryType;
         this.paramQueue = paramList;
-        this.parentIdQueue = parentIdQueue;
+        this.parentIdStack = parentIdStack;
         this.prevQueryTypeQueue = prevQueryTypeQueue;
         this.baseSortParams = baseSortParams;
         this.aggregationParamList = aggregationParamList;
@@ -46,7 +47,7 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
 
     @Override
     protected LambdaEsQueryWrapper<T> instance() {
-        return new LambdaEsQueryWrapper<>(entity, level, parentId, prevQueryType, paramQueue, parentIdQueue, prevQueryTypeQueue, baseSortParams, aggregationParamList);
+        return new LambdaEsQueryWrapper<>(entity, level, parentId, prevQueryType, paramQueue, parentIdStack, prevQueryTypeQueue, baseSortParams, aggregationParamList);
     }
 
 }

@@ -9,6 +9,7 @@ import cn.easyes.core.conditions.function.Update;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * 更新Lambda表达式
@@ -33,20 +34,20 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
     }
 
     LambdaEsUpdateWrapper(T entity, int level, String parentId, EsQueryTypeEnum pervQueryType, LinkedList<Param> paramQueue,
-                          LinkedList<String> parentIdQueue, LinkedList<EsQueryTypeEnum> prevQueryTypeQueue, List<EsUpdateParam> updateParamList) {
+                          Stack<String> parentIdStack, LinkedList<EsQueryTypeEnum> prevQueryTypeQueue, List<EsUpdateParam> updateParamList) {
         super.setEntity(entity);
         this.level = level;
         this.parentId = parentId;
         this.prevQueryType = pervQueryType;
         this.paramQueue = paramQueue;
-        this.parentIdQueue = parentIdQueue;
+        this.parentIdStack = parentIdStack;
         this.prevQueryTypeQueue = prevQueryTypeQueue;
         this.updateParamList = updateParamList;
     }
 
     @Override
     protected LambdaEsUpdateWrapper<T> instance() {
-        return new LambdaEsUpdateWrapper<>(entity, level, parentId, prevQueryType, paramQueue, parentIdQueue, prevQueryTypeQueue, updateParamList);
+        return new LambdaEsUpdateWrapper<>(entity, level, parentId, prevQueryType, paramQueue, parentIdStack, prevQueryTypeQueue, updateParamList);
     }
 
 }

@@ -1,5 +1,6 @@
 package cn.easyes.core.core;
 
+import cn.easyes.common.constants.BaseEsConstants;
 import cn.easyes.common.enums.AggregationTypeEnum;
 import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.utils.*;
@@ -125,7 +126,7 @@ public class WrapperProcessor {
                 break;
             case MULTI_MATCH:
                 String[] realFields = getRealFields(param.getColumns(), mappingColumnMap);
-                queryBuilder = QueryBuilders.multiMatchQuery(param.getVal(), realFields).operator((Operator) param.getExt1()).minimumShouldMatch(String.valueOf(param.getExt2()));
+                queryBuilder = QueryBuilders.multiMatchQuery(param.getVal(), realFields).operator((Operator) param.getExt1()).minimumShouldMatch(param.getExt2() + PERCENT_SIGN);
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MATCH_ALL:

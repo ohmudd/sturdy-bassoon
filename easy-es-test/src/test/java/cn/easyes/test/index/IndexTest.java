@@ -38,7 +38,8 @@ public class IndexTest {
     @Test
     public void testCreateIndexByEntity() {
         // 绝大多数场景推荐使用 简单至上
-        documentMapper.createIndex();
+        boolean ok = documentMapper.createIndex();
+        Assertions.assertTrue(ok);
     }
 
     /**

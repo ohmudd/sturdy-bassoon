@@ -1066,11 +1066,11 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         for (int i = 0; i < sortValues.length; i++) {
             Object sortValue = sortValues[i];
             if (!(sortValue instanceof Double)) {
-                return;
+                continue;
             }
             double distance = (double) sortValue;
             if (Double.isNaN(distance)) {
-                return;
+                continue;
             }
             Integer distanceDecimalPlaces = entityInfo.getDistanceDecimalPlaces().get(i);
             if (distanceDecimalPlaces > ZERO) {

@@ -56,7 +56,18 @@ public class MapperScannerRegister implements ImportBeanDefinitionRegistrar, Res
                     "\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\n" +
                     "------------------------------------------------------>"
             );
-            System.out.println(":: version   :: " + versionStr + "                                 >");
+
+            // 版本长度并不固定,比如beta版,所以需要特殊处理
+            int width = 38;
+            int blank = width - versionStr.length();
+            StringBuilder sb = new StringBuilder();
+            sb.append(":: version   :: ")
+                    .append(versionStr);
+            for (int i = 0; i < blank; i++) {
+                sb.append(" ");
+            }
+            sb.append(">");
+            System.out.println(sb);
             System.out.println(":: home      :: https://easy-es.cn/                   >");
             System.out.println(":: community :: https://dromara.org/                  >");
             System.out.println(":: wechat    :: 252645816, add and become muscle man! >");
@@ -87,5 +98,9 @@ public class MapperScannerRegister implements ImportBeanDefinitionRegistrar, Res
     @Override
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("252645816, add and become muscle man! >".length());
     }
 }

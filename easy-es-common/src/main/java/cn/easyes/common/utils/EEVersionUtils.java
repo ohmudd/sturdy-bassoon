@@ -33,7 +33,7 @@ public class EEVersionUtils {
      */
     public static <T> String getJarVersion(Class<T> objectClass) {
         return Optional.ofNullable(objectClass.getPackage().getImplementationVersion()).
-                orElse(UNKNOWN);
+                orElse("UNKNOWN");
     }
 
     /**
