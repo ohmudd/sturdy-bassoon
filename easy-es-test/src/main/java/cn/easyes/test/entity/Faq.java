@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@IndexName("faq")
+@IndexName("easyes_faq")
 public class Faq {
     @IndexField("faq_name")
     private String faqName;
