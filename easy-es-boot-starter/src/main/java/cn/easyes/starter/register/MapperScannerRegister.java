@@ -1,5 +1,6 @@
 package cn.easyes.starter.register;
 
+import cn.easyes.common.utils.EEVersionUtil;
 import cn.easyes.common.utils.LogUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.EnvironmentAware;
@@ -46,8 +47,7 @@ public class MapperScannerRegister implements ImportBeanDefinitionRegistrar, Res
         //@author dazer
         boolean banner = Optional.ofNullable(environment.getProperty(ENABLE_BANNER)).map(Boolean::parseBoolean).orElse(Boolean.TRUE);
         if (banner) {
-            String versionStr =  Optional.ofNullable(MapperScannerRegister.class.getPackage().getImplementationVersion()).
-                    orElse("unknown");
+            String versionStr = EEVersionUtil.getJarVersion(this.getClass());
             System.out.println("\n" +
                     "___                     _  _            ___\n" +
                     "  | __|   __ _     ___    | || |   ___    | __|    ___\n" +
@@ -56,7 +56,7 @@ public class MapperScannerRegister implements ImportBeanDefinitionRegistrar, Res
                     "_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_| \"\"\"\"|_|     |_|\"\"\"\"\"|_|\"\"\"\"\"|\n" +
                     "\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\n" +
                     "--------------------------xpc-------------------------->");
-            System.out.println(":: easy-es ::                                  (v" + versionStr + ")");
+            System.out.println(":: easy-es ::                                  (v:" + versionStr + ")");
         }
 
         AnnotationAttributes mapperScanAttrs = AnnotationAttributes
