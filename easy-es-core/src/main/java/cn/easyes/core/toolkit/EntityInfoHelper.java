@@ -355,7 +355,7 @@ public class EntityInfoHelper {
         HighLight highLight = field.getAnnotation(HighLight.class);
         String mappingField = highLight.mappingField();
         if (StringUtils.isNotBlank(mappingField)) {
-            entityInfo.getNotSerializeField().add(field.getName());
+            entityInfo.getNotSerializeField().add(mappingField);
         } else {
             // 如果用户未指定高亮映射字段,则高亮映射字段用当前字段
             mappingField = field.getName();

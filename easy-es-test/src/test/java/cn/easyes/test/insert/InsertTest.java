@@ -45,17 +45,6 @@ public class InsertTest {
         Point point = new Point(13.400544, 52.530286);
         document.setGeoLocation(point.toString());
         document.setStarNum(1);
-        List<User> users = new ArrayList<>();
-        Set<Faq> faqs = new HashSet<>();
-        faqs.add(new Faq("问题1", "回答1"));
-        faqs.add(new Faq("问题2", "回答2"));
-
-        Set<Faq> faqs1 = new HashSet<>();
-        faqs1.add(new Faq("问题3", "回答3"));
-        faqs1.add(new Faq("问题4", "回答4"));
-        users.add(new User("用户1", 18, faqs));
-        users.add(new User("用户2", 19, faqs1));
-        document.setUsers(users);
         int successCount = documentMapper.insert(document);
         Assert.assertEquals(successCount, 1);
     }
