@@ -66,7 +66,7 @@ public class EntityInfoHelper {
 
         // 缓存中未获取到,则初始化
         GlobalConfig globalConfig = GlobalConfigCache.getGlobalConfig();
-        return initTableInfo(globalConfig, clazz);
+        return initIndexInfo(globalConfig, clazz);
     }
 
     /**
@@ -76,7 +76,7 @@ public class EntityInfoHelper {
      * @param clazz        类
      * @return 实体信息
      */
-    public synchronized static EntityInfo initTableInfo(GlobalConfig globalConfig, Class<?> clazz) {
+    public synchronized static EntityInfo initIndexInfo(GlobalConfig globalConfig, Class<?> clazz) {
         EntityInfo entityInfo = ENTITY_INFO_CACHE.get(clazz);
         if (entityInfo != null) {
             return entityInfo;
@@ -85,9 +85,9 @@ public class EntityInfoHelper {
         // 没有获取到缓存信息,则初始化
         entityInfo = new EntityInfo();
         // 初始化表名(索引名)相关
-        initTableName(clazz, globalConfig, entityInfo);
+        initIndexName(clazz, globalConfig, entityInfo);
         // 初始化字段相关
-        initTableFields(clazz, globalConfig, entityInfo);
+        initIndexFields(clazz, globalConfig, entityInfo);
 
         // 放入缓存
         ENTITY_INFO_CACHE.put(clazz, entityInfo);
@@ -96,42 +96,42 @@ public class EntityInfoHelper {
 
 
     /**
-     * 初始化 表主键,表字段
+     * 初始化 索引主键,索引字段
      *
      * @param clazz        类
      * @param globalConfig 全局配置
      * @param entityInfo   实体信息
      */
-    public static void initTableFields(Class<?> clazz, GlobalConfig globalConfig, EntityInfo entityInfo) {
+    public static void initIndexFields(Class<?> clazz, GlobalConfig globalConfig, EntityInfo entityInfo) {
         // 数据库全局配置
         GlobalConfig.DbConfig dbConfig = globalConfig.getDbConfig();
         List<Field> list = getAllFields(clazz);
         // 标记是否读取到主键
         boolean isReadPK = false;
         // 是否存在 @TableId 注解
-        boolean existTableId = isExistTableId(list);
+        boolean existTableId = isExistIndexId(list);
 
         List<EntityFieldInfo> fieldList = new ArrayList<>();
         for (Field field : list) {
             // 主键ID 初始化
             if (!isReadPK) {
                 if (existTableId) {
-                    isReadPK = initTableIdWithAnnotation(dbConfig, entityInfo, field);
+                    isReadPK = initIndexIdWithAnnotation(dbConfig, entityInfo, field);
                 } else {
-                    isReadPK = initTableIdWithoutAnnotation(dbConfig, entityInfo, field);
+                    isReadPK = initIndexIdWithoutAnnotation(dbConfig, entityInfo, field);
                 }
                 if (isReadPK) {
                     continue;
                 }
             }
 
-            // 有 @TableField 等已知自定义注解的字段初始化
-            if (initTableFieldWithAnnotation(dbConfig, fieldList, field, entityInfo)) {
+            // 有 @IndexField 等已知自定义注解的字段初始化
+            if (initIndexFieldWithAnnotation(dbConfig, fieldList, field, entityInfo)) {
                 continue;
             }
 
-            // 无 @TableField 等已知自定义注解的字段初始化
-            initTableFieldWithoutAnnotation(dbConfig, fieldList, field, entityInfo);
+            // 无 @IndexField 等已知自定义注解的字段初始化
+            initIndexFieldWithoutAnnotation(dbConfig, fieldList, field, entityInfo);
         }
 
         // 字段列表
@@ -250,20 +250,19 @@ public class EntityInfoHelper {
      * @param entityInfo 实体信息
      * @return
      */
-    private static boolean initTableFieldWithAnnotation(GlobalConfig.DbConfig dbConfig, List<EntityFieldInfo> fieldList,
+    private static boolean initIndexFieldWithAnnotation(GlobalConfig.DbConfig dbConfig, List<EntityFieldInfo> fieldList,
                                                         Field field, EntityInfo entityInfo) {
         boolean hasAnnotation = false;
 
-        // 初始化封装TableField注解信息
+        // 初始化封装IndexField注解信息
         if (field.isAnnotationPresent(IndexField.class)) {
-            initTableFieldAnnotation(dbConfig, entityInfo, field, fieldList);
+            initIndexFieldAnnotation(dbConfig, entityInfo, field, fieldList);
             hasAnnotation = true;
         }
 
         // 初始化封装HighLight注解信息
         if (field.isAnnotationPresent(HighLight.class)) {
             initHighLightAnnotation(dbConfig, entityInfo, field);
-            hasAnnotation = true;
         }
 
         return hasAnnotation;
@@ -271,14 +270,14 @@ public class EntityInfoHelper {
 
 
     /**
-     * TableField注解信息初始化
+     * IndexField注解信息初始化
      *
      * @param dbConfig   索引配置
      * @param fieldList  字段列表
      * @param field      字段
      * @param entityInfo 实体信息
      */
-    private static void initTableFieldAnnotation(GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo,
+    private static void initIndexFieldAnnotation(GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo,
                                                  Field field, List<EntityFieldInfo> fieldList) {
         IndexField tableField = field.getAnnotation(IndexField.class);
         if (tableField.exist()) {
@@ -437,7 +436,7 @@ public class EntityInfoHelper {
      * @param field      字段
      * @param entityInfo 实体信息
      */
-    private static void initTableFieldWithoutAnnotation(GlobalConfig.DbConfig dbConfig, List<EntityFieldInfo> fieldList,
+    private static void initIndexFieldWithoutAnnotation(GlobalConfig.DbConfig dbConfig, List<EntityFieldInfo> fieldList,
                                                         Field field, EntityInfo entityInfo) {
         boolean isNotSerializedField = entityInfo.getNotSerializeField().contains(field.getName());
         if (isNotSerializedField) {
@@ -461,7 +460,7 @@ public class EntityInfoHelper {
      * @param field      字段
      * @return 布尔值
      */
-    private static boolean initTableIdWithAnnotation(GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo,
+    private static boolean initIndexIdWithAnnotation(GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo,
                                                      Field field) {
         IndexId tableId = field.getAnnotation(IndexId.class);
         if (tableId != null) {
@@ -496,7 +495,7 @@ public class EntityInfoHelper {
      * @param field      字段
      * @return 布尔值
      */
-    private static boolean initTableIdWithoutAnnotation(GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo,
+    private static boolean initIndexIdWithoutAnnotation(GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo,
                                                         Field field) {
         String column = field.getName();
         if (DEFAULT_ID_NAME.equalsIgnoreCase(column) || DEFAULT_ES_ID_NAME.equals(column)) {
@@ -520,7 +519,7 @@ public class EntityInfoHelper {
      * @param list 字段列表
      * @return 布尔值
      */
-    public static boolean isExistTableId(List<Field> list) {
+    public static boolean isExistIndexId(List<Field> list) {
         for (Field field : list) {
             IndexId tableId = field.getAnnotation(IndexId.class);
             if (tableId != null) {
@@ -542,13 +541,13 @@ public class EntityInfoHelper {
     }
 
     /**
-     * 初始化表(索引)名称
+     * 初始化索引名等信息
      *
      * @param clazz        类
      * @param globalConfig 全局配置
      * @param entityInfo   实体信息
      */
-    private static void initTableName(Class<?> clazz, GlobalConfig globalConfig, EntityInfo entityInfo) {
+    private static void initIndexName(Class<?> clazz, GlobalConfig globalConfig, EntityInfo entityInfo) {
         // 数据库全局配置
         GlobalConfig.DbConfig dbConfig = globalConfig.getDbConfig();
         IndexName table = clazz.getAnnotation(IndexName.class);
