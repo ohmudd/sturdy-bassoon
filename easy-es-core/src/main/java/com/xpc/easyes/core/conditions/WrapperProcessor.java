@@ -149,9 +149,12 @@ public class WrapperProcessor {
         Optional.ofNullable(wrapper.from).ifPresent(searchSourceBuilder::from);
         MyOptional.ofNullable(wrapper.size).ifPresent(searchSourceBuilder::size, DEFAULT_SIZE);
 
-        // 查询超过一万条, trackTotalHists自动开启
         if (searchSourceBuilder.size() > DEFAULT_SIZE) {
+            // 查询超过一万条, trackTotalHists自动开启
             searchSourceBuilder.trackTotalHits(true);
+        } else {
+            // 根据全局配置决定是否开启
+            searchSourceBuilder.trackTotalHits(GlobalConfigCache.getGlobalConfig().getDbConfig().isEnableTrackTotalHits());
         }
 
         return searchSourceBuilder;

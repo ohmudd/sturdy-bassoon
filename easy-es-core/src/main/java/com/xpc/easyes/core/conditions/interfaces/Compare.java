@@ -72,7 +72,6 @@ public interface Compare<Children, R> extends Serializable {
         return match(condition, column, val, DEFAULT_BOOST);
     }
 
-
     default Children nestedMatch(R path, String column, Object val) {
         return nestedMatch(true, path, column, val, ScoreMode.Avg, DEFAULT_BOOST);
     }
@@ -113,6 +112,48 @@ public interface Compare<Children, R> extends Serializable {
      * @return 泛型
      */
     Children nestedMatch(boolean condition, R path, String column, Object val, ScoreMode scoreMode, Float boost);
+
+    default Children nestedMatch(String path, String column, Object val) {
+        return nestedMatch(true, path, column, val, ScoreMode.Avg, DEFAULT_BOOST);
+    }
+
+    default Children nestedMatch(String path, String column, Object val, ScoreMode scoreMode) {
+        return nestedMatch(true, path, column, val, scoreMode, DEFAULT_BOOST);
+    }
+
+    default Children nestedMatch(boolean condition, String path, String column, Object val) {
+        return nestedMatch(condition, path, column, val, ScoreMode.Avg, DEFAULT_BOOST);
+    }
+
+    default Children nestedMatch(boolean condition, String path, String column, Object val, Float boost) {
+        return nestedMatch(condition, path, column, val, ScoreMode.Avg, boost);
+    }
+
+    default Children nestedMatch(String path, String column, Object val, Float boost) {
+        return nestedMatch(true, path, column, val, ScoreMode.Avg, boost);
+    }
+
+    default Children nestedMatch(boolean condition, String path, String column, Object val, ScoreMode scoreMode) {
+        return nestedMatch(condition, path, column, val, scoreMode, DEFAULT_BOOST);
+    }
+
+    default Children nestedMatch(String path, String column, Object val, ScoreMode scoreMode, Float boost) {
+        return nestedMatch(true, path, column, val, scoreMode, boost);
+    }
+
+    /**
+     * 嵌套查询 嵌套层级>1级时适用
+     *
+     * @param condition 条件
+     * @param path      路径
+     * @param column    列名
+     * @param val       值
+     * @param scoreMode 得分模式
+     * @param boost     权重
+     * @return 泛型
+     */
+    Children nestedMatch(boolean condition, String path, String column, Object val, ScoreMode scoreMode, Float boost);
+
 
     /**
      * match 分词匹配

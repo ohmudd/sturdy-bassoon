@@ -22,6 +22,11 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
     List<EsUpdateParam> updateParamList;
 
     /**
+     * 更新操作作用的索引名
+     */
+    protected String indexName;
+
+    /**
      * 不建议直接 new 该实例，使用 Wrappers.lambdaQuery(entity)
      */
     public LambdaEsUpdateWrapper() {
@@ -30,6 +35,7 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
 
     /**
      * 不建议直接 new 该实例，使用 Wrappers.lambdaQuery(entity)
+     *
      * @param entity 实体
      */
     public LambdaEsUpdateWrapper(T entity) {
@@ -52,6 +58,12 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
             esUpdateParam.setValue(val);
             updateParamList.add(esUpdateParam);
         }
+        return typedThis;
+    }
+
+    @Override
+    public LambdaEsUpdateWrapper<T> index(boolean condition, String indexName) {
+        this.indexName = indexName;
         return typedThis;
     }
 

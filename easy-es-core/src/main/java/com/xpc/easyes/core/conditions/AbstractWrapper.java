@@ -145,6 +145,11 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
+    public Children nestedMatch(boolean condition, String path, String column, Object val, ScoreMode scoreMode, Float boost) {
+        return doIt(condition, MATCH_QUERY, MUST, path, column, val, scoreMode, boost);
+    }
+
+    @Override
     public Children matchPhase(boolean condition, R column, Object val, Float boost) {
         return doIt(condition, MATCH_PHASE, MUST, FieldUtils.getFieldName(column), val, boost);
     }

@@ -41,6 +41,10 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
      * 查询多少条记录
      */
     protected Integer size;
+    /**
+     * 查询索引名
+     */
+    protected String indexName;
 
     /**
      * 不建议直接 new 该实例，使用 Wrappers.lambdaQuery(entity)
@@ -136,6 +140,14 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
     public LambdaEsQueryWrapper<T> limit(Integer m, Integer n) {
         this.from = m;
         this.size = n;
+        return typedThis;
+    }
+
+    @Override
+    public LambdaEsQueryWrapper<T> index(boolean condition, String indexName) {
+        if (condition) {
+            this.indexName = indexName;
+        }
         return typedThis;
     }
 

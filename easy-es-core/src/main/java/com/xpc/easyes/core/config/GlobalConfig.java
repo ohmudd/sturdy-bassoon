@@ -59,5 +59,9 @@ public class GlobalConfig {
          * Field update strategy default nonNull 字段更新策略,默认非null
          */
         private FieldStrategy fieldStrategy = FieldStrategy.NOT_NULL;
+        /**
+         * 是否开启查询全部数据 默认关闭 若查询数据大于1w条时则自动开启
+         */
+        private boolean enableTrackTotalHits = false;
     }
 }

@@ -77,4 +77,18 @@ public interface Query<Children, T, R> extends Serializable {
      * @return 泛型
      */
     Children limit(Integer m, Integer n);
+
+    default Children index(String indexName) {
+        return index(true, indexName);
+    }
+
+    /**
+     * 设置当前查询的索引名称
+     *
+     * @param condition 条件
+     * @param indexName 索引名
+     * @return 泛型
+     */
+    Children index(boolean condition, String indexName);
+
 }
