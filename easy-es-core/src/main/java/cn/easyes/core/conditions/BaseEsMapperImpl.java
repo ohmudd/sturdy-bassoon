@@ -47,7 +47,6 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.metrics.ParsedCardinality;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
-import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -168,36 +167,8 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public SearchResponse search(LambdaEsQueryWrapper<T> wrapper) {
-        // 构建es restHighLevel 查询参数
-        SearchRequest searchRequest = new SearchRequest(getIndexName(wrapper.indexName));
-        SearchSourceBuilder searchSourceBuilder = WrapperProcessor.buildSearchSourceBuilder(wrapper, entityClass);
-        searchRequest.source(searchSourceBuilder);
-        printDSL(searchRequest);
-        // 执行查询
-        SearchResponse response;
-        try {
-            response = client.search(searchRequest, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-            throw ExceptionUtils.eee("search exception", e);
-        }
-        return response;
-    }
-
-    private SearchResponse search(LambdaEsQueryWrapper<T> wrapper, List<Object> searchAfter) {
-        // 构建es restHighLevel 查询参数
-        SearchRequest searchRequest = new SearchRequest(getIndexName(wrapper.indexName));
-        SearchSourceBuilder searchSourceBuilder = WrapperProcessor.buildSearchSourceBuilder(wrapper, entityClass);
-        searchSourceBuilder.searchAfter(searchAfter.toArray());
-        searchRequest.source(searchSourceBuilder);
-        printDSL(searchRequest);
-        // 执行查询
-        SearchResponse response;
-        try {
-            response = client.search(searchRequest, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-            throw ExceptionUtils.eee("search exception", e);
-        }
-        return response;
+        // 执行普通混合查询, 不含searchAfter分页
+        return getSearchResponse(wrapper, null);
     }
 
     @Override
@@ -249,12 +220,13 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public SAPageInfo<T> searchAfterPage(LambdaEsQueryWrapper<T> wrapper, List<Object> searchAfter, Integer pageSize) {
-        //searchAfter语法规定 或from只允许为0、-1、不传，这里直接设置为不允许有值
-        if (!ObjectUtils.isEmpty(wrapper.from)) {
-            throw ExceptionUtils.eee("from is not empty");
+        // searchAfter语法规定 或from只允许为0或-1或不传,否则es会报错, 推荐不指定, 直接传null即可
+        boolean illegalArg = Objects.nonNull(wrapper.from) && (!wrapper.from.equals(ZERO) || !wrapper.from.equals(MINUS_ONE));
+        if (illegalArg) {
+            throw ExceptionUtils.eee("The wrapper.from in searchAfter must be 0 or -1 or null, null is recommended");
         }
 
-        //searchAfter必须要进行排序，不排序无法进行分页
+        // searchAfter必须要进行排序，不排序无法进行分页
         if (CollectionUtils.isEmpty(wrapper.sortParamList)) {
             throw ExceptionUtils.eee("sortParamList cannot be empty");
         }
@@ -265,7 +237,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
         // 请求es获取数据
         SearchResponse response =
-                CollectionUtils.isEmpty(searchAfter) ? getSearchResponse(wrapper) : getSearchResponse(wrapper, searchAfter);
+                CollectionUtils.isEmpty(searchAfter) ? getSearchResponse(wrapper) : getSearchResponse(wrapper, searchAfter.toArray());
 
         // 解析数据
         SearchHit[] searchHits = parseSearchHitArray(response);
@@ -626,6 +598,30 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         return Boolean.TRUE;
     }
 
+    /**
+     * 获取es查询结果返回体
+     *
+     * @param wrapper     条件
+     * @param searchAfter searchAfter参数
+     * @return es返回体
+     */
+    private SearchResponse getSearchResponse(LambdaEsQueryWrapper<T> wrapper, Object[] searchAfter) {
+        // 构建es restHighLevel 查询参数
+        SearchRequest searchRequest = new SearchRequest(getIndexName(wrapper.indexName));
+        SearchSourceBuilder searchSourceBuilder = WrapperProcessor.buildSearchSourceBuilder(wrapper, entityClass);
+        searchRequest.source(searchSourceBuilder);
+        Optional.ofNullable(searchAfter).ifPresent(searchSourceBuilder::searchAfter);
+        printDSL(searchRequest);
+        // 执行查询
+        SearchResponse response;
+        try {
+            response = client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw ExceptionUtils.eee("search exception", e);
+        }
+        return response;
+    }
+
 
     /**
      * 生成DelRequest请求参数
@@ -805,16 +801,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      */
     private SearchResponse getSearchResponse(LambdaEsQueryWrapper<T> wrapper) {
         return search(wrapper);
-    }
-
-    /**
-     * 获取es搜索响应体
-     *
-     * @param wrapper 条件
-     * @return 搜索响应体
-     */
-    private SearchResponse getSearchResponse(LambdaEsQueryWrapper<T> wrapper, List<Object> searchAfter) {
-        return search(wrapper, searchAfter);
     }
 
     /**

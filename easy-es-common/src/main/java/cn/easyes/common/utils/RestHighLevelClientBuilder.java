@@ -9,7 +9,7 @@ import org.elasticsearch.client.RestHighLevelClient;
  * elasticsearch 构造器
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class RestHighLevelClientBuild {
+public class RestHighLevelClientBuilder {
 
     /**
      * 构建RestHighLevelClient
@@ -19,7 +19,7 @@ public class RestHighLevelClientBuild {
      */
     public static RestHighLevelClient build(RestClientBuilder builder) {
         RestHighLevelClient restHighLevelClient = new RestHighLevelClient(builder);
-        //检验es版本是否对应
+        // 检验es版本是否对应
         EsVersionUtil.verify(restHighLevelClient);
         return restHighLevelClient;
     }

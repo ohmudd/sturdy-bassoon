@@ -27,6 +27,10 @@ public interface BaseEsConstants {
      */
     Integer ONE = 1;
     /**
+     * 数字-1
+     */
+    Integer MINUS_ONE = -1;
+    /**
      * 默认索引别名
      */
     String DEFAULT_ALIAS = "ee_default_alias";
