@@ -4,6 +4,7 @@
   - [Quick start](/en/quick-start.md)
     - [Springboot integration demo](/en/demo.md)
   - Core Function
+        - [Automatically hosted indexes](/en/auto-process-index.md)
   	- [index](/en/index.md)
   	  - [exists index](/en/exists-index.md)
   	  - [delete index](/en/del-index.md)
