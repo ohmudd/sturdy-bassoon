@@ -3,7 +3,7 @@
 
 Usage example: Assuming that my index name is: dev_document, then we can add this annotation to the model
 ```java
-@TableName("dev_document")
+@TableName(value="daily_document",shardsNum = 3,replicasNum = 2) // 0.9.11 + version, the number of shards and replicas of the index can also be set through this annotation in the index automatic hosting mode
 public class Document {
     ...
 }
