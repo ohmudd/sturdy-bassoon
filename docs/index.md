@@ -18,4 +18,4 @@
     // 删除指定索引
     Boolean deleteIndex(String indexName);
 ```
-接口对应代码演示请根据名称点击大纲进入具体页面查看
+接口对应代码演示请根据名称点击大纲进入具体页面查看,亦可参考源码test模块->test目录->index包下代码
