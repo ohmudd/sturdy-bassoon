@@ -21,7 +21,7 @@ easy-es:
 ```yaml
 easy-es:
   global-config:
-    process_index_mode: smoothly #索引处理模式,smoothly:平滑模式,默认开启此模式, not_smoothly:非平滑模式, manual:手动模式
+    process_index_mode: smoothly #索引处理模式(0.9.10+版本支持),smoothly:平滑模式,默认开启此模式, not_smoothly:非平滑模式, manual:手动模式
     print-dsl: true # 开启控制台打印通过本框架生成的DSL语句,默认为开启,生产环境建议关闭(0.9.7+版本支持)
     db-config:
       map-underscore-to-camel-case: false # 是否开启下划线转驼峰 默认为false(0.9.8+版本支持)
