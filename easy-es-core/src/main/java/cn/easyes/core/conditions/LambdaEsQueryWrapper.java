@@ -20,7 +20,7 @@ import java.util.function.Predicate;
  **/
 @SuppressWarnings("serial")
 public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, LambdaEsQueryWrapper<T>>
-        implements Query<LambdaEsQueryWrapper<T>, T, SFunction<T, ?>> {
+        implements Query<LambdaEsQueryWrapper<T>, T, SFunction<T, ?>>, Cloneable {
     /**
      * 查询字段
      */
@@ -153,8 +153,17 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
 
     @Override
     protected SearchRequest getSearchRequest() {
-        // TODO 待优化 v1.0+
+        // TODO 代码结构待优化 v1.0+
         return null;
     }
 
+    @Override
+    protected Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return this;
+    }
 }

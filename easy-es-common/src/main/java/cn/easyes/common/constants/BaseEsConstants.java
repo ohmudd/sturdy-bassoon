@@ -67,6 +67,10 @@ public interface BaseEsConstants {
      */
     String COLON = ":";
     /**
+     * 逗号分隔符
+     */
+    String COMMA_SEPARATOR = ",";
+    /**
      * ee内置es分布式锁索引名称
      */
     String LOCK_INDEX = "ee-distribute-lock";
