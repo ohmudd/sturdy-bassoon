@@ -59,9 +59,6 @@ public class WrapperProcessor {
         // 初始化boolQueryBuilder 参数
         BoolQueryBuilder boolQueryBuilder = initBoolQueryBuilder(wrapper.paramList, entityClass);
 
-        // 初始化全表扫描查询参数
-        Optional.ofNullable(wrapper.matchAllQuery).ifPresent(p -> boolQueryBuilder.must(QueryBuilders.matchAllQuery()));
-
         // 初始化searchSourceBuilder 参数
         SearchSourceBuilder searchSourceBuilder = initSearchSourceBuilder(wrapper, entityClass);
 
@@ -87,9 +84,9 @@ public class WrapperProcessor {
             String realField = FieldUtils.getRealField(param.getColumn(), entityInfo.getMappingColumnMap(), dbConfig);
             param.setColumn(realField);
             if (ArrayUtils.isNotEmpty(param.getColumns())) {
-                String[] columns = (String[]) Arrays.stream(param.getColumns())
-                        .map(column -> FieldUtils.getRealField(param.getColumn(), entityInfo.getMappingColumnMap(), dbConfig))
-                        .toArray();
+                String[] columns = Arrays.stream(param.getColumns())
+                        .map(column -> FieldUtils.getRealField(column, entityInfo.getMappingColumnMap(), dbConfig))
+                        .toArray(String[]::new);
                 param.setColumns(columns);
             }
             if (NESTED_MATCH.equals(param.getQueryTypeEnum()) || HAS_CHILD.equals(param.getQueryTypeEnum()) || HAS_PARENT.equals(param.getQueryTypeEnum())) {
@@ -156,7 +153,11 @@ public class WrapperProcessor {
                 setChildrenBool(bool, queryBuilder, parentType);
                 break;
             case MULTI_MATCH:
-                queryBuilder = QueryBuilders.multiMatchQuery(param.getVal(), param.getColumns()).operator((Operator) param.getExt1()).minimumShouldMatch((String) param.getExt2());
+                queryBuilder = QueryBuilders.multiMatchQuery(param.getVal(), param.getColumns()).operator((Operator) param.getExt1()).minimumShouldMatch(String.valueOf(param.getExt2()));
+                setChildrenBool(bool, queryBuilder, parentType);
+                break;
+            case MATCH_ALL:
+                queryBuilder = QueryBuilders.matchAllQuery().boost(param.getBoost());
                 setChildrenBool(bool, queryBuilder, parentType);
                 break;
             case QUERY_STRING:
@@ -192,7 +193,7 @@ public class WrapperProcessor {
                 setChildrenBool(bool, queryBuilder, parentType);
                 break;
             case TERMS:
-                queryBuilder = QueryBuilders.termsQuery(param.getColumn(), (Object[]) param.getVal());
+                queryBuilder = QueryBuilders.termsQuery(param.getColumn(), (Collection<?>) param.getVal());
                 setChildrenBool(bool, queryBuilder, parentType);
                 break;
             case EXISTS:
@@ -204,9 +205,9 @@ public class WrapperProcessor {
                 setChildrenBool(bool, queryBuilder, parentType);
                 break;
             case GEO_DISTANCE:
-                GeoDistanceQueryBuilder geoDistance = QueryBuilders.geoDistanceQuery(param.getColumn()).point((GeoPoint) param.getExt2()).boost(param.getBoost());
-                MyOptional.ofNullable(param.getExt1()).ifPresent(ext1 -> geoDistance.distance((Double) param.getVal(), (DistanceUnit) ext1), geoDistance.distance((String) param.getVal()));
-                queryBuilder = geoDistance;
+                GeoDistanceQueryBuilder geoDistanceBuilder = QueryBuilders.geoDistanceQuery(param.getColumn()).point((GeoPoint) param.getExt2()).boost(param.getBoost());
+                MyOptional.ofNullable(param.getExt1()).ifPresent(ext1 -> geoDistanceBuilder.distance((double) param.getVal(), (DistanceUnit) ext1), () -> geoDistanceBuilder.distance((String) param.getVal()));
+                queryBuilder = geoDistanceBuilder;
                 setChildrenBool(bool, queryBuilder, parentType);
                 break;
             case GEO_POLYGON:

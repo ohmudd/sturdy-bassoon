@@ -14,6 +14,7 @@ import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
@@ -21,6 +22,7 @@ import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.geometry.Circle;
 import org.elasticsearch.geometry.Point;
 import org.elasticsearch.geometry.Rectangle;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.ParsedLongTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -34,6 +36,7 @@ import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
@@ -53,6 +56,8 @@ import java.util.*;
 public class AllTest {
     @Resource
     private DocumentMapper documentMapper;
+    @Autowired
+    private RestHighLevelClient client;
 
     // 1.新增
     @Test
@@ -62,8 +67,8 @@ public class AllTest {
         Document document = new Document();
         document.setEsId("1");
         document.setTitle("测试文档1");
-        document.setContent("阿凡达");
-        document.setCreator("流量");
+        document.setContent("测试内容1");
+        document.setCreator("老汉1");
         document.setLocation("40.171975,116.587105");
         document.setGmtCreate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         document.setCustomField("自定义字段1");
@@ -304,6 +309,17 @@ public class AllTest {
 
     @Test
     @Order(6)
+    public void testConditionExists() {
+        // exists等价于isNotNull 在es中更推荐此种语法
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.exists(Document::getNullField);
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals(1, documents.size());
+    }
+
+
+    @Test
+    @Order(6)
     public void testConditionIn() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.in(Document::getEsId, "1", "2", "3");
@@ -435,17 +451,6 @@ public class AllTest {
 
     @Test
     @Order(6)
-    public void testConditionEnableMust2Filter() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.match(Document::getCreator, "老汉")
-                .enableMust2Filter(true);
-        String source = documentMapper.getSource(wrapper);
-        System.out.println(source);
-        Assertions.assertTrue(source.contains("filter"));
-    }
-
-    @Test
-    @Order(6)
     public void testConditionAnd() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.in(Document::getStarNum, 1, 2, 3, 4, 10, 11)
@@ -453,6 +458,30 @@ public class AllTest {
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(1, documents.size());
     }
+
+    @Test
+    @Order(6)
+    public void testConditionOr() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.and(w -> w.in(Document::getStarNum, 1, 2, 3, 4, 10, 11)
+                .eq(Document::getTitle, "测试文档10")
+                .match(Document::getCreator, "老汉")
+                .or(i -> i.eq(Document::getTitle, "测试文档11")));
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals(2, documents.size());
+    }
+
+    @Test
+    @Order(6)
+    public void testConditionOrInner() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.and(w -> w.match(Document::getContent, "测试").match(Document::getCreator, "老汉")
+                .or(i -> i.eq(Document::getStarNum, 12))
+        );
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals(2, documents.size());
+    }
+
 
     @Test
     @Order(6)
@@ -697,12 +726,12 @@ public class AllTest {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         GeoPoint geoPoint = new GeoPoint(41.0, 116.0);
         wrapper.geoDistance(Document::getLocation, 168.8, DistanceUnit.KILOMETERS, geoPoint);
-        GeoDistanceSortBuilder geoDistanceSortBuilder = SortBuilders.geoDistanceSort(FieldUtils.val(Document::getLocation), geoPoint)
-                .unit(DistanceUnit.KILOMETERS)
-                .geoDistance(GeoDistance.ARC)
-                .order(SortOrder.DESC);
-
-        wrapper.sort(geoDistanceSortBuilder);
+//        GeoDistanceSortBuilder geoDistanceSortBuilder = SortBuilders.geoDistanceSort(FieldUtils.val(Document::getLocation), geoPoint)
+//                .unit(DistanceUnit.KILOMETERS)
+//                .geoDistance(GeoDistance.ARC)
+//                .order(SortOrder.DESC);
+//
+//        wrapper.sort(geoDistanceSortBuilder);
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(4, documents.size());
     }
@@ -767,25 +796,18 @@ public class AllTest {
         Assertions.assertTrue(lockDeleted);
     }
 
-
     @Test
-    @Order(11)
-    public void testAND() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.eq(Document::getCreator, "老汉")
-                .and(a -> a.eq(Document::getContent, "推车")
-                        .and(c -> c.eq(Document::getContent, "电车").eq(Document::getContent, "坏了"))
-                        .eq(Document::getCreator, "痴汉")
-                        .or(b -> b.eq(Document::getStarNum, 888).eq(Document::getCustomField, "不推车")
-                                .and(bb -> bb.eq(Document::getStarNum, 888).eq(Document::getCustomField, "不推车")
-                                        .and(bbb -> bbb.eq(Document::getStarNum, 888).eq(Document::getCustomField, "不推车"))
-                                )
-                        )
-                )
-                .and(d -> d.eq(Document::getEsId, 666).eq(Document::getGmtCreate, "2023"))
-        ;
-        List<Document> documents = documentMapper.selectList(wrapper);
-        System.out.println(documents);
+    @Order(21)
+    public void testDSL(){
+        // 设置检索条件
+        List<Integer> values = Arrays.asList(2,3);
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.must(QueryBuilders.termQuery("business_type",1));
+        boolQueryBuilder.must(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("state",9))
+                .should(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("state",8)).must(QueryBuilders.termQuery("bidding_sign",1))));
+        boolQueryBuilder.should(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("business_type",2)).must(QueryBuilders.termsQuery("state",values)));
+        System.out.println(boolQueryBuilder.toString());
+        System.out.println();
     }
 
 }

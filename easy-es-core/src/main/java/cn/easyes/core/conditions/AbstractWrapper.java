@@ -7,12 +7,8 @@ import cn.easyes.common.utils.*;
 import cn.easyes.core.Param;
 import cn.easyes.core.biz.AggregationParam;
 import cn.easyes.core.biz.BaseSortParam;
-import cn.easyes.core.biz.GeoParam;
 import cn.easyes.core.biz.OrderByParam;
-import cn.easyes.core.conditions.interfaces.Compare;
-import cn.easyes.core.conditions.interfaces.Func;
-import cn.easyes.core.conditions.interfaces.Geo;
-import cn.easyes.core.conditions.interfaces.Nested;
+import cn.easyes.core.conditions.interfaces.*;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
@@ -37,7 +33,7 @@ import static cn.easyes.common.enums.OrderTypeEnum.CUSTOMIZE;
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, R, Children>> extends Wrapper<T>
-        implements Compare<Children, R>, Nested<Children, Children>, Func<Children, R>, Geo<Children, R> {
+        implements Compare<Children, R>, Nested<Children, Children>, Func<Children, R>, Join<Children>, Geo<Children, R> {
 
     protected final Children typedThis = (Children) this;
 
@@ -71,19 +67,10 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      */
     protected String distinctField;
     /**
-     * geo相关参数
-     */
-    protected GeoParam geoParam;
-
-    /**
      * 排序参数列表
      */
     protected List<OrderByParam> orderByParams;
 
-    /**
-     * 是否查询全部文档
-     */
-    protected Boolean matchAllQuery;
     /**
      * 实体对象
      */
@@ -165,6 +152,11 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
+    public Children or(boolean condition) {
+        return addParam(condition, OR, null, null, null);
+    }
+
+    @Override
     public Children must(boolean condition, Consumer<Children> consumer) {
         return addNested(condition, AND_MUST, consumer);
     }
@@ -217,11 +209,8 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
-    public Children matchAllQuery(boolean condition) {
-        if (condition) {
-            this.matchAllQuery = true;
-        }
-        return typedThis;
+    public Children matchAllQuery(boolean condition, Float boost) {
+        return addParam(condition, MATCH_ALL, null, null, boost);
     }
 
     @Override

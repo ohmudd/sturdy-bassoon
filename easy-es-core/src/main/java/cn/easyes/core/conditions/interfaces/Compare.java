@@ -360,16 +360,25 @@ public interface Compare<Children, R> extends Serializable {
 
 
     default Children matchAllQuery() {
-        return matchAllQuery(true);
+        return matchAllQuery(true, DEFAULT_BOOST);
+    }
+
+    default Children matchAllQuery(Float boost) {
+        return matchAllQuery(true, boost);
+    }
+
+    default Children matchAllQuery(boolean condition) {
+        return matchAllQuery(condition, DEFAULT_BOOST);
     }
 
     /**
      * 查询全部文档
      *
      * @param condition 条件
+     * @param boost     权重值
      * @return 泛型
      */
-    Children matchAllQuery(boolean condition);
+    Children matchAllQuery(boolean condition, Float boost);
 
 
     default Children matchPhrasePrefixQuery(R column, Object val) {

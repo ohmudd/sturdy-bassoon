@@ -40,10 +40,6 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
      */
     protected Integer size;
     /**
-     * must条件转filter
-     */
-    protected Boolean enableMust2Filter;
-    /**
      * 用户自定义的searchSourceBuilder 用于混合查询
      */
     protected SearchSourceBuilder searchSourceBuilder;
@@ -135,14 +131,6 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
         }
         if (condition) {
             this.indexNames = indexNames;
-        }
-        return typedThis;
-    }
-
-    @Override
-    public LambdaEsQueryWrapper<T> enableMust2Filter(boolean condition, boolean enable) {
-        if (condition) {
-            this.enableMust2Filter = enable;
         }
         return typedThis;
     }

@@ -60,6 +60,10 @@ public enum EsQueryTypeEnum {
      */
     MATCH_PHRASE_PREFIX,
     /**
+     * 查询全部 相当于Mysql中的select * 无where条件 谨慎使用
+     */
+    MATCH_ALL,
+    /**
      * 多字段匹配
      */
     MULTI_MATCH,
@@ -102,7 +106,11 @@ public enum EsQueryTypeEnum {
      */
     FILTER,
     /**
-     * 或条件，相当于MYSQL中的OR
+     * 或条件，相当于MYSQL中的OR 和MP中的or嵌套用法一致
      */
-    OR_SHOULD;
+    OR_SHOULD,
+    /**
+     * 或条件，仅影响紧跟其后的一个条件，和MP中的拼接or用法一致
+     */
+    OR;
 }
