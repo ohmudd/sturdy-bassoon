@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  傻瓜级ElasticSearch搜索引擎ORM框架,您的Star是我继续前进的动力，如果喜欢EE请右上角帮忙点个Star
+  您的Star是我继续前进的动力，如果喜欢EE请右上角帮忙点亮星星⭐!
 </p>
 
 <p align="center">
