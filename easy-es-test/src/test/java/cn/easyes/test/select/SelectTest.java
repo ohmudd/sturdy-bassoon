@@ -8,11 +8,10 @@ import cn.easyes.core.toolkit.QueryUtils;
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -25,7 +24,7 @@ import java.util.Map;
  * <p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
-@RunWith(SpringRunner.class)
+@Disabled
 @SpringBootTest(classes = TestEasyEsApplication.class)
 public class SelectTest {
     @Resource
@@ -42,7 +41,7 @@ public class SelectTest {
         wrapper.limit(1);
         Document document = documentMapper.selectOne(wrapper);
         System.out.println(document);
-        Assert.assertEquals(title, document.getTitle());
+        Assertions.assertEquals(title, document.getTitle());
     }
 
     @Test

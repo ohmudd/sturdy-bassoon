@@ -605,6 +605,8 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         // 只查id列,节省内存
         searchSourceBuilder.fetchSource(DEFAULT_ES_ID_NAME, null);
+        searchSourceBuilder.trackTotalHits(true);
+        searchSourceBuilder.size(GlobalConfigCache.getGlobalConfig().getDbConfig().getBatchUpdateThreshold());
         BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.baseEsParamList,
                 wrapper.enableMust2Filter, entityClass);
         Optional.ofNullable(wrapper.geoParam).ifPresent(geoParam -> WrapperProcessor.setGeoQuery(geoParam, boolQueryBuilder, entityClass));

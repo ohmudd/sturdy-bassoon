@@ -72,5 +72,9 @@ public class GlobalConfig {
          * must convert to filter must by default, must 条件转filter 默认不转换
          */
         private boolean enableMust2Filter = false;
+        /**
+         * Batch update threshold 10000 by default 批量更新阈值 默认值为1万
+         */
+        private Integer batchUpdateThreshold = 10000;
     }
 }

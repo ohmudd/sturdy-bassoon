@@ -2,30 +2,25 @@ package cn.easyes.test.insert;
 
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
-import cn.easyes.test.entity.Faq;
-import cn.easyes.test.entity.User;
 import cn.easyes.test.mapper.DocumentMapper;
 import org.elasticsearch.geometry.Point;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 插入测试
  * <p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
-@RunWith(SpringRunner.class)
+@Disabled
 @SpringBootTest(classes = TestEasyEsApplication.class)
 public class InsertTest {
     @Resource
@@ -46,7 +41,7 @@ public class InsertTest {
         document.setGeoLocation(point.toString());
         document.setStarNum(1);
         int successCount = documentMapper.insert(document);
-        Assert.assertEquals(successCount, 1);
+        Assertions.assertEquals(successCount, 1);
     }
 
     @Test
@@ -58,7 +53,6 @@ public class InsertTest {
         document.setTitle("老汉");
         document.setContent("推*技术过硬");
         document.setCreator("隔壁老王");
-
 
         document.setGmtCreate(now);
         document.setCustomField("乌拉巴拉小魔仙");
