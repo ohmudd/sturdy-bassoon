@@ -49,12 +49,14 @@ or(boolean condition, Consumer<Param> consumer)
 
 除此之外,有一部分使用场景是如下图这样的,所有查询字段,查询类型,匹配规则等都是不固定的,由用户自由来选,这种情况下,采用上面的语法代码会非常难写,不妨使用queryStringQuery API来解决,用它来解决,整个语法就更像MySQL了,而且灵活性和效率都很高.
 
-![image](https://iknow.hs.net/7bcf189a-053a-48fa-85d6-ef8b763d427a.png)
+![image1](https://iknow.hs.net/7bcf189a-053a-48fa-85d6-ef8b763d427a.png)
 
 
 >前置知识学习:正式进入主题前,我们先来了解下ES的索引,因为有很多小白不懂ES索引,所以这里简单说一下ES的keyword类型和text类型,以免下面踩坑,已经了解的可直接跳过此段介绍.
-ES中的keyword类型,和MySQL中的字段基本上差不多,当我们需要对查询字段进行精确匹配,左模糊,右模糊,全模糊,排序聚合等操作时,需要该字段的索引类型为keyword类型,当我们需要对字段进行分词查询时,需要该字段的类型为text类型,并且指定分词器(不指定就用ES默认分词器,效果通常不理想).当同一个字段,我们既需要把它当keyword类型使用,又需要把它当text类型使用时,此时我们的索引类型为keyword_text类型,EE中可以对字段添加注解@TableField(fieldType = FieldType.KEYWORD_TEXT),如此该字段就会被创建为keyword+text双类型,值得注意的是,当我们把该字段当做keyword类型查询时,ES要求传入的字段名称为"字段名.keyword",当把该字段当text类型查询时,直接使用原字段名即可.
-
+ES中的keyword类型,和MySQL中的字段基本上差不多,当我们需要对查询字段进行精确匹配,左模糊,右模糊,全模糊,排序聚合等操作时,需要该字段的索引类型为keyword类型,当我们需要对字段进行分词查询时,需要该字段的类型为text类型,并且指定分词器(不指定就用ES默认分词器,效果通常不理想).当同一个字段,我们既需要把它当keyword类型使用,又需要把它当text类型使用时,此时我们的索引类型为keyword_text类型,EE中可以对字段添加注解@TableField(fieldType = FieldType.KEYWORD_TEXT),如此该字段就会被创建为keyword+text双类型如下图所示,值得注意的是,当我们把该字段当做keyword类型查询时,ES要求传入的字段名称为"字段名.keyword",当把该字段当text类型查询时,直接使用原字段名即可.
+![image2](https://iknow.hs.net/72818af6-7cc3-4833-b7a7-dbff845ce73e.png)
+还需要注意的是,如果一个字段的索引类型被创建为仅为keyword类型(如下图所示)查询时,则不需要在其名称后面追加.keyword,直接查询就行.
+![image3](https://iknow.hs.net/87335e55-1fe3-44ed-920b-61354383e85a.png)
 
 queryStringQuery API:
 
