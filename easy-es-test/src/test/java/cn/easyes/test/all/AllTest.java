@@ -4,10 +4,12 @@ import cn.easyes.common.constants.BaseEsConstants;
 import cn.easyes.core.biz.OrderByParam;
 import cn.easyes.core.biz.PageInfo;
 import cn.easyes.core.biz.SAPageInfo;
+import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.conditions.LambdaEsQueryWrapper;
 import cn.easyes.core.conditions.LambdaEsUpdateWrapper;
 import cn.easyes.core.toolkit.EntityInfoHelper;
 import cn.easyes.core.toolkit.EsWrappers;
+import cn.easyes.core.toolkit.FieldUtils;
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;
@@ -24,6 +26,9 @@ import org.elasticsearch.search.aggregations.metrics.ParsedAvg;
 import org.elasticsearch.search.aggregations.metrics.ParsedMax;
 import org.elasticsearch.search.aggregations.metrics.ParsedMin;
 import org.elasticsearch.search.aggregations.metrics.ParsedSum;
+import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -555,14 +560,29 @@ public class AllTest {
 
     @Test
     @Order(6)
-    public void testOrderByScore() {
-
+    public void testSortByScore() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.match(Document::getCreator, "老汉11");
+        wrapper.sortByScore();
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals("11",documents.get(0).getId());
     }
 
     @Test
     @Order(6)
     public void testSort() {
-
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.match(Document::getCreator, "老汉");
+        FieldSortBuilder fieldSortBuilder = SortBuilders.
+                fieldSort(FieldUtils.getRealField(
+                        FieldUtils.val(Document::getStarNum),
+                        EntityInfoHelper.getEntityInfo(Document.class).getMappingColumnMap(),
+                        GlobalConfigCache.getGlobalConfig().getDbConfig()));
+        fieldSortBuilder.order(SortOrder.DESC);
+        wrapper.sort(fieldSortBuilder);
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals("22", documents.get(0).getId());
+        Assertions.assertEquals("1", documents.get(21).getId());
     }
 
     @Test
