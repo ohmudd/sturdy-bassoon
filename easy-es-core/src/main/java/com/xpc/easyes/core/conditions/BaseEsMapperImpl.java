@@ -828,8 +828,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException();
+            LogUtils.error("bulk request exception", JSON.toJSONString(e));
         }
         return totalSuccess;
     }
