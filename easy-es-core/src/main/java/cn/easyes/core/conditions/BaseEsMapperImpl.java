@@ -47,6 +47,7 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.metrics.ParsedCardinality;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -248,6 +249,11 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public SAPageInfo<T> searchAfterPage(LambdaEsQueryWrapper<T> wrapper, List<Object> searchAfter, Integer pageSize) {
+        //searchAfter语法规定 或from只允许为0、-1、不传，这里直接设置为不允许有值
+        if (!ObjectUtils.isEmpty(wrapper.from)) {
+            throw ExceptionUtils.eee("from is not empty");
+        }
+
         //searchAfter必须要进行排序，不排序无法进行分页
         if (CollectionUtils.isEmpty(wrapper.sortParamList)) {
             throw ExceptionUtils.eee("sortParamList cannot be empty");

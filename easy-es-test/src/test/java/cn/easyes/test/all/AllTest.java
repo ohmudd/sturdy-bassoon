@@ -511,6 +511,7 @@ public class AllTest {
         LambdaEsQueryWrapper<Document> lambdaEsQueryWrapper = EsWrappers.lambdaQuery(Document.class);
         lambdaEsQueryWrapper.size(10);
         lambdaEsQueryWrapper.orderByDesc(Document::getEsId, Document::getStarNum);
+        lambdaEsQueryWrapper.from(0);
         SAPageInfo<Document> saPageInfo = documentMapper.searchAfterPage(lambdaEsQueryWrapper, null, 10);
         //第一页
         System.out.println(saPageInfo);
