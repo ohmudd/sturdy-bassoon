@@ -13,7 +13,7 @@ import lombok.Data;
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 @Data
-@IndexName(value = "easyes_comment", child = true)
+@IndexName(child = true)
 public class Comment {
     /**
      * 评论id
