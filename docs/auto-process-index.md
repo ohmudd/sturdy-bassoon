@@ -31,8 +31,8 @@
 | JAVA | ES |
 | --- | --- |
 | byte | byte |
-| short | short|
-| int | integer|
+| short | short |
+| int | integer |
 | long | long |
 | float | float |
 | double | double |
@@ -45,6 +45,7 @@
 | LocalDateTime | date |
 | List | text |
 | ... | ... |
+
 
 ---
 
