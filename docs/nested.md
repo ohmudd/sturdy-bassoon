@@ -18,7 +18,7 @@
         private List<User> users;
     }
 ```
-> **注意:**务必像上面示例一样指定类型为fieldType=NESTED及其nestedClass,否则会导致框架无法正常运行
+>  **注意:** 务必像上面示例一样指定类型为fieldType=NESTED及其nestedClass,否则会导致框架无法正常运行
 
 - 手动挡模式
 
@@ -28,7 +28,7 @@
         // 省略其它代码
         wrapper.mapping(Document::getUsers, FieldType.NESTED)
 ```
-> **注意:**在手动挡模式下,除了要通过注解@TableField指定nestedClass外,还需要通过wrapper指定该嵌套字段,然后完成索引创建/更新
+>  **注意:** 在手动挡模式下,除了要通过注解@TableField指定nestedClass外,还需要通过wrapper指定该嵌套字段,然后完成索引创建/更新
 
 
 ## 1.2 CRUD
