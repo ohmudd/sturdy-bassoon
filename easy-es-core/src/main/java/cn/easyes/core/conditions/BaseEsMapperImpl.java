@@ -56,6 +56,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import static cn.easyes.common.constants.BaseEsConstants.DEFAULT_ES_ID_NAME;
 import static cn.easyes.common.constants.BaseEsConstants.PARENT;
 
 /**
@@ -231,6 +232,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public Long selectCount(LambdaEsQueryWrapper<T> wrapper, boolean distinct) {
+        // 只查id列,节省内存
+        wrapper.select(DEFAULT_ES_ID_NAME);
+
         if (distinct) {
             // 去重, 总数来源于桶
             SearchResponse response = getSearchResponse(wrapper);
@@ -325,24 +329,28 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public Integer delete(LambdaEsQueryWrapper<T> wrapper) {
+        // 只查id列,节省内存
+        wrapper.select(EntityInfoHelper.getEntityInfo(entityClass).getKeyProperty());
+
         List<T> list = this.selectList(wrapper);
         if (CollectionUtils.isEmpty(list)) {
             return BaseEsConstants.ZERO;
         }
+
         BulkRequest bulkRequest = new BulkRequest();
         bulkRequest.setRefreshPolicy(getRefreshPolicy());
         Method getId = BaseCache.getterMethod(entityClass, getRealIdFieldName());
         EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
-        list.forEach(t -> {
+        list.forEach(item -> {
             try {
-                Object id = getId.invoke(t);
+                Object id = getId.invoke(item);
                 if (Objects.nonNull(id)) {
                     DeleteRequest deleteRequest = new DeleteRequest();
                     deleteRequest.id(id.toString());
 
                     // 父子类型-子文档,追加其路由,否则无法删除
                     if (entityInfo.isChild()) {
-                        String routing = getRouting(t, entityInfo.getJoinFieldClass());
+                        String routing = getRouting(item, entityInfo.getJoinFieldClass());
                         deleteRequest.routing(routing);
                     }
 
@@ -482,7 +490,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         // 构造查询参数
         SearchRequest searchRequest = new SearchRequest(getIndexName(indexName));
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.termQuery(EntityInfoHelper.getDEFAULT_ES_ID_NAME(), id));
+        searchSourceBuilder.query(QueryBuilders.termQuery(DEFAULT_ES_ID_NAME, id));
         searchRequest.source(searchSourceBuilder);
 
         // 请求es获取数据
@@ -510,7 +518,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         List<String> stringIdList = idList.stream().map(Object::toString).collect(Collectors.toList());
         SearchRequest searchRequest = new SearchRequest(getIndexName(indexName));
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.query(QueryBuilders.termsQuery(EntityInfoHelper.getDEFAULT_ES_ID_NAME(), stringIdList));
+        sourceBuilder.query(QueryBuilders.termsQuery(DEFAULT_ES_ID_NAME, stringIdList));
         searchRequest.source(sourceBuilder);
 
         // 请求es获取数据
@@ -592,6 +600,8 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         // 构建查询条件
         SearchRequest searchRequest = new SearchRequest(getIndexName(wrapper.indexName));
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        // 只查id列,节省内存
+        searchSourceBuilder.fetchSource(DEFAULT_ES_ID_NAME, null);
         BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.baseEsParamList,
                 wrapper.enableMust2Filter, entityClass);
         Optional.ofNullable(wrapper.geoParam).ifPresent(geoParam -> WrapperProcessor.setGeoQuery(geoParam, boolQueryBuilder, entityClass));

@@ -11,6 +11,14 @@ public interface BaseEsConstants {
      */
     String ENABLE_PREFIX = "easy-es.enable";
     /**
+     * 默认主键名称
+     */
+    String DEFAULT_ID_NAME = "id";
+    /**
+     * Es 默认的主键名称
+     */
+    String DEFAULT_ES_ID_NAME = "_id";
+    /**
      * 数字0
      */
     Integer ZERO = 0;

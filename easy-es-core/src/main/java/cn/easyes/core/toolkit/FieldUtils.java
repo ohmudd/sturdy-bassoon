@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static cn.easyes.common.constants.BaseEsConstants.DEFAULT_ES_ID_NAME;
+import static cn.easyes.common.constants.BaseEsConstants.DEFAULT_ID_NAME;
+
 /**
  * 核心 处理字段名称工具类
  * <p>
@@ -32,9 +35,9 @@ public class FieldUtils {
      */
     public static <R> String getFieldName(R func) {
         String fieldName = getFieldNameNotConvertId(func);
-        if (EntityInfoHelper.getDEFAULT_ID_NAME().equals(fieldName)) {
+        if (DEFAULT_ID_NAME.equals(fieldName)) {
             // id统一转为_id
-            fieldName = EntityInfoHelper.getDEFAULT_ES_ID_NAME();
+            fieldName = DEFAULT_ES_ID_NAME;
         }
         return fieldName;
     }
@@ -158,7 +161,7 @@ public class FieldUtils {
     public static String getRealField(String field, Map<String, String> mappingColumnMap, GlobalConfig.DbConfig dbConfig) {
         String customField = mappingColumnMap.get(field);
         if (Objects.nonNull(customField)) {
-            return EntityInfoHelper.getDEFAULT_ID_NAME().equals(customField) ? EntityInfoHelper.getDEFAULT_ES_ID_NAME() : customField;
+            return DEFAULT_ID_NAME.equals(customField) ? DEFAULT_ES_ID_NAME : customField;
         } else {
             if (dbConfig.isMapUnderscoreToCamelCase()) {
                 return StringUtils.camelToUnderline(field);

@@ -27,8 +27,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static cn.easyes.common.constants.BaseEsConstants.PARENT;
-import static cn.easyes.common.constants.BaseEsConstants.POINT;
+import static cn.easyes.common.constants.BaseEsConstants.*;
 
 /**
  * 实体字段信息工具类
@@ -40,16 +39,7 @@ public class EntityInfoHelper {
      * 储存反射类表信息
      */
     private static final Map<Class<?>, EntityInfo> ENTITY_INFO_CACHE = new ConcurrentHashMap<>();
-    /**
-     * 默认主键名称
-     */
-    @Getter
-    private static final String DEFAULT_ID_NAME = "id";
-    /**
-     * Es 默认的主键名称
-     */
-    @Getter
-    private static final String DEFAULT_ES_ID_NAME = "_id";
+
 
     /**
      * 获取实体映射表信息

@@ -39,7 +39,7 @@ public class SelectTest {
         wrapper.eq(Document::getTitle, title);
         // 字段名亦可指定为字符串,不推荐
 //        wrapper.eq("title",title);
-
+        wrapper.select(Document::getId);
         wrapper.limit(1);
         Document document = documentMapper.selectOne(wrapper);
         System.out.println(document);
