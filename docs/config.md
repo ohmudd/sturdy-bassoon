@@ -30,7 +30,7 @@ easy-es:
       table-prefix: daily_ # 索引前缀,可用于区分环境  默认为空 用法和MP一样
       id-type: customize # id生成策略 customize为自定义,id值由用户生成,比如取MySQL中的数据id,如缺省此项配置,则id默认策略为es自动生成
       field-strategy: not_empty # 字段更新策略 默认为not_null
-      enable-track-total-hits: true # 默认开启,查询若指定了size超过1w条时也会自动开启,开启后查询所有匹配数据,若不开启,会导致分页器无法获取总条数,其它功能正常.
+      enable-track-total-hits: true # 默认开启,查询若指定了size超过1w条时也会自动开启,开启后查询所有匹配数据,若不开启,会导致无法获取数据总条数,其它功能不受影响.
       refresh-policy: immediate # 数据刷新策略,默认为不刷新
       enable-must2-filter: false # 是否全局开启must查询类型转换为filter查询类型 默认为false不转换 
 
