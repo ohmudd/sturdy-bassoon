@@ -99,7 +99,7 @@ public class WrapperProcessor {
         Map<String, String> fieldTypeMap = entityInfo.getFieldList().stream()
                 .collect(Collectors.toMap(EntityFieldInfo::getColumn, item -> Optional.ofNullable(item.getFieldType())
                         .map(FieldType::getType).orElse(FieldType.KEYWORD_TEXT.getType())));
-
+        // TODO 嵌套类型中的字段名称及自动智能拼接.keyword后缀待近期补充
         Map<Class<?>, List<EntityFieldInfo>> nestedFieldListMap = entityInfo.getNestedFieldListMap();
 
         paramList.forEach(param -> {
