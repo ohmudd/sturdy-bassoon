@@ -19,6 +19,7 @@
   	  - [Insert](/en/insert.md)
   	- [Conditional Constructor](/en/condition.md)
   	  - [eq](/en/eq.md)
+          - [allEq](allEq.md)
   	  - [ne](/en/ne.md)
   	  - [gt](/en/gt.md)
   	  - [ge](/en/ge.md)
