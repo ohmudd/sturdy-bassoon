@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  **/
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.FIELD, ElementType.ANNOTATION_TYPE})
-public @interface TableField {
+public @interface IndexField {
     /**
      * 自定义字段在es中的名称
      *

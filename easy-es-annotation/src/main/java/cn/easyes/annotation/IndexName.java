@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  **/
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
-public @interface TableName {
+public @interface IndexName {
     /**
      * 实体对应的索引名
      *
