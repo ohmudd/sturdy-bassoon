@@ -209,7 +209,7 @@ public interface Func<Children, R> extends Serializable {
     Children isNotNull(boolean condition, R column, Float boost);
 
     default Children groupBy(R column) {
-        return groupBy(column);
+        return groupBy(true,column);
     }
 
     default Children groupBy(R... columns) {
