@@ -17,7 +17,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static cn.easyes.common.enums.BaseEsParamTypeEnum.*;
 import static cn.easyes.common.enums.EsAttachTypeEnum.*;
@@ -406,77 +405,52 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         if (ArrayUtils.isEmpty(columns)) {
             return typedThis;
         }
-        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.TERMS, column, column));
+        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.TERMS, column));
         return typedThis;
     }
 
     @Override
-    public Children termsAggregation(boolean condition, boolean enablePipeline, String returnName, String column) {
-        return doIt(condition, enablePipeline, AggregationTypeEnum.TERMS, returnName, column);
-    }
-
-    @Override
-    public Children termsAggregations(boolean condition, boolean enablePipeline, String... columns) {
+    public Children termsAggregation(boolean condition, boolean enablePipeline, String... columns) {
         if (ArrayUtils.isEmpty(columns)) {
             return typedThis;
         }
-        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.TERMS, column, column));
+        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.TERMS, column));
         return typedThis;
     }
 
     @Override
-    public Children avg(boolean condition, boolean enablePipeline, String returnName, String column) {
-        return doIt(condition, enablePipeline, AggregationTypeEnum.AVG, returnName, column);
-    }
-
-    @Override
-    public Children avgs(boolean condition, boolean enablePipeline, String... columns) {
+    public Children avg(boolean condition, boolean enablePipeline, String... columns) {
         if (ArrayUtils.isEmpty(columns)) {
             return typedThis;
         }
-        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.AVG, column, column));
+        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.AVG, column));
         return typedThis;
     }
 
     @Override
-    public Children min(boolean condition, boolean enablePipeline, String returnName, String column) {
-        return doIt(condition, enablePipeline, AggregationTypeEnum.MIN, returnName, column);
-    }
-
-    @Override
-    public Children mins(boolean condition, boolean enablePipeline, String... columns) {
+    public Children min(boolean condition, boolean enablePipeline, String... columns) {
         if (ArrayUtils.isEmpty(columns)) {
             return typedThis;
         }
-        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.MIN, column, column));
+        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.MIN, column));
         return typedThis;
     }
 
     @Override
-    public Children max(boolean condition, boolean enablePipeline, String returnName, String column) {
-        return doIt(condition, enablePipeline, AggregationTypeEnum.MAX, returnName, column);
-    }
-
-    @Override
-    public Children maxs(boolean condition, boolean enablePipeline, String... columns) {
+    public Children max(boolean condition, boolean enablePipeline, String... columns) {
         if (ArrayUtils.isEmpty(columns)) {
             return typedThis;
         }
-        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.MAX, column, column));
+        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.MAX, column));
         return typedThis;
     }
 
     @Override
-    public Children sum(boolean condition, boolean enablePipeline, String returnName, String column) {
-        return doIt(condition, enablePipeline, AggregationTypeEnum.SUM, returnName, column);
-    }
-
-    @Override
-    public Children sums(boolean condition, boolean enablePipeline, String... columns) {
+    public Children sum(boolean condition, boolean enablePipeline, String... columns) {
         if (ArrayUtils.isEmpty(columns)) {
             return typedThis;
         }
-        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.SUM, column, column));
+        Arrays.stream(columns).forEach(column -> doIt(condition, enablePipeline, AggregationTypeEnum.SUM, column));
         return typedThis;
     }
 
@@ -562,15 +536,14 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * @param condition           条件
      * @param enablePipeline      是否管道聚合
      * @param aggregationTypeEnum 聚合类型
-     * @param returnName          返回的聚合字段名称
      * @param column              列
      * @return 泛型
      */
-    private Children doIt(boolean condition, boolean enablePipeline, AggregationTypeEnum aggregationTypeEnum, String returnName, String column) {
+    private Children doIt(boolean condition, boolean enablePipeline, AggregationTypeEnum aggregationTypeEnum, String column) {
         if (condition) {
             AggregationParam aggregationParam = new AggregationParam();
             aggregationParam.setEnablePipeline(enablePipeline);
-            aggregationParam.setName(returnName);
+            aggregationParam.setName(column);
             aggregationParam.setField(column);
             aggregationParam.setAggregationType(aggregationTypeEnum);
             aggregationParamList.add(aggregationParam);
@@ -582,7 +555,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * 封装查询参数(含AND,OR这种连接操作)
      *
      * @param condition 条件
-     * @param consumer      函数
+     * @param consumer  函数
      * @param open      左括号
      * @param close     右括号
      * @return 泛型

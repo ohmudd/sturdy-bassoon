@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * 链式
@@ -220,62 +219,32 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children termsAggregation(boolean condition, boolean pipeline, String returnName, R column) {
-        getWrapper().termsAggregation(condition, pipeline, returnName, column);
+    public Children termsAggregation(boolean condition, boolean pipeline, R... column) {
+        getWrapper().termsAggregation(condition, pipeline, column);
         return typedThis;
     }
 
     @Override
-    public Children termsAggregations(boolean condition, boolean pipeline, R... columns) {
-        getWrapper().termsAggregations(condition, pipeline, columns);
+    public Children avg(boolean condition, boolean pipeline, R... columns) {
+        getWrapper().avg(condition, pipeline, columns);
         return typedThis;
     }
 
     @Override
-    public Children avg(boolean condition, boolean pipeline, String returnName, R column) {
-        getWrapper().avg(condition, pipeline, returnName, column);
+    public Children min(boolean condition, boolean pipeline, R... columns) {
+        getWrapper().min(condition, pipeline, columns);
         return typedThis;
     }
 
     @Override
-    public Children avgs(boolean condition, boolean pipeline, R... columns) {
-        getWrapper().avgs(condition, pipeline, columns);
+    public Children max(boolean condition, boolean pipeline, R... columns) {
+        getWrapper().max(condition, pipeline, columns);
         return typedThis;
     }
 
     @Override
-    public Children min(boolean condition, boolean pipeline, String returnName, R column) {
-        getWrapper().min(condition, pipeline, returnName, column);
-        return typedThis;
-    }
-
-    @Override
-    public Children mins(boolean condition, boolean pipeline, R... columns) {
-        getWrapper().mins(condition, pipeline, columns);
-        return typedThis;
-    }
-
-    @Override
-    public Children max(boolean condition, boolean pipeline, String returnName, R column) {
-        getWrapper().max(condition, pipeline, returnName, column);
-        return typedThis;
-    }
-
-    @Override
-    public Children maxs(boolean condition, boolean pipeline, R... columns) {
-        getWrapper().maxs(condition, pipeline, columns);
-        return typedThis;
-    }
-
-    @Override
-    public Children sum(boolean condition, boolean pipeline, String returnName, R column) {
-        getWrapper().sum(condition, pipeline, returnName, column);
-        return typedThis;
-    }
-
-    @Override
-    public Children sums(boolean condition, boolean pipeline, R... columns) {
-        getWrapper().sums(condition, pipeline, columns);
+    public Children sum(boolean condition, boolean pipeline, R... columns) {
+        getWrapper().sum(condition, pipeline, columns);
         return typedThis;
     }
 
@@ -619,62 +588,32 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children termsAggregation(boolean condition, boolean enablePipeline, String returnName, String column) {
-        getWrapper().termsAggregation(condition, enablePipeline, returnName, column);
+    public Children termsAggregation(boolean condition, boolean enablePipeline, String... column) {
+        getWrapper().termsAggregation(condition, enablePipeline, column);
         return typedThis;
     }
 
     @Override
-    public Children termsAggregations(boolean condition, boolean enablePipeline, String... columns) {
-        getWrapper().termsAggregations(condition, enablePipeline, columns);
+    public Children avg(boolean condition, boolean enablePipeline, String... columns) {
+        getWrapper().avg(condition, enablePipeline, columns);
         return typedThis;
     }
 
     @Override
-    public Children avg(boolean condition, boolean enablePipeline, String returnName, String column) {
-        getWrapper().avg(condition, enablePipeline, returnName, column);
+    public Children min(boolean condition, boolean enablePipeline, String... columns) {
+        getWrapper().min(condition, enablePipeline, columns);
         return typedThis;
     }
 
     @Override
-    public Children avgs(boolean condition, boolean enablePipeline, String... columns) {
-        getWrapper().avgs(condition, enablePipeline, columns);
+    public Children max(boolean condition, boolean enablePipeline, String... columns) {
+        getWrapper().max(condition, enablePipeline, columns);
         return typedThis;
     }
 
     @Override
-    public Children min(boolean condition, boolean enablePipeline, String returnName, String column) {
-        getWrapper().min(condition, enablePipeline, returnName, column);
-        return typedThis;
-    }
-
-    @Override
-    public Children mins(boolean condition, boolean enablePipeline, String... columns) {
-        getWrapper().mins(condition, enablePipeline, columns);
-        return typedThis;
-    }
-
-    @Override
-    public Children max(boolean condition, boolean enablePipeline, String returnName, String column) {
-        getWrapper().max(condition, enablePipeline, returnName, column);
-        return typedThis;
-    }
-
-    @Override
-    public Children maxs(boolean condition, boolean enablePipeline, String... columns) {
-        getWrapper().maxs(condition, enablePipeline, columns);
-        return typedThis;
-    }
-
-    @Override
-    public Children sum(boolean condition, boolean enablePipeline, String returnName, String column) {
-        getWrapper().sum(condition, enablePipeline, returnName, column);
-        return typedThis;
-    }
-
-    @Override
-    public Children sums(boolean condition, boolean enablePipeline, String... columns) {
-        getWrapper().sums(condition, enablePipeline, columns);
+    public Children sum(boolean condition, boolean enablePipeline, String... columns) {
+        getWrapper().sum(condition, enablePipeline, columns);
         return typedThis;
     }
 

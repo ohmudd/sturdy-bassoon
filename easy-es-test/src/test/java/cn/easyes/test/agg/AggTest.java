@@ -66,11 +66,11 @@ public class AggTest {
         // 注意:指定的多个聚合参数为链式聚合,就是第一个聚合参数聚合之后的结果,再根据第二个参数聚合,对应Pipeline聚合
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.eq(Document::getTitle, "老汉")
-                .termsAggregations(Document::getTitle, Document::getSubTitle)
-                .avgs(Document::getStarNum, Document::getScore)
-                .mins(Document::getStarNum, Document::getScore)
-                .maxs(Document::getStarNum, Document::getScore)
-                .sums(Document::getStarNum, Document::getScore);
+                .termsAggregation(Document::getTitle, Document::getSubTitle)
+                .avg(Document::getStarNum, Document::getScore)
+                .min(true, Document::getStarNum, Document::getScore)
+                .max(false, Document::getStarNum, Document::getScore)
+                .sum(false, false, Document::getStarNum, Document::getScore);
         SearchResponse response = documentMapper.search(wrapper);
         System.out.println(response);
     }
@@ -81,11 +81,11 @@ public class AggTest {
         // 注意:指定的多个聚合参数为链式聚合,就是第一个聚合参数聚合之后的结果,再根据第二个参数聚合,对应Pipeline聚合
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.eq(Document::getTitle, "老汉")
-                .termsAggregations("title","subTitle")
-                .avgs("starNum", "score")
-                .mins("starNum", "score")
-                .maxs("starNum", "score")
-                .sums("starNum", "score");
+                .termsAggregation("title", "subTitle")
+                .avg("starNum", "score")
+                .min(true, "starNum", "score")
+                .max(false, "starNum", "score")
+                .sum(false, false, "starNum", "score");
         SearchResponse response = documentMapper.search(wrapper);
         System.out.println(response);
     }
