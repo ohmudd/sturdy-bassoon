@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -21,7 +22,8 @@ public enum JdkDataTypeEnum {
     STRING("string"),
     DATE("date"),
     LOCAL_DATE("localdate"),
-    LOCAL_DATE_TIME("localdatetime");
+    LOCAL_DATE_TIME("localdatetime"),
+    LIST("list");
     @Getter
     private String type;
 

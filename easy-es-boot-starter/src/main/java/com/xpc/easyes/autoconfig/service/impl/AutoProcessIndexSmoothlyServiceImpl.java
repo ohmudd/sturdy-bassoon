@@ -2,7 +2,7 @@ package com.xpc.easyes.autoconfig.service.impl;
 
 import com.xpc.easyes.autoconfig.service.AutoProcessIndexService;
 import com.xpc.easyes.core.common.EntityInfo;
-import com.xpc.easyes.core.enums.AutoProcessIndexStrategyEnum;
+import com.xpc.easyes.core.enums.ProcessIndexStrategyEnum;
 import com.xpc.easyes.core.params.CreateIndexParam;
 import com.xpc.easyes.core.params.EsIndexInfo;
 import com.xpc.easyes.core.toolkit.EntityInfoHelper;
@@ -26,7 +26,7 @@ import static com.xpc.easyes.core.constants.BaseEsConstants.SO_SUFFIX;
 public class AutoProcessIndexSmoothlyServiceImpl implements AutoProcessIndexService {
     @Override
     public Integer getStrategyType() {
-        return AutoProcessIndexStrategyEnum.SMOOTHLY.getStrategyType();
+        return ProcessIndexStrategyEnum.SMOOTHLY.getStrategyType();
     }
 
     @Override

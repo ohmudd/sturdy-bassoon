@@ -1,6 +1,6 @@
 package com.xpc.easyes.core.config;
 
-import com.xpc.easyes.core.enums.AutoProcessIndexStrategyEnum;
+import com.xpc.easyes.core.enums.ProcessIndexStrategyEnum;
 import com.xpc.easyes.core.enums.FieldStrategy;
 import com.xpc.easyes.core.enums.IdType;
 import lombok.Data;
@@ -16,6 +16,10 @@ public class GlobalConfig {
      * 是否开启本框架执行的DSL语句控制台打印 默认开启,生产环境建议关闭
      */
     private boolean printDsl = true;
+    /**
+     * 自动托管索引模式 默认为平滑迁移
+     */
+    private Integer processIndexMode = ProcessIndexStrategyEnum.SMOOTHLY.getStrategyType();
     /**
      * 数据库配置
      */
@@ -43,10 +47,6 @@ public class GlobalConfig {
          * 是否开启自动托管索引 默认开启
          */
         private boolean openAutoProcessIndex = true;
-        /**
-         * 自动托管索引模式 默认为平滑迁移
-         */
-        private Integer autoProcessIndexMode = AutoProcessIndexStrategyEnum.SMOOTHLY.getStrategyType();
         /**
          * 是否分布式环境
          */

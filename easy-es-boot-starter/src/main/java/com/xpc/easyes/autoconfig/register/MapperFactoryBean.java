@@ -6,7 +6,7 @@ import com.xpc.easyes.autoconfig.service.AutoProcessIndexService;
 import com.xpc.easyes.core.cache.BaseCache;
 import com.xpc.easyes.core.cache.GlobalConfigCache;
 import com.xpc.easyes.core.config.GlobalConfig;
-import com.xpc.easyes.core.enums.AutoProcessIndexStrategyEnum;
+import com.xpc.easyes.core.enums.ProcessIndexStrategyEnum;
 import com.xpc.easyes.core.proxy.EsMapperProxy;
 import com.xpc.easyes.core.toolkit.TypeUtils;
 import com.xpc.easyes.extension.anno.Intercepts;
@@ -65,9 +65,9 @@ public class MapperFactoryBean<T> implements FactoryBean<T> {
         InterceptorChain interceptorChain = this.initInterceptorChain();
 
         // 异步处理索引创建/更新/数据迁移等
-        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
-        if (!AutoProcessIndexStrategyEnum.MANUAL.getStrategyType().equals(dbConfig.getAutoProcessIndexMode())) {
-            AutoProcessIndexService autoProcessIndexService = indexStrategyFactory.getByStrategyType(dbConfig.getAutoProcessIndexMode());
+        GlobalConfig globalConfig = GlobalConfigCache.getGlobalConfig();
+        if (!ProcessIndexStrategyEnum.MANUAL.getStrategyType().equals(globalConfig.getProcessIndexMode())) {
+            AutoProcessIndexService autoProcessIndexService = indexStrategyFactory.getByStrategyType(globalConfig.getProcessIndexMode());
             autoProcessIndexService.processIndexAsync(entityClass, client);
         }
         return interceptorChain.pluginAll(t);

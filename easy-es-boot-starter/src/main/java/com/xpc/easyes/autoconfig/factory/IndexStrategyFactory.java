@@ -2,6 +2,7 @@ package com.xpc.easyes.autoconfig.factory;
 
 
 import com.xpc.easyes.autoconfig.service.AutoProcessIndexService;
+import com.xpc.easyes.core.enums.ProcessIndexStrategyEnum;
 import com.xpc.easyes.core.toolkit.ExceptionUtils;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.BeansException;
@@ -18,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.xpc.easyes.autoconfig.constants.PropertyKeyConstants.OPEN_AUTO_PROCESS_INDEX;
+import static com.xpc.easyes.autoconfig.constants.PropertyKeyConstants.PROCESS_INDEX_MODE;
 
 /**
  * 自动托管索引策略工厂
@@ -48,10 +49,8 @@ public class IndexStrategyFactory implements ApplicationContextAware, Initializi
     @Override
     public void afterPropertiesSet() throws Exception {
         // 默认开启
-        boolean isOpen = Optional.ofNullable(environment.getProperty(OPEN_AUTO_PROCESS_INDEX))
-                .map(Boolean::parseBoolean)
-                .orElse(Boolean.TRUE);
-        if (isOpen) {
+        String mode = environment.getProperty(PROCESS_INDEX_MODE);
+        if (!ProcessIndexStrategyEnum.MANUAL.getValue().equalsIgnoreCase(mode)) {
             applicationContext.getBeansOfType(AutoProcessIndexService.class)
                     .values()
                     .forEach(v -> SERVICE_MAP.putIfAbsent(v.getStrategyType(), v));

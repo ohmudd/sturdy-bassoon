@@ -241,7 +241,7 @@ public class IndexUtils {
 
         // 否则根据类型推断,String以及找不到的类型一律被当做keyword处理
         JdkDataTypeEnum jdkDataType = JdkDataTypeEnum.getByType(typeName.toLowerCase());
-        String type = FieldType.KEYWORD.getType();
+        String type;
         switch (jdkDataType) {
             case BYTE:
                 type = FieldType.BYTE.getType();
@@ -274,6 +274,9 @@ public class IndexUtils {
             case LOCAL_DATE:
             case LOCAL_DATE_TIME:
                 type = FieldType.DATE.getType();
+                break;
+            case LIST:
+                type = FieldType.TEXT.getType();
                 break;
             default:
                 return FieldType.KEYWORD.getType();
@@ -409,7 +412,9 @@ public class IndexUtils {
                     esIndexParam.setAnalyzer(field.getAnalyzer());
                 }
                 if (!Analyzer.NONE.equals(field.getSearchAnalyzer())) {
-                    esIndexParam.setSearchAnalyzer(field.getSearchAnalyzer());
+                    if (!Objects.equals(field.getAnalyzer(), field.getSearchAnalyzer())) {
+                        esIndexParam.setSearchAnalyzer(field.getSearchAnalyzer());
+                    }
                 }
                 esIndexParamList.add(esIndexParam);
             });
@@ -450,8 +455,24 @@ public class IndexUtils {
      * @return 是否存在索引
      */
     public static boolean existsIndexWithRetryAndSetActiveIndex(EntityInfo entityInfo, RestHighLevelClient client) {
+        boolean exists = existsIndexWithRetry(entityInfo, client);
+
+        // 重置当前激活索引
+        Optional.ofNullable(entityInfo.getRetrySuccessIndexName()).ifPresent(entityInfo::setIndexName);
+        return exists;
+    }
+
+    /**
+     * 追加后缀重试是否存在索引
+     *
+     * @param entityInfo 配置信息
+     * @param client     RestHighLevelClient
+     * @return 是否存在索引
+     */
+    public static boolean existsIndexWithRetry(EntityInfo entityInfo, RestHighLevelClient client) {
         boolean exists = IndexUtils.existsIndex(client, entityInfo.getIndexName());
         if (exists) {
+            entityInfo.setRetrySuccessIndexName(entityInfo.getIndexName());
             return true;
         }
 
@@ -460,7 +481,7 @@ public class IndexUtils {
             String retryIndexName = entityInfo.getIndexName() + S_SUFFIX + i;
             exists = IndexUtils.existsIndex(client, retryIndexName);
             if (exists) {
-                entityInfo.setIndexName(retryIndexName);
+                entityInfo.setRetrySuccessIndexName(retryIndexName);
                 break;
             }
         }

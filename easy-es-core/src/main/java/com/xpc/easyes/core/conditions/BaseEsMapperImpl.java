@@ -92,6 +92,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     public Boolean createIndex(LambdaEsIndexWrapper<T> wrapper) {
         // 初始化创建索引参数
         CreateIndexParam createIndexParam = new CreateIndexParam();
+        createIndexParam.setIndexName(wrapper.indexName);
 
         // 设置分片个副本信息
         Optional.ofNullable(wrapper.shardsNum).ifPresent(createIndexParam::setShardsNum);

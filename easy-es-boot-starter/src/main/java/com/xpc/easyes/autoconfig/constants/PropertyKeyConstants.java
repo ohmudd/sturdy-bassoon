@@ -11,13 +11,9 @@ public interface PropertyKeyConstants {
      */
     String PRINT_DSL = "easy-es.global-config.print-dsl";
     /**
-     * 是否开启索引自动托管
-     */
-    String OPEN_AUTO_PROCESS_INDEX = "easy-es.global-config.open-auto-process-index";
-    /**
      * 自动托管索引模式
      */
-    String AUTO_PROCESS_INDEX_MODE = "easy-es.global-config..auto_process_index_mode";
+    String PROCESS_INDEX_MODE = "easy-es.global-config.process_index_mode";
     /**
      * es索引前缀
      */

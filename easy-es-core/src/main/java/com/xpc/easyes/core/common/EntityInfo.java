@@ -40,6 +40,10 @@ public class EntityInfo {
      * 新索引名(由EE在更新索引时自动创建)
      */
     private String releaseIndexName;
+    /***
+     * 重试成功的索引名
+     */
+    private String retrySuccessIndexName;
     /**
      * 表映射结果集
      */

@@ -2,7 +2,7 @@ package com.xpc.easyes.autoconfig.service.impl;
 
 import com.xpc.easyes.autoconfig.service.AutoProcessIndexService;
 import com.xpc.easyes.core.common.EntityInfo;
-import com.xpc.easyes.core.enums.AutoProcessIndexStrategyEnum;
+import com.xpc.easyes.core.enums.ProcessIndexStrategyEnum;
 import com.xpc.easyes.core.params.CreateIndexParam;
 import com.xpc.easyes.core.params.EsIndexInfo;
 import com.xpc.easyes.core.toolkit.EntityInfoHelper;
@@ -24,7 +24,7 @@ public class AutoProcessIndexNotSmoothlyServiceImpl implements AutoProcessIndexS
 
     @Override
     public Integer getStrategyType() {
-        return AutoProcessIndexStrategyEnum.NOT_SMOOTHLY.getStrategyType();
+        return ProcessIndexStrategyEnum.NOT_SMOOTHLY.getStrategyType();
     }
 
 
@@ -36,7 +36,7 @@ public class AutoProcessIndexNotSmoothlyServiceImpl implements AutoProcessIndexS
     private boolean process(Class<?> entityClass, RestHighLevelClient client) {
         EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
         // 是否存在索引
-        boolean existsIndex = IndexUtils.existsIndexWithRetryAndSetActiveIndex(entityInfo, client);
+        boolean existsIndex = IndexUtils.existsIndexWithRetry(entityInfo, client);
         if (existsIndex) {
             // 更新
             return doUpdateIndex(entityInfo, client);
@@ -48,16 +48,17 @@ public class AutoProcessIndexNotSmoothlyServiceImpl implements AutoProcessIndexS
 
     private boolean doUpdateIndex(EntityInfo entityInfo, RestHighLevelClient client) {
         // 获取索引信息
-        EsIndexInfo esIndexInfo = IndexUtils.getIndex(client, entityInfo.getIndexName());
+        EsIndexInfo esIndexInfo = IndexUtils.getIndex(client, entityInfo.getRetrySuccessIndexName());
 
         // 索引是否有变化 若有则直接删除旧索引,创建新索引 若无则直接返回托管成功
         boolean isIndexNeedChange = IndexUtils.isIndexNeedChange(esIndexInfo, entityInfo);
         if (!isIndexNeedChange) {
+            entityInfo.setIndexName(entityInfo.getRetrySuccessIndexName());
             return Boolean.TRUE;
         }
 
         // 直接删除旧索引
-        IndexUtils.deleteIndex(client, entityInfo.getIndexName());
+        IndexUtils.deleteIndex(client, entityInfo.getRetrySuccessIndexName());
 
         // 初始化创建索引参数
         CreateIndexParam createIndexParam = IndexUtils.getCreateIndexParam(entityInfo);

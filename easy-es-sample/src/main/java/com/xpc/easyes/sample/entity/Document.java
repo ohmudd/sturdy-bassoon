@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * es 数据模型
@@ -29,7 +30,7 @@ public class Document {
     /**
      * 文档内容
      */
-    @TableField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_SMART)
+    @TableField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_MAX_WORD)
     private String content;
     /**
      * 作者 加@TableField注解,并指明strategy = FieldStrategy.NOT_EMPTY 表示更新的时候的策略为 创建者不为空字符串时才更新
@@ -56,7 +57,7 @@ public class Document {
     /**
      * 自定义字段
      */
-    @TableField(value = "u-la")
+    @TableField(value = "wu-la")
     private String customField;
 
     /**
