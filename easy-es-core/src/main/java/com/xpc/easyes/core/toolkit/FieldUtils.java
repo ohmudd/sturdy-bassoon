@@ -41,7 +41,12 @@ public class FieldUtils {
             // 利用jdk的SerializedLambda 解析方法引用
             java.lang.invoke.SerializedLambda serializedLambda = (SerializedLambda) method.invoke(func);
             String getter = serializedLambda.getImplMethodName();
-            return resolveFieldName(getter);
+            String fieldName = resolveFieldName(getter);
+            if (EntityInfoHelper.getDEFAULT_ID_NAME().equals(fieldName)) {
+                // id统一转为_id
+                fieldName = EntityInfoHelper.getDEFAULT_ES_ID_NAME();
+            }
+            return fieldName;
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
