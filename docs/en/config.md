@@ -50,7 +50,7 @@ easy-es:
 >    - After configuring the global policy, you can still customize the configuration for individual classes through annotations, and the priority of the global configuration is lower than the annotation configuration
 
 > - refresh-policy supports 3 policies
-> none: default policy, no data refresh
-> immediate : Immediate refresh will consume more performance, suitable for scenarios with high real-time data requirements
-> wait_until: After requesting to submit data, wait for the data to be refreshed (1s) before ending the request. The performance loss is moderate
+>     - none: default policy, no data refresh
+>     - immediate : Immediate refresh will consume more performance, suitable for scenarios with high real-time data requirements
+>     - wait_until: After requesting to submit data, wait for the data to be refreshed (1s) before ending the request. The performance loss is moderate
 
