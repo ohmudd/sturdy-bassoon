@@ -57,6 +57,7 @@
   	- [排序](sort.md)
           - [自定义排序](custom-sort.md)
   	- [聚合查询](aggregation.md)
+        - [去重查询](distinct.md)
   	- [分词查询](particple.md)
   	- [权重](weight.md)
   	- [高亮查询](highlight.md)
