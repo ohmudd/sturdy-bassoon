@@ -83,6 +83,13 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     @Override
+    public Boolean createIndex() {
+        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
+        CreateIndexParam createIndexParam = IndexUtils.getCreateIndexParam(entityInfo);
+        return IndexUtils.createIndex(client, entityInfo, createIndexParam);
+    }
+
+    @Override
     public Boolean createIndex(LambdaEsIndexWrapper<T> wrapper) {
         // 初始化创建索引参数
         CreateIndexParam createIndexParam = new CreateIndexParam();

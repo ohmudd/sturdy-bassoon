@@ -3,7 +3,6 @@ package cn.easyes.annotation;
 import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldStrategy;
 import cn.easyes.common.enums.FieldType;
-import cn.easyes.common.params.DefaultChildClass;
 import cn.easyes.common.params.DefaultNestedClass;
 import cn.easyes.common.params.JoinField;
 

@@ -79,7 +79,7 @@ public interface Index<Children, R> extends Serializable {
      * @return 泛型
      */
     default Children mapping(R column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat) {
-        return mapping(FieldUtils.getFieldName(column), fieldType, analyzer, searchAnalyzer, dateFormat);
+        return mapping(FieldUtils.getFieldName(column), fieldType, analyzer, searchAnalyzer, dateFormat, null);
     }
 
 
@@ -87,8 +87,12 @@ public interface Index<Children, R> extends Serializable {
         return mapping(column, fieldType, null, null, null);
     }
 
+    default Children mapping(String column, FieldType fieldType, Float boost) {
+        return mapping(column, fieldType, null, null, boost);
+    }
+
     default Children mapping(String column, FieldType fieldType, String dateFormat) {
-        return mapping(column, fieldType, null, null, dateFormat);
+        return mapping(column, fieldType, null, null, dateFormat, null);
     }
 
     default Children mapping(String column, FieldType fieldType, Analyzer analyzer) {
@@ -96,11 +100,15 @@ public interface Index<Children, R> extends Serializable {
     }
 
     default Children mapping(String column, FieldType fieldType, Analyzer analyzer, String dateFormat) {
-        return mapping(column, fieldType, analyzer, null, dateFormat);
+        return mapping(column, fieldType, analyzer, null, dateFormat, null);
     }
 
     default Children mapping(String column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer) {
         return mapping(column, fieldType, analyzer, null, null);
+    }
+
+    default Children mapping(String column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, Float boost) {
+        return mapping(column, fieldType, analyzer, null, boost);
     }
 
     /**
@@ -111,9 +119,10 @@ public interface Index<Children, R> extends Serializable {
      * @param analyzer       分词器类型
      * @param searchAnalyzer 查询分词器类型
      * @param dateFormat     日期格式
+     * @param boost          字段权重值
      * @return 泛型
      */
-    Children mapping(String column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat);
+    Children mapping(String column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat, Float boost);
 
     /**
      * 设置创建别名信息

@@ -31,6 +31,7 @@ public enum FieldType {
     BINARY("binary"),
     KEYWORD("keyword"),
     TEXT("text"),
+    KEYWORD_TEXT("keyword&text"),
     /**
      * mix
      */

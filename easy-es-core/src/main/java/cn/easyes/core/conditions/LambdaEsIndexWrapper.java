@@ -111,8 +111,8 @@ public class LambdaEsIndexWrapper<T> extends Wrapper<T> implements Index<LambdaE
     }
 
     @Override
-    public LambdaEsIndexWrapper<T> mapping(String column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat) {
-        addEsIndexParam(column, fieldType, analyzer, analyzer, dateFormat);
+    public LambdaEsIndexWrapper<T> mapping(String column, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat, Float boost) {
+        addEsIndexParam(column, fieldType, analyzer, analyzer, dateFormat, boost);
         return typedThis;
     }
 
@@ -138,13 +138,14 @@ public class LambdaEsIndexWrapper<T> extends Wrapper<T> implements Index<LambdaE
         return typedThis;
     }
 
-    private void addEsIndexParam(String fieldName, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat) {
+    private void addEsIndexParam(String fieldName, FieldType fieldType, Analyzer analyzer, Analyzer searchAnalyzer, String dateFormat, Float boost) {
         EsIndexParam esIndexParam = new EsIndexParam();
         esIndexParam.setFieldName(fieldName);
         esIndexParam.setFieldType(fieldType.getType());
         esIndexParam.setAnalyzer(analyzer);
         esIndexParam.setSearchAnalyzer(searchAnalyzer);
         esIndexParam.setDateFormat(dateFormat);
+        esIndexParam.setBoost(boost);
         esIndexParamList.add(esIndexParam);
     }
 }

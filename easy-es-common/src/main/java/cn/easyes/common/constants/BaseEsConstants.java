@@ -43,6 +43,10 @@ public interface BaseEsConstants {
      */
     Float DEFAULT_BOOST = 1.0F;
     /**
+     * 默认索引字段boost权重
+     */
+    Integer DEFAULT_INDEX_BOOST = 1;
+    /**
      * 空字符串
      */
     String EMPTY_STR = "";
@@ -194,4 +198,9 @@ public interface BaseEsConstants {
      * 父子类型索引-eager_global_ordinals
      */
     String EAGER_GLOBAL_ORDINALS_KEY = "eager_global_ordinals";
+    /**
+     * 索引权重key
+     */
+    String BOOST_KEY = "boost";
+
 }

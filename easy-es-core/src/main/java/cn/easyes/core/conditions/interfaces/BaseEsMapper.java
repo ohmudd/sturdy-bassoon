@@ -30,6 +30,13 @@ public interface BaseEsMapper<T> {
     Boolean existsIndex(String indexName);
 
     /**
+     * 创建索引,根据当前mapper对应实体类信息及其注解配置生成索引信息
+     *
+     * @return 是否创建成功
+     */
+    Boolean createIndex();
+
+    /**
      * 创建索引
      *
      * @param wrapper 条件

@@ -35,7 +35,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 
-import static cn.easyes.common.constants.BaseEsConstants.EAGER_GLOBAL_ORDINALS_KEY;
+import static cn.easyes.common.constants.BaseEsConstants.*;
 
 
 /**
@@ -45,6 +45,23 @@ import static cn.easyes.common.constants.BaseEsConstants.EAGER_GLOBAL_ORDINALS_K
  **/
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class IndexUtils {
+
+    private static final String FIELDS_KEY;
+    private static final Map<String, Object> FIELDS_MAP;
+    private static final int IGNORE_ABOVE;
+    private static final String IGNORE_ABOVE_KEY;
+
+
+    static {
+        FIELDS_MAP = new HashMap<>();
+        FIELDS_KEY = "fields";
+        IGNORE_ABOVE = 256;
+        IGNORE_ABOVE_KEY = "ignore_above";
+        Map<String, Object> keywordsMap = new HashMap<>();
+        keywordsMap.put(TYPE, FieldType.KEYWORD.getType());
+        keywordsMap.put(IGNORE_ABOVE_KEY, IGNORE_ABOVE);
+        FIELDS_MAP.put(FieldType.KEYWORD.getType(), keywordsMap);
+    }
 
     /**
      * 是否存在索引
@@ -329,7 +346,15 @@ public class IndexUtils {
         indexParamList.forEach(indexParam -> {
             Map<String, Object> info = new HashMap<>();
             Optional.ofNullable(indexParam.getDateFormat()).ifPresent(format -> info.put(BaseEsConstants.FORMAT, indexParam.getDateFormat()));
-            info.put(BaseEsConstants.TYPE, indexParam.getFieldType());
+
+            // 设置type
+            if (FieldType.KEYWORD_TEXT.getType().equals(indexParam.getFieldType())) {
+                info.put(BaseEsConstants.TYPE, FieldType.TEXT.getType());
+                info.put(FIELDS_KEY, FIELDS_MAP);
+            } else {
+                info.put(BaseEsConstants.TYPE, indexParam.getFieldType());
+            }
+
             // 设置分词器
             if (FieldType.TEXT.getType().equals(indexParam.getFieldType())) {
                 Optional.ofNullable(indexParam.getAnalyzer())
@@ -339,6 +364,9 @@ public class IndexUtils {
                         .ifPresent(searchAnalyzer ->
                                 info.put(BaseEsConstants.SEARCH_ANALYZER, indexParam.getSearchAnalyzer().toString().toLowerCase()));
             }
+
+            // 设置权重
+            Optional.ofNullable(indexParam.getBoost()).ifPresent(boost -> info.put(BOOST_KEY, indexParam.getBoost()));
 
             // 设置父子类型关系
             if (FieldType.JOIN.getType().equals(indexParam.getFieldType())) {
@@ -438,6 +466,8 @@ public class IndexUtils {
      * 初始化索引参数
      *
      * @param entityInfo 实体信息
+     * @param fieldList  字段列表
+     * @param isNested   是否嵌套
      * @return 索引参数列表
      */
     public static List<EsIndexParam> initIndexParam(EntityInfo entityInfo, List<EntityFieldInfo> fieldList, boolean isNested) {
@@ -482,6 +512,7 @@ public class IndexUtils {
                         esIndexParam.setSearchAnalyzer(field.getSearchAnalyzer());
                     }
                 }
+
                 Optional.ofNullable(field.getParentName()).ifPresent(esIndexParam::setParentName);
                 Optional.ofNullable(field.getChildName()).ifPresent(esIndexParam::setChildName);
                 esIndexParamList.add(esIndexParam);
@@ -511,9 +542,7 @@ public class IndexUtils {
         Map<String, Object> mapping = IndexUtils.initMapping(entityInfo, esIndexParamList);
 
         // 与查询到的已知index对比是否发生改变
-        Map<String, Object> esIndexInfoMapping = Objects.isNull(esIndexInfo.getMapping())
-                ? new HashMap<>(0) : esIndexInfo.getMapping();
-        return !mapping.equals(esIndexInfoMapping);
+        return !mapping.equals(esIndexInfo.getMapping());
     }
 
     /**

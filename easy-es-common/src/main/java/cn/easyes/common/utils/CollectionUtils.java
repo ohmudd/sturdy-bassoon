@@ -1,6 +1,7 @@
 package cn.easyes.common.utils;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -9,6 +10,15 @@ import java.util.Map;
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 public class CollectionUtils {
+    /**
+     * 精度 double
+     */
+    private final static double DOUBLE_ACCURACY = 0.001d;
+    /**
+     * 精度 float
+     */
+    private final static float FLOAT_ACCURACY = 0.001f;
+
     public CollectionUtils() {
     }
 
@@ -40,4 +50,5 @@ public class CollectionUtils {
     public static boolean isNotEmpty(Map<?, ?> map) {
         return !isEmpty(map);
     }
+
 }
