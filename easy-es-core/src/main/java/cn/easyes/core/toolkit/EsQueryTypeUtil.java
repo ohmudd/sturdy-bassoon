@@ -135,15 +135,16 @@ public class EsQueryTypeUtil {
     /**
      * 添加查询类型 适用于多字段单值情形
      *
-     * @param boolQueryBuilder  参数连接器
-     * @param queryType         查询类型
-     * @param attachType        连接类型
-     * @param enableMust2Filter must是否转filter
-     * @param fields            字段列表
-     * @param value             值
-     * @param ext               拓展字段
-     * @param minShouldMatch    最小匹配百分比
-     * @param boost             权重
+     * @param boolQueryBuilder   参数连接器
+     * @param queryType          查询类型
+     * @param attachType         连接类型
+     * @param originalAttachType 初始连接类型
+     * @param enableMust2Filter  must是否转filter
+     * @param fields             字段列表
+     * @param value              值
+     * @param ext                拓展字段
+     * @param minShouldMatch     最小匹配百分比
+     * @param boost              权重
      */
     public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType, Integer originalAttachType,
                                       boolean enableMust2Filter, List<String> fields, Object value, Object ext, Integer minShouldMatch, Float boost) {
@@ -161,14 +162,15 @@ public class EsQueryTypeUtil {
     /**
      * 添加查询类型 精确匹配 用于between 操作
      *
-     * @param boolQueryBuilder  参数连接器
-     * @param queryType         查询类型
-     * @param attachType        连接类型
-     * @param enableMust2Filter must是否转filter
-     * @param field             字段
-     * @param leftValue         左值
-     * @param rightValue        右值
-     * @param boost             权重
+     * @param boolQueryBuilder   参数连接器
+     * @param queryType          查询类型
+     * @param attachType         连接类型
+     * @param originalAttachType 初始连接类型
+     * @param enableMust2Filter  must是否转filter
+     * @param field              字段
+     * @param leftValue          左值
+     * @param rightValue         右值
+     * @param boost              权重
      */
     public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType, Integer originalAttachType,
                                       boolean enableMust2Filter, String field, Object leftValue, Object rightValue, Float boost) {
