@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://www.yuque.com/laohan-14b9d/foyrfa/naw1ie">
-   <img alt="East-Es-Logo" src="https://iknow.hs.net/6361ec1d-edca-4358-98c1-e7a309e15a39.png">
+   <img alt="East-Es-Logo" src="https://iknow.hs.net/e2ccba53-812e-4927-9cac-d6ca61327752.png">
   </a>
 </p>
 
@@ -22,6 +22,8 @@
 ---
 
 Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动智能索引托管.
+
+目前功能丰富度和易用度已全面领先SpringData-Elasticsearch.
 
 简化`CRUD`及其它高阶操作,可以更好的帮助开发者减轻开发负担
 
@@ -92,12 +94,16 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动�
 
 **开源社区码云首页** https://gitee.com/dromara
 
+# 架构 | Architecture
+---
+
+![Architecture](https://iknow.hs.net/27fb40b8-22d4-45c2-92e0-1471112d5102.jpg)
+
 
 # 相关链接 | Links
 ---
 
 - [Switch To English](https://gitee.com/easy-es/easy-es/blob/master/README_EN.md)
-- [中文文档](https://www.yuque.com/books/share/52959a47-d9e5-404e-a750-7d139dfd3b24/naw1ie)
 - [功能示例](https://gitee.com/easy-es/easy-es-springboot-demo)
 - [Springboot集成Demo](https://easy-es.cn/#/demo)
 
@@ -134,7 +140,7 @@ compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Vers
 # 捐赠 | Donate
 ---
 
-[捐赠记录,感谢你们的支持！](https://easy-es.cn/#/donate-log)
+[捐赠记录,感谢你们的支持！](https://easy-es.cn/pages/b52ac5/)
 
 > 您的支持是鼓励我们前行的动力，无论金额多少都足够表达您这份心意。
 

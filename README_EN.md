@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/xpc1024/easy-es">
-   <img alt="East-Es-Logo" src="https://iknow.hs.net/6361ec1d-edca-4358-98c1-e7a309e15a39.png">
+   <img alt="East-Es-Logo" src="https://iknow.hs.net/9fa0407f-30ff-4d8b-82da-a4990e41a04b.png">
   </a>
 </p>
 
@@ -26,12 +26,11 @@ Easy-Es is a powerfully enhanced toolkit of RestHighLevelClient for simplify dev
 ## Official website
 ---
 
-https://easy-es.cn/#/en/
+https://en.easy-es.cn/
 
 ## Links
 ---
 - [中文版](https://github.com/xpc1024/easy-es/blob/main/README-ZH.md)
-- [Documentation](https://www.yuque.com/laohan-14b9d/tald79/qf7ns2)
 - [Samples](https://github.com/xpc1024/easy-es/tree/main/easy-es-sample)
 - [Demo in Springboot](https://github.com/xpc1024/easy-es-springboot-demo-en)
 
@@ -125,6 +124,10 @@ String indexName = "document";
   ```
 
 > This showcase is just a small part of Easy-Es features. If you want to learn more, please refer to the [documentation](https://easy-es.cn/#/en/).
+
+## Architecture
+---
+![Architecture](https://iknow.hs.net/27fb40b8-22d4-45c2-92e0-1471112d5102.jpg)
 
 ## Syntax comparison with MySQL
 ---
