@@ -8,7 +8,10 @@
         // Here, the article title is mapped to the keyword type (word segmentation is not supported), and the document content is mapped to the text type (word segmentation query is supported), which can be defaulted
         wrapper.mapping(Document::getTitle, FieldType.KEYWORD)
                 .mapping(Document::getContent, FieldType.TEXT);
-        
+
+        // Version 0.9.8+ supports passing in field name String directly
+        wrapper.mapping("wu-la", FieldType.TEX);
+
         // Set shard and replica information, here 3 shards and 2 replicas are set, which can be defaulted
         wrapper.settings(3,2);
         
