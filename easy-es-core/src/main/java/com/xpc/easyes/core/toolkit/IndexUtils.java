@@ -512,15 +512,16 @@ public class IndexUtils {
             } finally {
                 LockUtils.release(client, entityClass.getSimpleName().toLowerCase(), LOCK_MAX_RETRY);
             }
-        }).whenCompleteAsync((status, throwable) -> {
-            if (status) {
+        }).exceptionally((throwable) -> {
+            Optional.ofNullable(throwable).ifPresent(e -> LogUtils.error("process index exception", e.toString()));
+            return Boolean.FALSE;
+        }).whenCompleteAsync((success, throwable) -> {
+            if (success) {
                 LogUtils.info("===> Congratulations auto process index by Easy-Es is done !");
             } else {
-                LogUtils.info("===> Unfortunately, auto process index by Easy-Es failed, please check your configuration");
+                LogUtils.warn("===> Unfortunately, auto process index by Easy-Es failed, please check your configuration");
             }
-            Optional.ofNullable(throwable).ifPresent(Throwable::printStackTrace);
         });
-
     }
 
 }

@@ -402,6 +402,8 @@ public class EntityInfoHelper {
                 indexName = tableName;
             }
             entityInfo.setAliasName(table.aliasName());
+            entityInfo.setShardsNum(table.shardsNum());
+            entityInfo.setReplicasNum(table.replicasNum());
         }
 
         String targetIndexName = indexName;
