@@ -15,6 +15,7 @@ Easy-Es (EE for short) is a low-code development framework based on RestHighLeve
 
 ---
 
+- **Fully automatic index hosting:** the world's first open source index hosting model, developers do not need to care about cumbersome steps such as index creation and update and data migration, the entire life cycle of the index can be hosted to the framework, and the framework is automatically completed, the process is zero downtime, and users are not aware of it , completely liberate developers.
 - **Block language differences:** Developers only need to know MySQL syntax to use Es.
 - **Low code:** Compared with using RestHighLevelClient, the same query can save about 3-5 times the amount of code on average.
 - **Easier to get field names:** The field name is obtained directly from the entity, no need to enter the field name string, which improves the readability of the code and eliminates the bugs caused by the omission of the code due to the modification of the field name.
