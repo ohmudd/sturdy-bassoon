@@ -1,5 +1,6 @@
 package cn.easyes.test.all;
 
+import cn.easyes.common.constants.BaseEsConstants;
 import cn.easyes.core.biz.OrderByParam;
 import cn.easyes.core.biz.PageInfo;
 import cn.easyes.core.biz.SAPageInfo;
@@ -32,7 +33,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
- * 全部测试-处手动挡索引相关API
+ * 全部核心功能测试-除手动挡索引相关API
+ * 以下测试用例,需要开启自动挡
  * <p>
  * Copyright © 2022 xpc1024 All Rights Reserved
  **/
@@ -735,7 +737,9 @@ public class AllTest {
     @Order(10)
     public void testDeleteIndex() {
         boolean deleted = documentMapper.deleteIndex(EntityInfoHelper.getEntityInfo(Document.class).getIndexName());
+        boolean lockDeleted = documentMapper.deleteIndex(BaseEsConstants.LOCK_INDEX);
         Assertions.assertTrue(deleted);
+        Assertions.assertTrue(lockDeleted);
     }
 
     @Test

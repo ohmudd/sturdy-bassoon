@@ -388,9 +388,10 @@ public class WrapperProcessor {
 
         // 多字段情形
         baseEsParam.getMustMultiFieldList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), MUST.getType(), enableMust2Filter,
-                        FieldUtils.getRealFields(fieldValueModel.getFields(), entityInfo.getMappingColumnMap()), fieldValueModel.getValue(),
-                        fieldValueModel.getExt(), fieldValueModel.getMinimumShouldMatch(), fieldValueModel.getBoost()));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), MUST.getType(),
+                        fieldValueModel.getOriginalAttachType(), enableMust2Filter, FieldUtils.getRealFields(fieldValueModel.getFields(),
+                                entityInfo.getMappingColumnMap()), fieldValueModel.getValue(), fieldValueModel.getExt(),
+                        fieldValueModel.getMinimumShouldMatch(), fieldValueModel.getBoost()));
 
         baseEsParam.getFilterList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, FILTER.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
@@ -400,7 +401,8 @@ public class WrapperProcessor {
 
         // 多字段情形
         baseEsParam.getShouldMultiFieldList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), SHOULD.getType(), enableMust2Filter,
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
+                        SHOULD.getType(), fieldValueModel.getOriginalAttachType(), enableMust2Filter,
                         FieldUtils.getRealFields(fieldValueModel.getFields(), entityInfo.getMappingColumnMap()), fieldValueModel.getValue(),
                         fieldValueModel.getExt(), fieldValueModel.getMinimumShouldMatch(), fieldValueModel.getBoost()));
 
@@ -421,13 +423,15 @@ public class WrapperProcessor {
 
         baseEsParam.getBetweenList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), BETWEEN.getType(),
-                        enableMust2Filter, entityInfo.getMappingColumn(fieldValueModel.getField()),
-                        fieldValueModel.getLeftValue(), fieldValueModel.getRightValue(), fieldValueModel.getBoost()));
+                        fieldValueModel.getOriginalAttachType(), enableMust2Filter,
+                        entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getLeftValue(),
+                        fieldValueModel.getRightValue(), fieldValueModel.getBoost()));
 
         baseEsParam.getNotBetweenList().forEach(fieldValueModel ->
                 EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), NOT_BETWEEN.getType(),
-                        enableMust2Filter, entityInfo.getMappingColumn(fieldValueModel.getField()),
-                        fieldValueModel.getLeftValue(), fieldValueModel.getRightValue(), fieldValueModel.getBoost()));
+                        fieldValueModel.getOriginalAttachType(), enableMust2Filter,
+                        entityInfo.getMappingColumn(fieldValueModel.getField()), fieldValueModel.getLeftValue(),
+                        fieldValueModel.getRightValue(), fieldValueModel.getBoost()));
 
         baseEsParam.getInList().forEach(fieldValueModel -> EsQueryTypeUtil.addQueryByType(boolQueryBuilder,
                 IN.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
