@@ -35,6 +35,18 @@ easy-es:
       enable-must2-filter: false # 是否全局开启must查询类型转换为filter查询类型 默认为false不转换 
 
 ```
+
+**其它配置:**
+```yaml
+logging:
+  level:
+   tracer: trace # 开启trace级别日志,在开发时可以开启此配置,则控制台可以打印es全部请求信息及DSL语句,为了避免重复,开启此项配置后,可以将EE的print-dsl设置为false.
+
+spring:
+  main:
+    banner-mode: off # 有用户反馈想关闭EE打印的Banner,由于EE的banner是直接覆盖springboot默认banner的,所以如需关闭,直接关闭springboot的banner即可关闭EE的banner.
+```
+
 > **Tips:**
 > - id-type支持3种类型:
 >     - auto: 由ES自动生成,是默认的配置,无需您额外配置 推荐
