@@ -26,7 +26,15 @@ Easy-Es is a powerfully enhanced toolkit of RestHighLevelClient for simplify dev
 ## Official website
 ---
 
-https://en.easy-es.cn/
+**easy-es website**  https://en.easy-es.cn/
+
+**easy-es gitee** https://gitee.com/dromara/easy-es
+
+**easy-es github** https://github.com/dromara/easy-es
+
+**dromara website** https://dromara.org/
+
+**dromara gitee homepage** https://gitee.com/dromara/
 
 ## Links
 ---
