@@ -7,7 +7,7 @@
 
 - 拥有 Java 开发环境以及相应 IDE
 - 熟悉MySQL
-- 熟悉 Spring Boot
+- 熟悉 Spring Boot (推荐版本2.5.x +)
 - 熟悉 Maven
 - 了解Es基本概念
 - 已安装Es **推荐7.x+版本**(没有安装的可自行百度教程,建议再装一个es-head插件,便于可视化验证),低版本可能存在API不兼容或其它未知情况,因为底层采用RestHighLevelClient而非RestLowLevelClient,本Demo采用Es版本为7.10.0
@@ -101,47 +101,29 @@ public class Document {
     private String content;
 }
 ```
-> Tips: 上面字段id如果未进行任何注解和全局配置,则其策略默认为Es自动生成,在es中对应字段'_id',字段类型为String,如果您需要对id进行特殊处理,后续章节有介绍如何对Id进行配置.
+> Tips:
+> - 上面字段名称以及下划线转自动驼峰,字段在ES中的存储类型,分词器等均可配置,在后续章节会有介绍.
+> - String类型默认会被EE创建为keyword类型,keyword类型支持精确查询等
+> - 如需分词查询,可像上面content一样,在字段上加上@TableField注解并指明字段类型为text,并指定分词器.
 
 编写Mapper类 DocumentMapper.java
 ```java
 public interface DocumentMapper extends BaseEsMapper<Document> {
 }
 ```
+## 
+**前置操作:**启动项目,由Easy-Es自动帮您创建索引(相当于MySQL等数据库中的表),有了索引才能进行后续CRUD操作.索引托管成功后,您可在控制台看到:===> Congratulations auto process index by Easy-Es is done !
+> **Tips:**
+> - 后续如若索引有更新,索引重建,更新,数据迁移等工作默认都由EE自动帮您完成,当然您也可以通过配置关闭索引自动托管,可通过EE提供的API手动维护或es-head等插件维护.
+> - 自动托管模式(0.9.9+版本支持),相关配置及详细介绍可在后面章节中看到,此处您只管将这些烦人的步骤交给EE去自动处理即可.
+> - 若您EE版本低于该版本,可通过EE提供的API手动维护索引
+
 ## 开始使用(CRUD)
 
 ---
 
 添加测试类，进行功能测试：
-> **前置操作:** 创建索引(相当于MySQL中的一张表,先有表才能进行后续CRUD)
 
-```java
-import com.xpc.easyes.core.enums.FieldType;
-@SpringBootTest(classes = EasyEsApplication.class)
-public class SearchTest {
-    
-    @Resource
-    DocumentMapper documentMapper;
-    
-    @Test
-    public void testCreatIndex() {
-        // 测试创建索引 不了解Es索引概念的建议先去了解 懒汉可以简单理解为MySQL中的一张表
-        LambdaEsIndexWrapper<Document> wrapper = new LambdaEsIndexWrapper<>();
-        
-        // 此处简单起见 直接使用类名作为索引名称 后面章节会教大家更如何灵活配置和使用索引
-        wrapper.indexName(Document.class.getSimpleName().toLowerCase());
-        
-        // 此处将文章标题映射为keyword类型(不支持分词),文档内容映射为text类型(支持分词查询)
-        wrapper.mapping(Document::getTitle, FieldType.KEYWORD)
-                .mapping(Document::getContent, FieldType.TEXT);
- 
-        boolean isOk = documentMapper.createIndex(wrapper);
-       	Assert.assertTrue(isOk);
-        // 期望值: true 如果是true 则证明索引已成功创建
-    }
-    
-}
-```
 > 测试新增: 新增一条数据(相当于MySQL中的Insert操作)
 
 ```java
