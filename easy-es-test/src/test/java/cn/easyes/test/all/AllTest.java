@@ -21,12 +21,14 @@ import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.geometry.Circle;
 import org.elasticsearch.geometry.Point;
 import org.elasticsearch.geometry.Rectangle;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.ParsedLongTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.ParsedAvg;
 import org.elasticsearch.search.aggregations.metrics.ParsedMax;
 import org.elasticsearch.search.aggregations.metrics.ParsedMin;
 import org.elasticsearch.search.aggregations.metrics.ParsedSum;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -79,9 +81,8 @@ public class AllTest {
     public void testBatchInsert() {
         List<Document> documentList = new ArrayList<>();
         for (int i = 2; i < 23; i++) {
-            Integer sec = i;
             Document document = new Document();
-            document.setEsId(sec.toString());
+            document.setEsId(Integer.toString(i));
             document.setTitle("测试文档" + i);
             document.setContent("测试内容" + i);
             document.setCreator("老汉" + i);
@@ -122,6 +123,19 @@ public class AllTest {
         wrapper.eq(Document::getTitle, "测试文档2");
         wrapper.set(Document::getContent, "测试文档内容2的内容被更新了");
         int count = documentMapper.update(null, wrapper);
+        Assertions.assertEquals(1, count);
+    }
+
+    @Test
+    @Order(4)
+    public void testUpdateBySetSearchSourceBuilder() {
+        LambdaEsUpdateWrapper<Document> wrapper = new LambdaEsUpdateWrapper<>();
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.termQuery(FieldUtils.val(Document::getTitle), "测试文档2"));
+        wrapper.setSearchSourceBuilder(searchSourceBuilder);
+        Document document = new Document();
+        document.setContent("测试文档内容2的内容再次被更新了");
+        int count = documentMapper.update(document, wrapper);
         Assertions.assertEquals(1, count);
     }
 
@@ -455,6 +469,19 @@ public class AllTest {
 
     @Test
     @Order(6)
+    public void testSetSearchSourceBuilder() {
+        // 测试混合查询的另一种方式
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchQuery(FieldUtils.val(Document::getCreator), "老汉"));
+        searchSourceBuilder.size(BaseEsConstants.DEFAULT_SIZE);
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.setSearchSourceBuilder(searchSourceBuilder);
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals(22, documents.size());
+    }
+
+    @Test
+    @Order(6)
     public void testConditionEnableMust2Filter() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.match(Document::getCreator, "老汉")
@@ -595,8 +622,8 @@ public class AllTest {
                 .geoDistance(Document::getLocation, 168.8, centerPoint)
                 .orderByDistanceAsc(Document::getLocation, centerPoint);
         List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals("3",documents.get(0).getEsId());
-        Assertions.assertEquals("4",documents.get(3).getEsId());
+        Assertions.assertEquals("3", documents.get(0).getEsId());
+        Assertions.assertEquals("4", documents.get(3).getEsId());
     }
 
     @Test
@@ -608,8 +635,8 @@ public class AllTest {
                 .geoDistance(Document::getLocation, 168.8, centerPoint)
                 .orderByDistanceDesc(Document::getLocation, centerPoint);
         List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals("4",documents.get(0).getEsId());
-        Assertions.assertEquals("3",documents.get(3).getEsId());
+        Assertions.assertEquals("4", documents.get(0).getEsId());
+        Assertions.assertEquals("3", documents.get(3).getEsId());
     }
 
     @Test
