@@ -26,7 +26,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Faq {
-    @IndexField(value = "faq_name", fieldType = FieldType.TEXT)
     private String faqName;
     @IndexField(value = "answer")
     private String faqAnswer;

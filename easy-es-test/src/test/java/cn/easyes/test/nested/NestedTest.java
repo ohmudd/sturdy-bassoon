@@ -78,31 +78,36 @@ public class NestedTest {
 
     @Test
     public void testNestedMatch() {
-        // 嵌套查询 查询年龄等于18或8，且密码等于123的数据
+        // 嵌套查询 查询年龄等于18或8，且密码等于12345的数据
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.nested(FieldUtils.val(Document::getUsers), w ->
-                w.in(FieldUtils.val(User::getAge), 18, 8)
-                        .eq(FieldUtils.val(User::getPassword), "123"));
+                w.in("users.age", 8)
+                        .eq("users.password", "12345"));
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents);
 
         // 嵌套类型中的字段获取可以用FieldUtils.val或直接传入字符串
         LambdaEsQueryWrapper<Document> wrapper1 = new LambdaEsQueryWrapper<>();
-        wrapper1.match(Document::getContent, "人才")
-                .nested("users.faqs", w -> w.eq(FieldUtils.val(Faq::getFaqAnswer), "回答4")
-                        .match("faqName", "问题3"))
-                .nested("users", w -> w.between("age", 10, 19))
+        wrapper1.eq(Document::getTitle,"老汉")
+                .nested("users.faqs", w -> w.eq("users.faqs.answer", "a4")
+                        .match("users.faqs.faq_name", "q4"))
+                .nested("users", w -> w.between("users.age", 1, 30))
                 .match(Document::getCreator, "吃饭");
         List<Document> documents1 = documentMapper.selectList(wrapper1);
         System.out.println(documents1);
 
         LambdaEsQueryWrapper<Document> wrapper2 = new LambdaEsQueryWrapper<>();
-        wrapper2.nested("users", w -> w.in("age", 18))
+        wrapper2.nested("users", w -> w.in("users.age", 18))
                 .or()
-                .nested("users.faqs", w -> w.match("faq_name", "q3"));
+                .nested("users.faqs", w -> w.match("users.faqs.faq_name", "q3"));
         List<Document> documents2 = documentMapper.selectList(wrapper2);
 
         System.out.println(documents2);
+
+        LambdaEsQueryWrapper<Document> wrapper3 = new LambdaEsQueryWrapper<>();
+        wrapper3.nested("users.faqs",w->w.match("users.faqs.faq_name", "q3").or().match("users.faqs.faq_name","q4"));
+        List<Document> documents3 = documentMapper.selectList(wrapper3);
+        System.out.println(documents3);
     }
 
 }

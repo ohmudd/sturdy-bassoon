@@ -91,7 +91,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         baseSortParams = new ArrayList<>();
         aggregationParamList = new ArrayList<>();
         paramQueue = new LinkedList<>();
-        prevQueryType = AND_MUST;
+        prevQueryType = NESTED_AND;
         parentIdQueue = new LinkedList<>();
         prevQueryTypeQueue = new LinkedList<>();
     }
@@ -125,12 +125,12 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children and(boolean condition, Consumer<Children> consumer) {
-        return addNested(condition, AND_MUST, consumer);
+        return addNested(condition, NESTED_AND, consumer);
     }
 
     @Override
     public Children or(boolean condition, Consumer<Children> consumer) {
-        return addNested(condition, OR_SHOULD, consumer);
+        return addNested(condition, NESTED_OR, consumer);
     }
 
     @Override
@@ -139,7 +139,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         for (int i = paramQueue.size() - 1; i >= 0; i--) {
             Param param = paramQueue.get(i);
             if (Objects.equals(level, param.getLevel())) {
-                param.setPrevQueryType(OR_SHOULD);
+                param.setPrevQueryType(NESTED_OR);
                 break;
             }
         }
@@ -148,17 +148,17 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children must(boolean condition, Consumer<Children> consumer) {
-        return addNested(condition, AND_MUST, consumer);
+        return addNested(condition, NESTED_AND, consumer);
     }
 
     @Override
     public Children should(boolean condition, Consumer<Children> consumer) {
-        return addNested(condition, OR_SHOULD, consumer);
+        return addNested(condition, NESTED_OR, consumer);
     }
 
     @Override
     public Children filter(boolean condition, Consumer<Children> consumer) {
-        return addNested(condition, AND_FILTER, consumer);
+        return addNested(condition, NESTED_FILTER, consumer);
     }
 
     @Override
@@ -172,8 +172,8 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
-    public Children mustNot(boolean condition, Consumer<Children> consumer) {
-        return addNested(condition, MUST_NOT, consumer);
+    public Children not(boolean condition, Consumer<Children> consumer) {
+        return addNested(condition, NESTED_NOT, consumer);
     }
 
     @Override
@@ -701,10 +701,10 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         processJoin(param);
 
         // 这两种情况需要重置其prevType
-        if (MUST_NOT.equals(queryTypeEnum)) {
-            prevQueryType = MUST_NOT;
-        } else if (FILTER.equals(queryTypeEnum)) {
-            prevQueryType = FILTER;
+        if (NESTED_NOT.equals(queryTypeEnum)) {
+            prevQueryType = NESTED_NOT;
+        } else if (NESTED_FILTER.equals(queryTypeEnum)) {
+            prevQueryType = NESTED_FILTER;
         }
 
         paramQueue.add(param);
@@ -734,13 +734,13 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
             Param prev = paramQueue.peekLast();
             if (OR.equals(prev.getQueryTypeEnum())) {
                 // 上一节点是拼接or() 需要重置其prevQueryType类型,让其走should查询
-                param.setPrevQueryType(OR_SHOULD);
+                param.setPrevQueryType(NESTED_OR);
             } else if (NOT.equals(prev.getQueryTypeEnum())) {
                 // 上一节点是拼接not() 需要重置其prevQueryType类型,让其走must_not查询
-                param.setPrevQueryType(MUST_NOT);
+                param.setPrevQueryType(NESTED_NOT);
             } else if (FILTER.equals(prev.getPrevQueryType())) {
                 // 上一节点是拼接filter() 需要重置其prevQueryType类型,让其走filter查询
-                param.setPrevQueryType(AND_FILTER);
+                param.setPrevQueryType(NESTED_FILTER);
             }
         }
     }

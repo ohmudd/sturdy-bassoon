@@ -11,7 +11,7 @@ public interface Join<Children> extends Serializable {
     /**
      * 拼接filter
      *
-     * @return 泛型
+     * @return wrapper
      */
     default Children filter() {
         return filter(true);
@@ -20,15 +20,15 @@ public interface Join<Children> extends Serializable {
     /**
      * 拼接filter
      *
-     * @param condition 条件
-     * @return 泛型
+     * @param condition 执行条件
+     * @return wrapper
      */
     Children filter(boolean condition);
 
     /**
      * 拼接or
      *
-     * @return 泛型
+     * @return wrapper
      */
     default Children or() {
         return or(true);
@@ -37,15 +37,15 @@ public interface Join<Children> extends Serializable {
     /**
      * 拼接 OR
      *
-     * @param condition 条件
-     * @return 泛型
+     * @param condition 执行条件
+     * @return wrapper
      */
     Children or(boolean condition);
 
     /**
      * 拼接not
      *
-     * @return 泛型
+     * @return wrapper
      */
     default Children not() {
         return not(true);
@@ -54,8 +54,8 @@ public interface Join<Children> extends Serializable {
     /**
      * 拼接not
      *
-     * @param condition 条件
-     * @return 泛型
+     * @param condition 执行条件
+     * @return wrapper
      */
     Children not(boolean condition);
 }

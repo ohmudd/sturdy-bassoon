@@ -125,7 +125,7 @@ public interface BaseEsMapper<T> {
     String executeDSL(String dsl, String indexName);
 
     /**
-     * 标准查询
+     * 混合查询
      *
      * @param wrapper 条件
      * @return es标准结果

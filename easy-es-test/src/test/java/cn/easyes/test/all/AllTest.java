@@ -66,6 +66,7 @@ public class AllTest {
         document.setTitle("测试文档1");
         document.setContent("测试内容1");
         document.setCreator("老汉1");
+        document.setIpAddress("192.168.1.1");
         document.setLocation("40.171975,116.587105");
         document.setGmtCreate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         document.setCustomField("自定义字段1");
@@ -187,6 +188,7 @@ public class AllTest {
     @Order(6)
     public void testSelectOne() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+
         wrapper.match(Document::getContent, "内容")
                 .orderByAsc(Document::getStarNum, Document::getEsId)
                 .limit(1);
@@ -224,6 +226,15 @@ public class AllTest {
         wrapper.match(Document::getCustomField, "字段");
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(22, documents.size());
+    }
+
+    @Test
+    @Order(6)
+    public void testIp(){
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.eq(Document::getIpAddress,"192.168.0.0/16");
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals(documents.size(),1);
     }
 
     @Test
@@ -525,10 +536,10 @@ public class AllTest {
 
     @Test
     @Order(6)
-    public void testConditionMustNot() {
+    public void testConditionNot() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.in(Document::getStarNum, 10,11,12,13)
-                .mustNot(i->i.eq(Document::getTitle,"测试文档10").eq(Document::getTitle,"测试文档11"));
+                .not(i->i.eq(Document::getTitle,"测试文档10").eq(Document::getTitle,"测试文档11"));
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(2, documents.size());
     }
@@ -876,7 +887,7 @@ public class AllTest {
     @Order(9)
     public void testComplex() {
         // SQL写法
-        // where business_type = 1 and (state = 9 or (state = 8 and bidding_sign = 1)) or business_type = 2 and state in (2,3)
+        // where business_type = 1 and (state = 9 or (state = 8 and bidding_sign = 1)) or (business_type = 2 and state in (2,3))
 
         // RestHighLevelClient写法
         List<Integer> values = Arrays.asList(2, 3);

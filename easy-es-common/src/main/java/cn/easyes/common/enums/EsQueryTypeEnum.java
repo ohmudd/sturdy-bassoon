@@ -92,19 +92,19 @@ public enum EsQueryTypeEnum {
     /**
      * 与条件,相当于MYSQL中的AND，必须满足且返回得分
      */
-    AND_MUST,
+    NESTED_AND,
     /**
      * 取反的与条件，必须不满足
      */
-    MUST_NOT,
+    NESTED_NOT,
     /**
      * 与条件必须满足，但不返回得分，效率更高
      */
-    AND_FILTER,
+    NESTED_FILTER,
     /**
      * 或条件，相当于MYSQL中的OR 和MP中的or嵌套用法一致
      */
-    OR_SHOULD,
+    NESTED_OR,
     /**
      * 嵌套查询 ES独有 对嵌套类型的查询
      */

@@ -234,10 +234,10 @@ public class WrapperProcessor {
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             // 下面五种嵌套类型 需要对孩子节点递归处理
-            case AND_MUST:
-            case AND_FILTER:
-            case MUST_NOT:
-            case OR_SHOULD:
+            case NESTED_AND:
+            case NESTED_FILTER:
+            case NESTED_NOT:
+            case NESTED_OR:
                 queryBuilder = getBool(children, QueryBuilders.boolQuery(), entityInfo, null);
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
@@ -262,13 +262,13 @@ public class WrapperProcessor {
      * @param parentType   查询类型
      */
     private static void setBool(BoolQueryBuilder bool, QueryBuilder queryBuilder, EsQueryTypeEnum parentType) {
-        if (AND_MUST.equals(parentType)) {
+        if (NESTED_AND.equals(parentType)) {
             bool.must(queryBuilder);
-        } else if (OR_SHOULD.equals(parentType)) {
+        } else if (NESTED_OR.equals(parentType)) {
             bool.should(queryBuilder);
-        } else if (AND_FILTER.equals(parentType)) {
+        } else if (NESTED_FILTER.equals(parentType)) {
             bool.filter(queryBuilder);
-        } else if (MUST_NOT.equals(parentType)) {
+        } else if (NESTED_NOT.equals(parentType)) {
             bool.mustNot(queryBuilder);
         } else {
             // by default

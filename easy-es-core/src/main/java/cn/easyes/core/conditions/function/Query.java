@@ -13,11 +13,22 @@ import java.util.function.Predicate;
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 public interface Query<Children, T, R> extends Serializable {
-
+    /**
+     * 设置查询字段
+     *
+     * @param column 查询列
+     * @return wrapper
+     */
     default Children select(R column) {
         return select(FieldUtils.getFieldNameNotConvertId(column));
     }
 
+    /**
+     * 设置查询字段
+     *
+     * @param columns 查询列
+     * @return wrapper
+     */
     default Children select(R... columns) {
         return select(Arrays.stream(columns).map(FieldUtils::getFieldNameNotConvertId).toArray(String[]::new));
     }
@@ -27,7 +38,7 @@ public interface Query<Children, T, R> extends Serializable {
      * 设置查询字段
      *
      * @param columns 查询列,支持多字段
-     * @return 泛型
+     * @return wrapper
      */
     Children select(String... columns);
 
@@ -35,7 +46,7 @@ public interface Query<Children, T, R> extends Serializable {
      * 查询字段
      *
      * @param predicate 预言
-     * @return 泛型
+     * @return wrapper
      */
     Children select(Predicate<EntityFieldInfo> predicate);
 
@@ -44,14 +55,26 @@ public interface Query<Children, T, R> extends Serializable {
      *
      * @param entityClass 实体类
      * @param predicate   预言
-     * @return 泛型
+     * @return wrapper
      */
     Children select(Class<T> entityClass, Predicate<EntityFieldInfo> predicate);
 
+    /**
+     * 设置不查询字段
+     *
+     * @param column 不查询列
+     * @return wrapper
+     */
     default Children notSelect(R column) {
         return notSelect(FieldUtils.getFieldNameNotConvertId(column));
     }
 
+    /**
+     * 设置不查询字段
+     *
+     * @param columns 不查询列
+     * @return wrapper
+     */
     default Children notSelect(R... columns) {
         return notSelect(Arrays.stream(columns).map(FieldUtils::getFieldNameNotConvertId).toArray(String[]::new));
     }
@@ -60,14 +83,26 @@ public interface Query<Children, T, R> extends Serializable {
      * 设置不查询字段
      *
      * @param columns 不查询字段,支持多字段
-     * @return 泛型
+     * @return wrapper
      */
     Children notSelect(String... columns);
 
+    /**
+     * 设置当前操作的索引名称
+     *
+     * @param indexName 索引名
+     * @return wrapper
+     */
     default Children index(String indexName) {
         return index(true, indexName);
     }
 
+    /**
+     * 设置当前操作的索引名称
+     *
+     * @param indexNames 索引名
+     * @return wrapper
+     */
     default Children index(String... indexNames) {
         return index(true, indexNames);
     }
@@ -77,7 +112,7 @@ public interface Query<Children, T, R> extends Serializable {
      *
      * @param condition  条件
      * @param indexNames 索引名
-     * @return 泛型
+     * @return wrapper
      */
     Children index(boolean condition, String... indexNames);
 

@@ -606,8 +606,8 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children mustNot(boolean condition, Consumer<Param> consumer) {
-        getWrapper().mustNot(condition, consumer);
+    public Children not(boolean condition, Consumer<Param> consumer) {
+        getWrapper().not(condition, consumer);
         return typedThis;
     }
 

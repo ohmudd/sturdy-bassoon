@@ -47,6 +47,11 @@ public class Document {
     @IndexField(fieldType = FieldType.TEXT, fieldData = true)
     private String filedData;
     /**
+     * ip字段
+     */
+    @IndexField(fieldType = FieldType.IP)
+    private String ipAddress;
+    /**
      * 创建时间
      */
     @IndexField(fieldType = FieldType.DATE, dateFormat = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis")
