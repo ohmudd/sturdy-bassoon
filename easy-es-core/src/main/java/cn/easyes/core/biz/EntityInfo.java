@@ -37,6 +37,10 @@ public class EntityInfo {
      */
     private String indexName;
     /**
+     * 配置的路由
+     */
+    private String routing;
+    /**
      * 新索引名(由EE在更新索引时自动创建)
      */
     private String releaseIndexName;
@@ -133,6 +137,10 @@ public class EntityInfo {
      */
     private final Map<String, String> highlightFieldMap = new HashMap<>();
     /**
+     * 实体字段名->es字段类型
+     */
+    private final Map<String, String> fieldTypeMap = new HashMap<>();
+    /**
      * 实体字段->es实际字段映射
      */
     private final Map<String, String> mappingColumnMap = new HashMap<>();
@@ -152,6 +160,10 @@ public class EntityInfo {
      * 嵌套类型 path和class对应关系
      */
     private final Map<String, Class<?>> pathClassMap = new HashMap<>();
+    /**
+     * 嵌套类型 实体字段名->字段类型
+     */
+    private final Map<Class<?>, Map<String, String>> nestedClassFieldTypeMap = new HashMap<>();
     /**
      * 嵌套类型 实体字段->es实际字段映射
      */

@@ -101,7 +101,6 @@ public class IndexUtils {
      */
     public static boolean createIndex(RestHighLevelClient client, EntityInfo entityInfo, CreateIndexParam indexParam) {
         CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexParam.getIndexName());
-
         // 设置settings信息
         if (Objects.isNull(indexParam.getSettings())) {
             // 分片个副本信息
@@ -238,7 +237,8 @@ public class IndexUtils {
         reindexRequest.setDestOpType(BaseEsConstants.DEFAULT_DEST_OP_TYPE);
         reindexRequest.setConflicts(BaseEsConstants.DEFAULT_CONFLICTS);
         reindexRequest.setRefresh(Boolean.TRUE);
-        reindexRequest.setTimeout(TimeValue.MAX_VALUE);
+        int reindexTimeOutHours = GlobalConfigCache.getGlobalConfig().getReindexTimeOutHours();
+        reindexRequest.setTimeout(TimeValue.timeValueHours(reindexTimeOutHours));
         try {
             BulkByScrollResponse response = client.reindex(reindexRequest, RequestOptions.DEFAULT);
             List<BulkItemResponse.Failure> bulkFailures = response.getBulkFailures();

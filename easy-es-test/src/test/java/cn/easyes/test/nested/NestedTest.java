@@ -101,12 +101,8 @@ public class NestedTest {
                 .or()
                 .nested("users.faqs", w -> w.match("faq_name", "q3"));
         List<Document> documents2 = documentMapper.selectList(wrapper2);
+
         System.out.println(documents2);
     }
 
-
-    public static void main(String[] args) {
-        String val = FieldUtils.val(User::getAge);
-        System.out.println(val);
-    }
 }

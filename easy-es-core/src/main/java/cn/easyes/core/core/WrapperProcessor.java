@@ -1,12 +1,10 @@
 package cn.easyes.core.core;
 
-import cn.easyes.annotation.rely.FieldType;
 import cn.easyes.common.enums.AggregationTypeEnum;
 import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.utils.*;
 import cn.easyes.core.biz.*;
 import cn.easyes.core.cache.GlobalConfigCache;
-import cn.easyes.core.config.GlobalConfig;
 import cn.easyes.core.toolkit.EntityInfoHelper;
 import cn.easyes.core.toolkit.FieldUtils;
 import cn.easyes.core.toolkit.TreeBuilder;
@@ -38,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static cn.easyes.common.constants.BaseEsConstants.*;
 import static cn.easyes.common.enums.EsQueryTypeEnum.*;
+import static cn.easyes.core.toolkit.FieldUtils.*;
 
 /**
  * 核心 wrapper处理类
@@ -74,60 +73,14 @@ public class WrapperProcessor {
      * @param entityClass 实体类
      */
     public static BoolQueryBuilder initBoolQueryBuilder(List<Param> paramList, Class<?> entityClass) {
-        // 数据预处理
-        List<Param> rootList = new ArrayList<>();
-        preProcessData(paramList, rootList, entityClass);
-
         // 建立参数森林（无根树）
+        List<Param> rootList = paramList.stream().filter(i -> Objects.isNull(i.getParentId())).collect(Collectors.toList());
         TreeBuilder treeBuilder = new TreeBuilder(rootList, paramList);
         List<Param> tree = (List<Param>) treeBuilder.build();
         BoolQueryBuilder rootBool = QueryBuilders.boolQuery();
 
-        // 对森林的每个根节点递归封装 这里看似简单实则很绕很烧脑 整个框架的核心 主要依托树的递归 深度优先遍历 森林
-        return getBool(tree, rootBool);
-    }
-
-    /***
-     * 数据预处理 原始数据转换为目标数据
-     * @param paramList 参数列表
-     * @param rootList 子树根
-     * @param entityClass 实体类
-     */
-    private static void preProcessData(List<Param> paramList, List<Param> rootList, Class<?> entityClass) {
-        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
-        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
-        Map<String, String> fieldTypeMap = entityInfo.getFieldList().stream()
-                .collect(Collectors.toMap(EntityFieldInfo::getColumn, item -> Optional.ofNullable(item.getFieldType())
-                        .map(FieldType::getType).orElse(FieldType.KEYWORD_TEXT.getType())));
-        // TODO 嵌套类型中的字段名称及自动智能拼接.keyword后缀待近期补充 以及嵌套类型自定义字段处理
-        Map<Class<?>, List<EntityFieldInfo>> nestedFieldListMap = entityInfo.getNestedFieldListMap();
-
-        paramList.forEach(param -> {
-            // 驼峰及自定义字段转换
-            String realField = FieldUtils.getRealField(param.getColumn(), entityInfo.getMappingColumnMap(), dbConfig);
-            param.setColumn(realField);
-            if (ArrayUtils.isNotEmpty(param.getColumns())) {
-                String[] columns = FieldUtils.getRealFields(param.getColumns(), entityInfo.getMappingColumnMap(), dbConfig);
-                param.setColumns(columns);
-            }
-            if (HAS_CHILD.equals(param.getQueryTypeEnum()) || HAS_PARENT.equals(param.getQueryTypeEnum())) {
-                String realPath = FieldUtils.getRealField(param.getExt1().toString(), entityInfo.getMappingColumnMap(), dbConfig);
-                param.setExt1(realPath);
-            }
-
-            // 是否需要智能拼接.keyword后缀
-            Optional.ofNullable(fieldTypeMap.get(realField))
-                    .ifPresent(fieldType -> {
-                        if (FieldType.KEYWORD_TEXT.getType().equals(fieldType)) {
-                            param.setNeedAddKeywordSuffix(true);
-                        }
-                    });
-
-            if (param.getParentId() == null) {
-                // 仙人板板
-                rootList.add(param);
-            }
-        });
+        // 对森林的每个根节点递归封装 这里看似简单实则很绕很烧脑 整个框架的核心 主要依托树的递归 深度优先遍历 森林 还原lambda条件构造语句
+        return getBool(tree, rootBool, EntityInfoHelper.getEntityInfo(entityClass), null);
     }
 
     /**
@@ -137,34 +90,39 @@ public class WrapperProcessor {
      * @param param 查询参数
      */
     @SneakyThrows
-    private static void initBool(BoolQueryBuilder bool, Param param) {
+    private static void initBool(BoolQueryBuilder bool, Param param, EntityInfo entityInfo,
+                                 Map<String, String> mappingColumnMap, Map<String, String> fieldTypeMap) {
         List<Param> children = (List<Param>) param.getChildren();
         QueryBuilder queryBuilder;
         RangeQueryBuilder rangeBuilder;
-        String finalField;
+        String realField;
         switch (param.getQueryTypeEnum()) {
             case OR:
                 // 渣男行为,*完就不认人了,因为拼接OR已处理过了 直接跳过
                 break;
             case TERM:
-                finalField = getFinalField(param.getColumn(), param.isNeedAddKeywordSuffix());
-                queryBuilder = QueryBuilders.termQuery(finalField, param.getVal()).boost(param.getBoost());
+                realField = getRealFieldAndSuffix(param.getColumn(), fieldTypeMap, mappingColumnMap);
+                queryBuilder = QueryBuilders.termQuery(realField, param.getVal()).boost(param.getBoost());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MATCH:
-                queryBuilder = QueryBuilders.matchQuery(param.getColumn(), param.getVal()).boost(param.getBoost());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = QueryBuilders.matchQuery(realField, param.getVal()).boost(param.getBoost());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MATCH_PHRASE:
-                queryBuilder = QueryBuilders.matchPhraseQuery(param.getColumn(), param.getVal()).boost(param.getBoost());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = QueryBuilders.matchPhraseQuery(realField, param.getVal()).boost(param.getBoost());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MATCH_PHRASE_PREFIX:
-                queryBuilder = QueryBuilders.matchPhrasePrefixQuery(param.getColumn(), param.getVal()).boost(param.getBoost()).maxExpansions((int) param.getExt1());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = QueryBuilders.matchPhrasePrefixQuery(realField, param.getVal()).boost(param.getBoost()).maxExpansions((int) param.getExt1());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MULTI_MATCH:
-                queryBuilder = QueryBuilders.multiMatchQuery(param.getVal(), param.getColumns()).operator((Operator) param.getExt1()).minimumShouldMatch(String.valueOf(param.getExt2()));
+                String[] realFields = getRealFields(param.getColumns(), mappingColumnMap);
+                queryBuilder = QueryBuilders.multiMatchQuery(param.getVal(), realFields).operator((Operator) param.getExt1()).minimumShouldMatch(String.valueOf(param.getExt2()));
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MATCH_ALL:
@@ -172,111 +130,120 @@ public class WrapperProcessor {
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case QUERY_STRING:
-                queryBuilder = QueryBuilders.queryStringQuery(param.getColumn()).boost(param.getBoost());
+                realField = getRealFieldAndSuffix(param.getColumn(), fieldTypeMap, mappingColumnMap);
+                queryBuilder = QueryBuilders.queryStringQuery(realField).boost(param.getBoost());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case PREFIX:
-                queryBuilder = QueryBuilders.prefixQuery(param.getColumn(), (String) param.getVal()).boost(param.getBoost());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = QueryBuilders.prefixQuery(realField, (String) param.getVal()).boost(param.getBoost());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GT:
-                rangeBuilder = QueryBuilders.rangeQuery(param.getColumn()).gt(param.getVal()).boost(param.getBoost());
+                realField = getRealFieldAndSuffix(param.getColumn(), fieldTypeMap, mappingColumnMap);
+                rangeBuilder = QueryBuilders.rangeQuery(realField).gt(param.getVal()).boost(param.getBoost());
                 Optional.ofNullable(param.getExt1()).ifPresent(ext1 -> rangeBuilder.timeZone(((ZoneId) ext1).getId()));
                 Optional.ofNullable(param.getExt2()).ifPresent(ext2 -> rangeBuilder.format(ext2.toString()));
                 setBool(bool, rangeBuilder, param.getPrevQueryType());
                 break;
             case GE:
-                rangeBuilder = QueryBuilders.rangeQuery(param.getColumn()).gte(param.getVal()).boost(param.getBoost());
+                realField = getRealFieldAndSuffix(param.getColumn(), fieldTypeMap, mappingColumnMap);
+                rangeBuilder = QueryBuilders.rangeQuery(realField).gte(param.getVal()).boost(param.getBoost());
                 Optional.ofNullable(param.getExt1()).ifPresent(ext1 -> rangeBuilder.timeZone(((ZoneId) ext1).getId()));
                 Optional.ofNullable(param.getExt2()).ifPresent(ext2 -> rangeBuilder.format(ext2.toString()));
                 setBool(bool, rangeBuilder, param.getPrevQueryType());
                 break;
             case LT:
-                rangeBuilder = QueryBuilders.rangeQuery(param.getColumn()).lt(param.getVal()).boost(param.getBoost());
+                realField = getRealFieldAndSuffix(param.getColumn(), fieldTypeMap, mappingColumnMap);
+                rangeBuilder = QueryBuilders.rangeQuery(realField).lt(param.getVal()).boost(param.getBoost());
                 Optional.ofNullable(param.getExt1()).ifPresent(ext1 -> rangeBuilder.timeZone(((ZoneId) ext1).getId()));
                 Optional.ofNullable(param.getExt2()).ifPresent(ext2 -> rangeBuilder.format(ext2.toString()));
                 setBool(bool, rangeBuilder, param.getPrevQueryType());
                 break;
             case LE:
-                rangeBuilder = QueryBuilders.rangeQuery(param.getColumn()).lte(param.getVal()).boost(param.getBoost());
+                realField = getRealFieldAndSuffix(param.getColumn(), fieldTypeMap, mappingColumnMap);
+                rangeBuilder = QueryBuilders.rangeQuery(realField).lte(param.getVal()).boost(param.getBoost());
                 Optional.ofNullable(param.getExt1()).ifPresent(ext1 -> rangeBuilder.timeZone(((ZoneId) ext1).getId()));
                 Optional.ofNullable(param.getExt2()).ifPresent(ext2 -> rangeBuilder.format(ext2.toString()));
                 setBool(bool, rangeBuilder, param.getPrevQueryType());
                 break;
             case BETWEEN:
-                rangeBuilder = QueryBuilders.rangeQuery(param.getColumn()).gte(param.getExt1()).lte(param.getExt2()).boost(param.getBoost());
+                realField = getRealFieldAndSuffix(param.getColumn(), fieldTypeMap, mappingColumnMap);
+                rangeBuilder = QueryBuilders.rangeQuery(realField).gte(param.getExt1()).lte(param.getExt2()).boost(param.getBoost());
                 Optional.ofNullable(param.getExt3()).ifPresent(ext3 -> rangeBuilder.timeZone(((ZoneId) ext3).getId()));
                 Optional.ofNullable(param.getExt4()).ifPresent(ext4 -> rangeBuilder.format(ext4.toString()));
                 setBool(bool, rangeBuilder, param.getPrevQueryType());
                 break;
             case WILDCARD:
-                finalField = getFinalField(param.getColumn(), param.isNeedAddKeywordSuffix());
-                queryBuilder = QueryBuilders.wildcardQuery(finalField, param.getVal().toString());
+                realField = getRealFieldAndSuffix(param.getColumn(), fieldTypeMap, mappingColumnMap);
+                queryBuilder = QueryBuilders.wildcardQuery(realField, param.getVal().toString());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case TERMS:
-                finalField = getFinalField(param.getColumn(), param.isNeedAddKeywordSuffix());
-                queryBuilder = QueryBuilders.termsQuery(finalField, (Collection<?>) param.getVal());
+                realField = getRealFieldAndSuffix(param.getColumn(), fieldTypeMap, mappingColumnMap);
+                queryBuilder = QueryBuilders.termsQuery(realField, (Collection<?>) param.getVal());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case EXISTS:
-                queryBuilder = QueryBuilders.existsQuery(param.getColumn()).boost(param.getBoost());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = QueryBuilders.existsQuery(realField).boost(param.getBoost());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GEO_BOUNDING_BOX:
-                queryBuilder = QueryBuilders.geoBoundingBoxQuery(param.getColumn()).setCorners((GeoPoint) param.getExt1(), (GeoPoint) param.getExt2()).boost(param.getBoost());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = QueryBuilders.geoBoundingBoxQuery(realField).setCorners((GeoPoint) param.getExt1(), (GeoPoint) param.getExt2()).boost(param.getBoost());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GEO_DISTANCE:
-                GeoDistanceQueryBuilder geoDistanceBuilder = QueryBuilders.geoDistanceQuery(param.getColumn()).point((GeoPoint) param.getExt2()).boost(param.getBoost());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                GeoDistanceQueryBuilder geoDistanceBuilder = QueryBuilders.geoDistanceQuery(realField).point((GeoPoint) param.getExt2()).boost(param.getBoost());
                 MyOptional.ofNullable(param.getExt1()).ifPresent(ext1 -> geoDistanceBuilder.distance((double) param.getVal(), (DistanceUnit) ext1), () -> geoDistanceBuilder.distance((String) param.getVal()));
                 queryBuilder = geoDistanceBuilder;
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GEO_POLYGON:
-                queryBuilder = QueryBuilders.geoPolygonQuery(param.getColumn(), (List<GeoPoint>) param.getVal());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = QueryBuilders.geoPolygonQuery(realField, (List<GeoPoint>) param.getVal());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GEO_SHAPE_ID:
-                queryBuilder = QueryBuilders.geoShapeQuery(param.getColumn(), param.getVal().toString()).boost(param.getBoost());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = QueryBuilders.geoShapeQuery(realField, param.getVal().toString()).boost(param.getBoost());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GEO_SHAPE:
-                queryBuilder = QueryBuilders.geoShapeQuery(param.getColumn(), (Geometry) param.getVal()).relation((ShapeRelation) param.getExt1()).boost(param.getBoost());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = QueryBuilders.geoShapeQuery(realField, (Geometry) param.getVal()).relation((ShapeRelation) param.getExt1()).boost(param.getBoost());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case HAS_CHILD:
-                queryBuilder = new HasChildQueryBuilder(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + param.getColumn(), param.getVal()).boost(param.getBoost()), (ScoreMode) param.getExt2());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = new HasChildQueryBuilder(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + realField, param.getVal()).boost(param.getBoost()), (ScoreMode) param.getExt2());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case HAS_PARENT:
-                queryBuilder = new HasParentQueryBuilder(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + param.getColumn(), param.getVal()).boost(param.getBoost()), (boolean) param.getExt2());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = new HasParentQueryBuilder(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + realField, param.getVal()).boost(param.getBoost()), (boolean) param.getExt2());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case PARENT_ID:
-                queryBuilder = new ParentIdQueryBuilder(param.getColumn(), param.getVal().toString());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                queryBuilder = new ParentIdQueryBuilder(realField, param.getVal().toString());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             // 下面五种嵌套类型 需要对孩子节点递归处理
             case AND_MUST:
-                queryBuilder = getBool(children, QueryBuilders.boolQuery());
-                setBool(bool, queryBuilder, AND_MUST);
-                break;
             case FILTER:
-                queryBuilder = getBool(children, QueryBuilders.boolQuery());
-                setBool(bool, queryBuilder, FILTER);
-                break;
             case MUST_NOT:
-                queryBuilder = getBool(children, QueryBuilders.boolQuery());
-                setBool(bool, queryBuilder, MUST_NOT);
-                break;
             case OR_SHOULD:
-                queryBuilder = getBool(children, QueryBuilders.boolQuery());
-                setBool(bool, queryBuilder, OR_SHOULD);
+                queryBuilder = getBool(children, QueryBuilders.boolQuery(), entityInfo, null);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case NESTED:
-                queryBuilder = getBool(children, QueryBuilders.boolQuery());
-                queryBuilder = QueryBuilders.nestedQuery(param.getColumn(), queryBuilder, (ScoreMode) param.getVal());
+                realField = getRealField(param.getColumn(), mappingColumnMap);
+                String[] split = param.getColumn().split("\\.");
+                queryBuilder = getBool(children, QueryBuilders.boolQuery(), entityInfo, split[split.length - 1]);
+                queryBuilder = QueryBuilders.nestedQuery(realField, queryBuilder, (ScoreMode) param.getVal());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             default:
@@ -284,7 +251,6 @@ public class WrapperProcessor {
                 throw ExceptionUtils.eee("非法参数类型");
         }
     }
-
 
     /**
      * 设置节点的bool
@@ -303,6 +269,7 @@ public class WrapperProcessor {
         } else if (MUST_NOT.equals(parentType)) {
             bool.mustNot(queryBuilder);
         } else {
+            // just ignore,almost never happen
             bool.must(queryBuilder);
         }
     }
@@ -314,28 +281,29 @@ public class WrapperProcessor {
      * @param builder   新的根bool
      * @return 子节点bool合集, 统一封装至入参builder中
      */
-    private static BoolQueryBuilder getBool(List<Param> paramList, BoolQueryBuilder builder) {
+    private static BoolQueryBuilder getBool(List<Param> paramList, BoolQueryBuilder builder, EntityInfo entityInfo, String path) {
         if (CollectionUtils.isEmpty(paramList)) {
             return builder;
         }
-        paramList.forEach(param -> initBool(builder, param));
-        return builder;
-    }
 
-    /**
-     * 获取字段最终名称
-     *
-     * @param origin    初始值
-     * @param condition 是否拼接
-     * @return 最终字段名
-     */
-    private static String getFinalField(String origin, boolean condition) {
-        if (condition && origin != null) {
-            if (!origin.endsWith(KEYWORD_SUFFIX)) {
-                return origin + KEYWORD_SUFFIX;
-            }
+        // 获取字段名称映射关系以及字段类型映射关系
+        Map<String, String> mappingColumnMap;
+        Map<String, String> fieldTypeMap;
+        if (StringUtils.isNotBlank(path)) {
+            // 嵌套类型
+            Class<?> clazz = entityInfo.getPathClassMap().get(path);
+            mappingColumnMap = Optional.ofNullable(entityInfo.getNestedClassMappingColumnMap().get(clazz))
+                    .orElse(new HashMap<>(0));
+            fieldTypeMap = Optional.ofNullable(entityInfo.getNestedClassFieldTypeMap().get(clazz))
+                    .orElse(new HashMap<>(0));
+        } else {
+            mappingColumnMap = entityInfo.getMappingColumnMap();
+            fieldTypeMap = entityInfo.getFieldTypeMap();
         }
-        return origin;
+
+        // 批量初始化每一个参数至BoolQueryBuilder
+        paramList.forEach(param -> initBool(builder, param, entityInfo, mappingColumnMap, fieldTypeMap));
+        return builder;
     }
 
 
@@ -405,10 +373,10 @@ public class WrapperProcessor {
         if (ArrayUtils.isEmpty(wrapper.include) && ArrayUtils.isEmpty(wrapper.exclude)) {
             return;
         }
-        // 获取配置
-        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
-        String[] includes = FieldUtils.getRealFields(wrapper.include, mappingColumnMap, dbConfig);
-        String[] excludes = FieldUtils.getRealFields(wrapper.exclude, mappingColumnMap, dbConfig);
+
+        // 获取实际字段
+        String[] includes = FieldUtils.getRealFields(wrapper.include, mappingColumnMap);
+        String[] excludes = FieldUtils.getRealFields(wrapper.exclude, mappingColumnMap);
         searchSourceBuilder.fetchSource(includes, excludes);
     }
 
@@ -450,15 +418,12 @@ public class WrapperProcessor {
      * @param searchSourceBuilder 查询参数建造者
      */
     private static void setSort(Wrapper<?> wrapper, Map<String, String> mappingColumnMap, SearchSourceBuilder searchSourceBuilder) {
-        // 获取配置
-        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
-
         // 批量设置排序字段
         if (CollectionUtils.isNotEmpty(wrapper.baseSortParams)) {
             wrapper.baseSortParams.forEach(baseSortParam -> {
                 // 获取es中的实际字段 有可能已经被用户自定义或者驼峰转成下划线
                 String realField = Objects.isNull(baseSortParam.getSortField()) ?
-                        null : FieldUtils.getRealField(baseSortParam.getSortField(), mappingColumnMap, dbConfig);
+                        null : getRealField(baseSortParam.getSortField(), mappingColumnMap);
                 SortBuilder<?> sortBuilder = getSortBuilder(realField, baseSortParam);
                 Optional.ofNullable(sortBuilder).ifPresent(searchSourceBuilder::sort);
             });
@@ -518,13 +483,10 @@ public class WrapperProcessor {
      */
     private static void setAggregations(Wrapper<?> wrapper, Map<String, String> mappingColumnMap,
                                         SearchSourceBuilder searchSourceBuilder) {
-        // 获取配置
-        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
-
         // 设置折叠(去重)字段
         Optional.ofNullable(wrapper.distinctField)
                 .ifPresent(distinctField -> {
-                    String realField = FieldUtils.getRealField(distinctField, mappingColumnMap, dbConfig);
+                    String realField = getRealField(distinctField, mappingColumnMap);
                     searchSourceBuilder.collapse(new CollapseBuilder(realField));
                     searchSourceBuilder.aggregation(AggregationBuilders.cardinality(REPEAT_NUM_KEY).field(realField));
                 });
@@ -539,7 +501,7 @@ public class WrapperProcessor {
         AggregationBuilder root = null;
         AggregationBuilder cursor = null;
         for (AggregationParam aggParam : aggregationParamList) {
-            String realField = FieldUtils.getRealField(aggParam.getField(), mappingColumnMap, dbConfig);
+            String realField = getRealField(aggParam.getField(), mappingColumnMap);
             AggregationBuilder builder = getRealAggregationBuilder(aggParam.getAggregationType(), aggParam.getName(), realField);
             if (aggParam.isEnablePipeline()) {
                 // 管道聚合, 构造聚合树

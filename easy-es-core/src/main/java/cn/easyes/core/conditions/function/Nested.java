@@ -65,7 +65,7 @@ public interface Nested<Param, Children> extends Serializable {
     Children should(boolean condition, Consumer<Param> consumer);
 
     default Children filter(Consumer<Param> consumer) {
-        return should(true, consumer);
+        return filter(true, consumer);
     }
 
     /**
@@ -78,7 +78,7 @@ public interface Nested<Param, Children> extends Serializable {
     Children filter(boolean condition, Consumer<Param> consumer);
 
     default Children mustNot(Consumer<Param> consumer) {
-        return should(true, consumer);
+        return mustNot(true, consumer);
     }
 
     /**

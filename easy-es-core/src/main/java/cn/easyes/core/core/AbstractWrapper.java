@@ -135,10 +135,12 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children or(boolean condition) {
-        if (!paramQueue.isEmpty()) {
-            Param param = paramQueue.peekLast();
+        // 需要将其前一同level节点prevQueryType修改为or_should
+        for (int i = paramQueue.size() - 1; i >= 0; i--) {
+            Param param = paramQueue.get(i);
             if (Objects.equals(level, param.getLevel())) {
                 param.setPrevQueryType(OR_SHOULD);
+                break;
             }
         }
         return addParam(condition, OR, null, null, null);
@@ -655,6 +657,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * @param boost         权重
      */
     private void addBaseParam(Param param, EsQueryTypeEnum queryTypeEnum, String column, Object val, Float boost) {
+        // 基本值设置
         param.setId(UUID.randomUUID().toString());
         Optional.ofNullable(parentId).ifPresent(param::setParentId);
         param.setPrevQueryType(prevQueryType);
@@ -662,18 +665,62 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         param.setVal(val);
         param.setColumn(column);
         param.setBoost(boost);
+        param.setLevel(level);
 
-        // 入队之前需要先对MP中的拼接or()特殊处理之所以在此处处理,是因为可以少遍历一遍树 节省OLog(N) 时间复杂度
-        if (!paramQueue.isEmpty()) {
-            Param prev = paramQueue.peekLast();
-            if (OR.equals(prev.getQueryTypeEnum())) {
-                // 上一节点是拼接or() 则修改当前节点的prevQueryType为OR_SHOULD 让其走should查询
-                param.setPrevQueryType(OR_SHOULD);
-            }
-        }
+        // 入队之前需要先对MP中的拼接or()特殊处理
+        processOr(param);
         paramQueue.add(param);
     }
 
+    /**
+     * 追加基础嵌套
+     *
+     * @param param         参数
+     * @param queryTypeEnum 查询类型
+     * @param consumer      消费者
+     */
+    private void addBaseNested(Param param, EsQueryTypeEnum queryTypeEnum, Consumer<Children> consumer) {
+        // 基本值设置
+        param.setId(UUID.randomUUID().toString());
+        Optional.ofNullable(parentId).ifPresent(param::setParentId);
+        param.setQueryTypeEnum(queryTypeEnum);
+        param.setLevel(level);
+        param.setPrevQueryType(queryTypeEnum);
+
+        // 入队之前需要先对MP中的拼接or()特殊处理
+        processOr(param);
+
+        paramQueue.add(param);
+        this.parentId = param.getId();
+        parentIdQueue.push(parentId);
+        level++;
+        consumer.accept(instance());
+        // 深度优先在consumer条件消费完后会来执行这里 此时parentId需要重置 至于为什么,比较烧脑 可断点打在consumer前后观察一波
+        level--;
+        if (!parentIdQueue.isEmpty()) {
+            this.parentId = parentIdQueue.pollLast();
+        }
+        if (level == 0) {
+            // 仙人板板 根节点
+            this.parentId = null;
+        }
+    }
+
+
+    /**
+     * 特殊处理拼接or
+     *
+     * @param param 参数
+     */
+    private void processOr(Param param) {
+        if (!paramQueue.isEmpty()) {
+            Param prev = paramQueue.peekLast();
+            if (OR.equals(prev.getQueryTypeEnum())) {
+                // 上一节点是拼接or() 需要重置其prevQueryType类型,让其走should查询
+                param.setPrevQueryType(OR_SHOULD);
+            }
+        }
+    }
 
     /**
      * 追加查询参数
@@ -762,39 +809,6 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         return typedThis;
     }
 
-
-    /**
-     * 追加基础嵌套
-     *
-     * @param param         参数
-     * @param queryTypeEnum 查询类型
-     * @param consumer      消费者
-     */
-    private void addBaseNested(Param param, EsQueryTypeEnum queryTypeEnum, Consumer<Children> consumer) {
-        param.setId(UUID.randomUUID().toString());
-        Optional.ofNullable(parentId).ifPresent(param::setParentId);
-        param.setQueryTypeEnum(queryTypeEnum);
-        level++;
-        param.setLevel(level);
-        paramQueue.add(param);
-        this.parentId = param.getId();
-        parentIdQueue.push(parentId);
-        prevQueryTypeQueue.push(queryTypeEnum);
-        consumer.accept(instance());
-        // 深度优先在consumer条件消费完后会来执行这里 此时parentId需要重置 至于为什么 可断点打在consumer前后观察一波 整个框架最难的地方就在此
-        level--;
-        if (!parentIdQueue.isEmpty()) {
-            this.parentId = parentIdQueue.pollLast();
-        }
-        if (!prevQueryTypeQueue.isEmpty()) {
-            this.prevQueryType = prevQueryTypeQueue.pollLast();
-        }
-        if (level == 0) {
-            // 仙人板板 根节点
-            this.parentId = null;
-            this.prevQueryType = AND_MUST;
-        }
-    }
 
     /**
      * 重载，追加嵌套条件

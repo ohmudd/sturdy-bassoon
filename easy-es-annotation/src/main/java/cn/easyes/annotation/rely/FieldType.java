@@ -1,5 +1,7 @@
 package cn.easyes.annotation.rely;
 
+import java.util.Arrays;
+
 /**
  * Es支持的数据类型枚举
  * <p>
@@ -66,5 +68,18 @@ public enum FieldType {
 
     public String getType() {
         return type;
+    }
+
+    /**
+     * 根据类型字符串获取对应枚举
+     *
+     * @param type 类型字符串
+     * @return 对应枚举
+     */
+    public static FieldType getByType(String type) {
+        return Arrays.stream(FieldType.values())
+                .filter(v -> v.getType().equals(type))
+                .findFirst()
+                .orElse(FieldType.KEYWORD_TEXT);
     }
 }

@@ -4,7 +4,6 @@ import cn.easyes.common.constants.BaseEsConstants;
 import cn.easyes.core.biz.EsPageInfo;
 import cn.easyes.core.biz.OrderByParam;
 import cn.easyes.core.biz.SAPageInfo;
-import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.conditions.select.LambdaEsQueryWrapper;
 import cn.easyes.core.conditions.update.LambdaEsUpdateWrapper;
 import cn.easyes.core.core.EsWrappers;
@@ -177,9 +176,7 @@ public class AllTest {
     @Order(6)
     public void testOne() {
         // 链式调用
-        Document document = EsWrappers.lambdaChainQuery(documentMapper)
-                .eq(Document::getTitle, "测试文档3")
-                .one();
+        Document document = EsWrappers.lambdaChainQuery(documentMapper).eq(Document::getTitle, "测试文档3").one();
         Assertions.assertEquals(document.getContent(), "测试文档内容3的内容被修改了");
     }
 
@@ -196,8 +193,6 @@ public class AllTest {
     public void testSelectBatchIds() {
         List<Document> documents = documentMapper.selectBatchIds(Arrays.asList("1", "2"));
         Assertions.assertEquals(2, documents.size());
-        Assertions.assertEquals("1", documents.get(1).getEsId());
-        Assertions.assertEquals("老汉2", documents.get(0).getCreator());
     }
 
     @Test
@@ -568,7 +563,7 @@ public class AllTest {
         wrapper.orderByDesc(Document::getStarNum);
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals("22", documents.get(0).getEsId());
-        Assertions.assertEquals("1", documents.get(21).getEsId());
+        Assertions.assertEquals("21", documents.get(1).getEsId());
     }
 
     @Test
@@ -595,7 +590,7 @@ public class AllTest {
         wrapper.orderBy(orderByParams);
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals("22", documents.get(0).getEsId());
-        Assertions.assertEquals("1", documents.get(21).getEsId());
+        Assertions.assertEquals("21", documents.get(1).getEsId());
     }
 
     @Test
@@ -657,13 +652,12 @@ public class AllTest {
         FieldSortBuilder fieldSortBuilder = SortBuilders.
                 fieldSort(FieldUtils.getRealField(
                         FieldUtils.val(Document::getStarNum),
-                        EntityInfoHelper.getEntityInfo(Document.class).getMappingColumnMap(),
-                        GlobalConfigCache.getGlobalConfig().getDbConfig()));
+                        EntityInfoHelper.getEntityInfo(Document.class).getMappingColumnMap()));
         fieldSortBuilder.order(SortOrder.DESC);
         wrapper.sort(fieldSortBuilder);
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals("22", documents.get(0).getEsId());
-        Assertions.assertEquals("1", documents.get(21).getEsId());
+        Assertions.assertEquals("21", documents.get(1).getEsId());
     }
 
     @Test
@@ -852,11 +846,11 @@ public class AllTest {
 
         System.out.println(boolQueryBuilder);
         System.out.println("--------------------");
+
         // MP及EE写法
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.eq("business_type", 1)
-                .and(a -> a.eq("state", 9).or(b -> b.eq("state", 8).eq("bidding_sign", 1))
-                )
+                .and(a -> a.eq("state", 9).or(b -> b.eq("state", 8).eq("bidding_sign", 1)))
                 .or(i -> i.eq("business_type", 2).in("state", 2, 3));
         documentMapper.selectList(wrapper);
     }

@@ -26,6 +26,10 @@ public class GlobalConfig {
      */
     private ProcessIndexStrategyEnum processIndexMode = ProcessIndexStrategyEnum.SMOOTHLY;
     /**
+     * Rebuild index timeout unit: hour, default: 72 重建索引超时时间 单位小时,默认72
+     */
+    private int reindexTimeOutHours = 72;
+    /**
      * process index blocking main thread true by default 异步处理索引是否阻塞主线程 默认阻塞
      */
     private boolean asyncProcessIndexBlocking = true;
@@ -43,7 +47,6 @@ public class GlobalConfig {
      * 分布式环境下,平滑模式,当前客户端激活最新索引最大重试次数 若数据量过大,重建索引数据迁移时间超过60*(180/60)=180分钟时,可调大此参数值 此参数值决定多久重试一次 单位:秒
      */
     private int activeReleaseIndexFixedDelay = 180;
-
     /**
      * es db config 数据库配置
      */

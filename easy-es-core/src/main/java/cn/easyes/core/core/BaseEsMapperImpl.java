@@ -213,6 +213,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     public String getSource(Wrapper<T> wrapper) {
         // 获取由本框架生成的es查询参数 用于验证生成语法的正确性
         SearchRequest searchRequest = new SearchRequest(getIndexNames(wrapper.indexNames));
+        Optional.ofNullable(getRouting()).ifPresent(searchRequest::routing);
         SearchSourceBuilder searchSourceBuilder = WrapperProcessor.buildSearchSourceBuilder(wrapper, entityClass);
         searchRequest.source(searchSourceBuilder);
         return Optional.ofNullable(searchRequest.source())
@@ -292,6 +293,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         } else {
             // 不去重,直接count获取,效率更高
             CountRequest countRequest = new CountRequest(getIndexNames(wrapper.indexNames));
+            Optional.ofNullable(getRouting()).ifPresent(countRequest::routing);
             QueryBuilder queryBuilder = Optional.ofNullable(wrapper.searchSourceBuilder)
                     .map(SearchSourceBuilder::query)
                     .orElseGet(() -> WrapperProcessor.initBoolQueryBuilder(wrapper.paramQueue, entityClass));
@@ -369,6 +371,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     @Override
     public Integer delete(Wrapper<T> wrapper) {
         DeleteByQueryRequest request = new DeleteByQueryRequest(getIndexNames(wrapper.indexNames));
+        Optional.ofNullable(getRouting()).ifPresent(request::setRouting);
         BoolQueryBuilder boolQueryBuilder = WrapperProcessor.initBoolQueryBuilder(wrapper.paramQueue, entityClass);
         request.setQuery(boolQueryBuilder);
         BulkByScrollResponse bulkResponse;
@@ -467,6 +470,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         // 构造查询参数
         List<String> stringIdList = idList.stream().map(Object::toString).collect(Collectors.toList());
         SearchRequest searchRequest = new SearchRequest(getIndexNames(indexName));
+        Optional.ofNullable(getRouting()).ifPresent(searchRequest::routing);
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder.query(QueryBuilders.termsQuery(DEFAULT_ES_ID_NAME, stringIdList));
         sourceBuilder.size(idList.size());
@@ -574,6 +578,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
         // 更新mapping
         PutMappingRequest putMappingRequest = new PutMappingRequest(indexName);
+
         if (Objects.isNull(wrapper.mapping)) {
             Assert.notEmpty(wrapper.esIndexParamList, String.format("update index: %s failed, because of empty update args", indexName));
             Map<String, Object> mapping = IndexUtils.initMapping(EntityInfoHelper.getEntityInfo(entityClass), wrapper.esIndexParamList);
@@ -601,6 +606,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     private Integer doInsert(T entity, String indexName) {
         // 构建请求入参
         IndexRequest indexRequest = buildIndexRequest(entity, indexName);
+        Optional.ofNullable(getRouting()).ifPresent(indexRequest::routing);
         indexRequest.setRefreshPolicy(getRefreshPolicy());
 
         try {
@@ -629,6 +635,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     private Integer doInsertBatch(Collection<T> entityList, String indexName) {
         // 构建批量请求参数
         BulkRequest bulkRequest = new BulkRequest();
+        Optional.ofNullable(getRouting()).ifPresent(bulkRequest::routing);
         bulkRequest.setRefreshPolicy(getRefreshPolicy());
         entityList.forEach(entity -> {
             IndexRequest indexRequest = buildIndexRequest(entity, indexName);
@@ -649,6 +656,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      */
     private Integer doDeleteById(Serializable id, String indexName) {
         DeleteRequest deleteRequest = generateDelRequest(id, indexName);
+        Optional.ofNullable(getRouting()).ifPresent(deleteRequest::routing);
         deleteRequest.setRefreshPolicy(getRefreshPolicy());
         try {
             DeleteResponse deleteResponse = client.delete(deleteRequest, RequestOptions.DEFAULT);
@@ -671,6 +679,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      */
     private Integer doDeleteBatchIds(Collection<? extends Serializable> idList, String indexName) {
         BulkRequest bulkRequest = new BulkRequest();
+        Optional.ofNullable(getRouting()).ifPresent(bulkRequest::routing);
         bulkRequest.setRefreshPolicy(getRefreshPolicy());
         idList.forEach(id -> {
             DeleteRequest deleteRequest = generateDelRequest(id, indexName);
@@ -690,6 +699,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     private Integer doUpdateById(T entity, String idValue, String indexName) {
         // 构建更新请求参数
         UpdateRequest updateRequest = buildUpdateRequest(entity, idValue, indexName);
+        Optional.ofNullable(getRouting()).ifPresent(updateRequest::routing);
         updateRequest.setRefreshPolicy(getRefreshPolicy());
 
         // 执行更新
@@ -715,6 +725,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     private Integer doUpdateBatchByIds(Collection<T> entityList, String indexName) {
         // 封装批量请求参数
         BulkRequest bulkRequest = new BulkRequest();
+        Optional.ofNullable(getRouting()).ifPresent(bulkRequest::routing);
         bulkRequest.setRefreshPolicy(getRefreshPolicy());
         entityList.forEach(entity -> {
             String idValue = getIdValue(entity);
@@ -748,6 +759,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
         // 批量更新
         BulkRequest bulkRequest = new BulkRequest();
+        Optional.ofNullable(getRouting()).ifPresent(bulkRequest::routing);
         bulkRequest.setRefreshPolicy(getRefreshPolicy());
         Method getId = BaseCache.getterMethod(entityClass, getRealIdFieldName());
         EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
@@ -782,6 +794,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     private T doSelectById(Serializable id, String indexName) {
         // 构造查询参数
         SearchRequest searchRequest = new SearchRequest(indexName);
+        Optional.ofNullable(getRouting()).ifPresent(searchRequest::routing);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.termQuery(DEFAULT_ES_ID_NAME, id));
         searchRequest.source(searchSourceBuilder);
@@ -807,6 +820,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     private SearchResponse getSearchResponse(Wrapper<T> wrapper, Object[] searchAfter) {
         // 构建es restHighLevelClient 查询参数
         SearchRequest searchRequest = new SearchRequest(getIndexNames(wrapper.indexNames));
+        Optional.ofNullable(getRouting()).ifPresent(searchRequest::routing);
 
         // 用户在wrapper中指定的混合查询条件优先级最高
         SearchSourceBuilder searchSourceBuilder = Optional.ofNullable(wrapper.searchSourceBuilder)
@@ -859,6 +873,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     private List<T> selectListByUpdateWrapper(Wrapper<T> wrapper, String indexName) {
         // 构建查询条件
         SearchRequest searchRequest = new SearchRequest(indexName);
+        Optional.ofNullable(getRouting()).ifPresent(searchRequest::routing);
         SearchSourceBuilder searchSourceBuilder;
         if (Objects.isNull(wrapper.searchSourceBuilder)) {
             searchSourceBuilder = new SearchSourceBuilder();
@@ -881,7 +896,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         searchRequest.source(searchSourceBuilder);
         printDSL(searchRequest);
         try {
-            //  查询数据明细
+            // 查询数据明细
             SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
             printResponseErrors(response);
             SearchHit[] searchHits = parseSearchHitArray(response);
@@ -1126,6 +1141,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      */
     private SearchHit[] getSearchHitArray(Wrapper<T> wrapper) {
         SearchRequest searchRequest = new SearchRequest(getIndexNames(wrapper.indexNames));
+        Optional.ofNullable(getRouting()).ifPresent(searchRequest::routing);
 
         // 用户在wrapper中指定的混合查询条件优先级最高
         SearchSourceBuilder searchSourceBuilder = Objects.isNull(wrapper.searchSourceBuilder) ?
@@ -1209,7 +1225,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         updateParamList.forEach(esUpdateParam -> {
             String realField = FieldUtils.getRealFieldNotConvertId(esUpdateParam.getField(),
                     EntityInfoHelper.getEntityInfo(entityClass).getMappingColumnMap(),
-                    GlobalConfigCache.getGlobalConfig().getDbConfig());
+                    GlobalConfigCache.getGlobalConfig().getDbConfig().isMapUnderscoreToCamelCase());
             jsonObject.put(realField, esUpdateParam.getValue());
         });
         return JSON.toJSONString(jsonObject, SerializerFeature.WriteMapNullValue);
@@ -1445,11 +1461,20 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     }
 
     /**
-     * 父子
+     * 获取路由
+     *
+     * @return 路由
+     */
+    private String getRouting() {
+        return EntityInfoHelper.getEntityInfo(entityClass).getRouting();
+    }
+
+    /**
+     * 父子文档获取路由
      *
      * @param entity         实体对象
      * @param joinFieldClass join字段类
-     * @return
+     * @return 路由
      */
     private String getRouting(T entity, Class<?> joinFieldClass) {
         // 父子类型-子文档,设置路由
