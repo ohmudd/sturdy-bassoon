@@ -244,6 +244,8 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     public Integer insert(T entity, String indexName) {
         // 构建请求入参
         IndexRequest indexRequest = buildIndexRequest(entity, indexName);
+        indexRequest.setRefreshPolicy(getRefreshPolicy());
+
         try {
             IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
             if (Objects.equals(indexResponse.status(), RestStatus.CREATED)) {
@@ -272,8 +274,10 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         }
         // 构建批量请求参数
         BulkRequest bulkRequest = new BulkRequest();
+        bulkRequest.setRefreshPolicy(getRefreshPolicy());
         entityList.forEach(entity -> {
             IndexRequest indexRequest = buildIndexRequest(entity, indexName);
+            indexRequest.setRefreshPolicy(getRefreshPolicy());
             bulkRequest.add(indexRequest);
         });
         // 执行批量请求并返回结果
@@ -287,13 +291,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public Integer deleteById(Serializable id, String indexName) {
-        if (Objects.isNull(id) || StringUtils.isEmpty(id.toString())) {
-            throw ExceptionUtils.eee("id must not be null or empty");
-        }
-
-        DeleteRequest deleteRequest = new DeleteRequest();
-        deleteRequest.id(id.toString());
-        deleteRequest.index(getIndexName(indexName));
+        DeleteRequest deleteRequest = generateDelRequest(id, indexName);
         try {
             DeleteResponse deleteResponse = client.delete(deleteRequest, RequestOptions.DEFAULT);
             if (Objects.equals(deleteResponse.status(), RestStatus.OK)) {
@@ -312,6 +310,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             return BaseEsConstants.ZERO;
         }
         BulkRequest bulkRequest = new BulkRequest();
+        bulkRequest.setRefreshPolicy(getRefreshPolicy());
         Method getId = BaseCache.getterMethod(entityClass, getRealIdFieldName());
         list.forEach(t -> {
             try {
@@ -320,8 +319,8 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
                     DeleteRequest deleteRequest = new DeleteRequest();
                     deleteRequest.id(id.toString());
                     deleteRequest.index(getIndexName(wrapper.indexName));
+                    deleteRequest.setRefreshPolicy(getRefreshPolicy());
                     bulkRequest.add(deleteRequest);
-
                 }
             } catch (Exception e) {
                 throw ExceptionUtils.eee("delete exception", e);
@@ -339,13 +338,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     public Integer deleteBatchIds(Collection<? extends Serializable> idList, String indexName) {
         Assert.notEmpty(idList, "the collection of id must not empty");
         BulkRequest bulkRequest = new BulkRequest();
+        bulkRequest.setRefreshPolicy(getRefreshPolicy());
         idList.forEach(id -> {
-            if (Objects.isNull(id) || StringUtils.isEmpty(id.toString())) {
-                throw ExceptionUtils.eee("id must not be null or empty");
-            }
-            DeleteRequest deleteRequest = new DeleteRequest();
-            deleteRequest.id(id.toString());
-            deleteRequest.index(getIndexName(indexName));
+            DeleteRequest deleteRequest = generateDelRequest(id, indexName);
             bulkRequest.add(deleteRequest);
         });
         return doBulkRequest(bulkRequest, RequestOptions.DEFAULT);
@@ -363,6 +358,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
         // 构建更新请求参数
         UpdateRequest updateRequest = buildUpdateRequest(entity, idValue, indexName);
+        updateRequest.setRefreshPolicy(getRefreshPolicy());
 
         // 执行更新
         try {
@@ -390,9 +386,11 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
         // 封装批量请求参数
         BulkRequest bulkRequest = new BulkRequest();
+        bulkRequest.setRefreshPolicy(getRefreshPolicy());
         entityList.forEach(entity -> {
             String idValue = getIdValue(entityClass, entity);
             UpdateRequest updateRequest = buildUpdateRequest(entity, idValue, indexName);
+            updateRequest.setRefreshPolicy(getRefreshPolicy());
             bulkRequest.add(updateRequest);
         });
 
@@ -427,11 +425,13 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
         // 批量更新
         BulkRequest bulkRequest = new BulkRequest();
+        bulkRequest.setRefreshPolicy(getRefreshPolicy());
         String index = getIndexName(updateWrapper.indexName);
         idList.forEach(id -> {
             UpdateRequest updateRequest = new UpdateRequest();
             updateRequest.id(id).index(index);
             updateRequest.doc(jsonData, XContentType.JSON);
+            updateRequest.setRefreshPolicy(getRefreshPolicy());
             bulkRequest.add(updateRequest);
         });
         return doBulkRequest(bulkRequest, RequestOptions.DEFAULT);
@@ -531,6 +531,25 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             EntityInfoHelper.getEntityInfo(entityClass).setIndexName(indexName);
         }
         return Boolean.TRUE;
+    }
+
+
+    /**
+     * 生成DelRequest请求参数
+     *
+     * @param id        id
+     * @param indexName 索引名
+     * @return DelRequest
+     */
+    private DeleteRequest generateDelRequest(Serializable id, String indexName) {
+        if (Objects.isNull(id) || StringUtils.isEmpty(id.toString())) {
+            throw ExceptionUtils.eee("id must not be null or empty");
+        }
+        DeleteRequest deleteRequest = new DeleteRequest();
+        deleteRequest.id(id.toString());
+        deleteRequest.index(getIndexName(indexName));
+        deleteRequest.setRefreshPolicy(getRefreshPolicy());
+        return deleteRequest;
     }
 
     /**
@@ -985,6 +1004,15 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             Optional.ofNullable(searchRequest.source())
                     .ifPresent(source -> LogUtils.info(DSL_PREFIX + source));
         }
+    }
+
+    /**
+     * 获取刷新策略
+     *
+     * @return 刷新策略
+     */
+    private String getRefreshPolicy() {
+        return GlobalConfigCache.getGlobalConfig().getDbConfig().getRefreshPolicy().getValue();
     }
 
 }

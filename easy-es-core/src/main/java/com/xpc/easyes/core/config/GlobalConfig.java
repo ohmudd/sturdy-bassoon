@@ -3,6 +3,7 @@ package com.xpc.easyes.core.config;
 import com.xpc.easyes.core.enums.FieldStrategy;
 import com.xpc.easyes.core.enums.IdType;
 import com.xpc.easyes.core.enums.ProcessIndexStrategyEnum;
+import com.xpc.easyes.core.enums.RefreshPolicy;
 import lombok.Data;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -60,8 +61,12 @@ public class GlobalConfig {
          */
         private FieldStrategy fieldStrategy = FieldStrategy.NOT_NULL;
         /**
-         * 是否开启查询全部数据 默认关闭 若查询数据大于1w条时则自动开启
+         * enableTrackTotalHits default false,是否开启查询全部数据 默认关闭, 当指定size超过1万条时自动开启
          */
         private boolean enableTrackTotalHits = false;
+        /**
+         * data refresh policy 数据刷新策略,默认为NONE
+         */
+        private RefreshPolicy refreshPolicy = RefreshPolicy.NONE;
     }
 }
