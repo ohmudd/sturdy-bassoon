@@ -28,10 +28,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * 滚动查询测试
+ *
  * @author tudou
- * &#064;date
  * <p>
- * Copyright © 2021 xpc1024 All Rights Reserved
+ * Copyright © 2022 xpc1024 All Rights Reserved
  **/
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestEasyEsApplication.class)
@@ -62,6 +62,8 @@ public class SearchTest {
 
     /**
      * 滚动查询
+     *
+     * @throws IOException io异常
      */
     @Test
     public void testScrollSearch() throws IOException {
