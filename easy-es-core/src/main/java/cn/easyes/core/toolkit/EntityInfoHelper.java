@@ -1,9 +1,6 @@
 package cn.easyes.core.toolkit;
 
-import cn.easyes.annotation.HighLight;
-import cn.easyes.annotation.IndexField;
-import cn.easyes.annotation.IndexId;
-import cn.easyes.annotation.IndexName;
+import cn.easyes.annotation.*;
 import cn.easyes.common.enums.FieldType;
 import cn.easyes.common.enums.IdType;
 import cn.easyes.common.params.DefaultNestedClass;
@@ -263,8 +260,26 @@ public class EntityInfoHelper {
         // 初始化封装HighLight注解信息
         if (field.isAnnotationPresent(HighLight.class)) {
             initHighLightAnnotation(dbConfig, entityInfo, field);
+            // 此处无需返回true阻断流程,可防止用户未添加IndexField时,框架索引跳过读取此字段的信息
         }
 
+        // 初始化封装Score注解信息
+        if (field.isAnnotationPresent(Score.class)) {
+            entityInfo.setScoreField(field.getName());
+            entityInfo.getNotSerializeField().add(field.getName());
+            entityInfo.setScoreDecimalPlaces(field.getAnnotation(Score.class).decimalPlaces());
+            hasAnnotation = true;
+        }
+
+        // 初始化封装Distance注解信息
+        if (field.isAnnotationPresent(Distance.class)) {
+            Distance distance = field.getAnnotation(Distance.class);
+            entityInfo.setDistanceField(field.getName());
+            entityInfo.getNotSerializeField().add(field.getName());
+            entityInfo.setDistanceDecimalPlaces(distance.decimalPlaces());
+            entityInfo.setSortBuilderIndex(distance.sortBuilderIndex());
+            hasAnnotation = true;
+        }
         return hasAnnotation;
     }
 
@@ -315,7 +330,7 @@ public class EntityInfoHelper {
                 entityInfo.setJoinFieldName(mappingColumn);
                 entityInfo.setJoinFieldClass(tableField.joinFieldClass());
                 entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.joinFieldClass());
-                processNested(tableField.joinFieldClass(),dbConfig, entityInfo);
+                processNested(tableField.joinFieldClass(), dbConfig, entityInfo);
             }
 
             fieldList.add(entityFieldInfo);
@@ -358,7 +373,7 @@ public class EntityInfoHelper {
 
         // 封装高亮参数
         HighLightParam highLightParam =
-                new HighLightParam(highLight.fragmentSize(),highLight.preTag(), highLight.postTag(), realHighLightField);
+                new HighLightParam(highLight.fragmentSize(), highLight.preTag(), highLight.postTag(), realHighLightField);
         entityInfo.getHighLightParams().add(highLightParam);
     }
 

@@ -14,6 +14,7 @@ import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.unit.DistanceUnit;
@@ -27,6 +28,7 @@ import org.elasticsearch.search.aggregations.metrics.ParsedMax;
 import org.elasticsearch.search.aggregations.metrics.ParsedMin;
 import org.elasticsearch.search.aggregations.metrics.ParsedSum;
 import org.elasticsearch.search.sort.FieldSortBuilder;
+import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.*;
@@ -586,6 +588,32 @@ public class AllTest {
 
     @Test
     @Order(6)
+    public void testOrderByDistanceAsc() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        GeoPoint centerPoint = new GeoPoint(41.0, 116.0);
+        wrapper.match(Document::getCreator, "老汉")
+                .geoDistance(Document::getLocation, 168.8, centerPoint)
+                .orderByDistanceAsc(Document::getLocation, centerPoint);
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals("3",documents.get(0).getEsId());
+        Assertions.assertEquals("4",documents.get(3).getEsId());
+    }
+
+    @Test
+    @Order(6)
+    public void testOrderByDistanceDesc() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        GeoPoint centerPoint = new GeoPoint(41.0, 116.0);
+        wrapper.match(Document::getCreator, "老汉")
+                .geoDistance(Document::getLocation, 168.8, centerPoint)
+                .orderByDistanceDesc(Document::getLocation, centerPoint);
+        List<Document> documents = documentMapper.selectList(wrapper);
+        Assertions.assertEquals("4",documents.get(0).getEsId());
+        Assertions.assertEquals("3",documents.get(3).getEsId());
+    }
+
+    @Test
+    @Order(6)
     public void testSortByScore() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.match(Document::getCreator, "老汉11");
@@ -741,7 +769,14 @@ public class AllTest {
     @Order(6)
     public void testGeoDistance() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.geoDistance(Document::getLocation, 168.8, DistanceUnit.KILOMETERS, new GeoPoint(41.0, 116.0));
+        GeoPoint geoPoint = new GeoPoint(41.0, 116.0);
+        wrapper.geoDistance(Document::getLocation, 168.8, DistanceUnit.KILOMETERS, geoPoint);
+        GeoDistanceSortBuilder geoDistanceSortBuilder = SortBuilders.geoDistanceSort(FieldUtils.val(Document::getLocation), geoPoint)
+                .unit(DistanceUnit.KILOMETERS)
+                .geoDistance(GeoDistance.ARC)
+                .order(SortOrder.DESC);
+
+        wrapper.sort(geoDistanceSortBuilder);
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(4, documents.size());
     }

@@ -754,10 +754,17 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @return 实际想要的数据
      */
     private T parseOne(SearchHit searchHit) {
-        T entity = JSON.parseObject(searchHit.getSourceAsString(), entityClass,
-                EntityInfoHelper.getEntityInfo(entityClass).getExtraProcessor());
+        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
+        T entity = JSON.parseObject(searchHit.getSourceAsString(), entityClass, entityInfo.getExtraProcessor());
 
+        // id字段处理
         setId(entity, searchHit.getId());
+
+        // 得分字段处理
+        setScore(entity, searchHit.getScore(), entityInfo);
+
+        // 距离字段处理
+        setDistance(entity, searchHit.getSortValues(), entityInfo);
 
         return entity;
     }
@@ -784,6 +791,12 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             });
         }
 
+        // 得分字段处理
+        setScore(entity, searchHit.getScore(), entityInfo);
+
+        // 距离字段处理
+        setDistance(entity, searchHit.getSortValues(), entityInfo);
+
         // id处理
         boolean includeId = WrapperProcessor.includeId(getRealIdFieldName(), wrapper);
         if (includeId) {
@@ -791,6 +804,66 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         }
 
         return entity;
+    }
+
+    /**
+     * 设置距离
+     *
+     * @param entity     实体对象
+     * @param sortValues 排序值(含距离)
+     * @param entityInfo 实体信息
+     */
+    private void setDistance(T entity, Object[] sortValues, EntityInfo entityInfo) {
+        String distanceField = entityInfo.getDistanceField();
+        if (Objects.isNull(distanceField) || ArrayUtils.isEmpty(sortValues)) {
+            return;
+        }
+
+        try {
+            // 有多个排序字段时,index为距离排序在sortBuilders中的位置
+            Object sortValue = sortValues[entityInfo.getSortBuilderIndex()];
+            if (!(sortValue instanceof Double)) {
+                return;
+            }
+            double distance = (double) sortValue;
+            if (Double.isNaN(distance)) {
+                return;
+            }
+            if (entityInfo.getScoreDecimalPlaces() > ZERO) {
+                distance = NumericUtils.setDecimalPlaces(distance, entityInfo.getDistanceDecimalPlaces());
+            }
+            Method invokeMethod = BaseCache.setterMethod(entity.getClass(), distanceField);
+            invokeMethod.invoke(entity, distance);
+        } catch (Throwable e) {
+            // 遇到异常只提示, 不阻断流程 distance未设置不影核心业务
+            LogUtils.formatError("set distance error, entity:{},sortValues:{},distanceField:{},e:{}", entity, JSON.toJSONString(sortValues), distanceField, e);
+        }
+    }
+
+    /**
+     * 设置查询得分
+     *
+     * @param entity     实体对象
+     * @param score      得分
+     * @param entityInfo 实体信息
+     */
+    private void setScore(T entity, float score, EntityInfo entityInfo) {
+        String scoreField = entityInfo.getScoreField();
+        if (Objects.isNull(scoreField) || Float.isNaN(score)) {
+            return;
+        }
+
+        if (entityInfo.getScoreDecimalPlaces() > ZERO) {
+            score = NumericUtils.setDecimalPlaces(score, entityInfo.getScoreDecimalPlaces());
+        }
+
+        try {
+            Method invokeMethod = BaseCache.setterMethod(entity.getClass(), scoreField);
+            invokeMethod.invoke(entity, score);
+        } catch (Throwable e) {
+            // 遇到异常只提示, 不阻断流程 score未设置不影核心业务
+            LogUtils.formatError("set score error, entity:{},score:{},scoreField:{},e:{}", entity, score, scoreField, e);
+        }
     }
 
     /**
