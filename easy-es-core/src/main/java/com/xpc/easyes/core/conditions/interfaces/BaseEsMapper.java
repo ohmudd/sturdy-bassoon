@@ -6,6 +6,7 @@ import com.xpc.easyes.core.conditions.LambdaEsQueryWrapper;
 import com.xpc.easyes.core.conditions.LambdaEsUpdateWrapper;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -79,6 +80,15 @@ public interface BaseEsMapper<T> {
      * @throws IOException IO异常
      */
     SearchResponse search(SearchRequest searchRequest, RequestOptions requestOptions) throws IOException;
+
+    /**
+     * es原生滚动查询
+     * @param searchScrollRequest 查询请求参数
+     * @param requestOptions 类型
+     * @return es原生返回结果
+     * @throws IOException IO异常
+     */
+    SearchResponse scroll(SearchScrollRequest searchScrollRequest, RequestOptions requestOptions) throws IOException;
 
     /**
      * 获取通过本框架生成的查询参数,可用于检验本框架生成的查询参数是否正确

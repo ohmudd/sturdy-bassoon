@@ -28,11 +28,12 @@
 
 
 自动推断映射表:
+
 | JAVA | ES |
 | --- | --- |
 | byte | byte |
-| short | short|
-| int | integer|
+| short | short |
+| int | integer |
 | long | long |
 | float | float |
 | double | double |
@@ -46,7 +47,6 @@
 | List | text |
 | ... | ... |
 
----
 
 >"自动挡"模式下的最佳实践示例:
 
@@ -124,7 +124,7 @@ public class Document {
 easy-es:
   global-config:
     process_index_mode: smoothly #smoothly:平滑模式, not_smoothly:非平滑模式, manual:手动模式
-    distributed: false # 项目是否分布式环境部署,默认为true, 如果是单机运行可填false,将加分布式锁,效率更高.
+    distributed: false # 项目是否分布式环境部署,默认为true, 如果是单机运行可填false,将不加分布式锁,效率更高.
 ```
 若缺省此行配置,则默认开启平滑模式.
 
