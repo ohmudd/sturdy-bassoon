@@ -1,18 +1,17 @@
 package cn.easyes.core.conditions;
 
+import cn.easyes.common.constants.BaseEsConstants;
+import cn.easyes.common.enums.FieldStrategy;
+import cn.easyes.common.enums.IdType;
+import cn.easyes.common.utils.*;
+import cn.easyes.core.biz.*;
 import cn.easyes.core.cache.BaseCache;
 import cn.easyes.core.cache.GlobalConfigCache;
-import cn.easyes.core.common.EntityFieldInfo;
-import cn.easyes.core.common.EntityInfo;
-import cn.easyes.core.common.PageInfo;
 import cn.easyes.core.conditions.interfaces.BaseEsMapper;
-import cn.easyes.core.constants.BaseEsConstants;
-import cn.easyes.core.enums.FieldStrategy;
-import cn.easyes.core.enums.IdType;
-import cn.easyes.core.params.CreateIndexParam;
-import cn.easyes.core.params.EsIndexParam;
-import cn.easyes.core.params.EsUpdateParam;
-import cn.easyes.core.toolkit.*;
+import cn.easyes.core.toolkit.EntityInfoHelper;
+import cn.easyes.core.toolkit.FieldUtils;
+import cn.easyes.core.toolkit.IndexUtils;
+import cn.easyes.core.toolkit.PageHelper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializeFilter;

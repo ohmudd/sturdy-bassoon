@@ -6,7 +6,7 @@
 
     <groupId>cn.easy-es</groupId>
     <artifactId>easy-es-parent</artifactId>
-    <version>0.9.21</version>
+    <version>0.9.30</version>
 
     <name>easy-es-parent</name>
     <description>easy use for elastic search</description>
@@ -20,10 +20,11 @@
     </licenses>
 
     <modules>
-        <module>../easy-es-core</module>
         <module>../easy-es-boot-starter</module>
+        <module>../easy-es-core</module>
         <module>../easy-es-extension</module>
         <module>../easy-es-annotation</module>
+        <module>../easy-es-common</module>
     </modules>
 
     <properties>
@@ -38,6 +39,31 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>cn.easy-es</groupId>
+                <artifactId>easy-es-boot-starter</artifactId>
+                <version>${version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.easy-es</groupId>
+                <artifactId>easy-es-core</artifactId>
+                <version>${version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.easy-es</groupId>
+                <artifactId>easy-es-extension</artifactId>
+                <version>${version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.easy-es</groupId>
+                <artifactId>easy-es-common</artifactId>
+                <version>${version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.easy-es</groupId>
+                <artifactId>easy-es-annotation</artifactId>
+                <version>${version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>

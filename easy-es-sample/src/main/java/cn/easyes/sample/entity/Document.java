@@ -1,17 +1,15 @@
 package cn.easyes.sample.entity;
 
-import cn.easyes.core.anno.HighLightMappingField;
-import cn.easyes.core.anno.TableField;
-import cn.easyes.core.anno.TableId;
-import cn.easyes.core.anno.TableName;
-import cn.easyes.core.enums.Analyzer;
-import cn.easyes.core.enums.FieldStrategy;
-import cn.easyes.core.enums.FieldType;
-import cn.easyes.core.enums.IdType;
+import cn.easyes.annotation.anno.HighLightMappingField;
+import cn.easyes.annotation.anno.TableField;
+import cn.easyes.annotation.anno.TableId;
+import cn.easyes.annotation.anno.TableName;
+import cn.easyes.common.enums.Analyzer;
+import cn.easyes.common.enums.FieldStrategy;
+import cn.easyes.common.enums.FieldType;
+import cn.easyes.common.enums.IdType;
 import lombok.Data;
 import lombok.experimental.Accessors;
-
-import java.util.List;
 
 /**
  * es 数据模型
@@ -76,9 +74,4 @@ public class Document {
      * 文档点赞数
      */
     private Integer starNum;
-    /**
-     * 嵌套类型 注意,务必像下面示例一样指定类型为nested及其nested class,否则会导致框架无法正常运行
-     */
-    @TableField(fieldType = FieldType.NESTED, nestedClass = User.class)
-    private List<User> users;
 }

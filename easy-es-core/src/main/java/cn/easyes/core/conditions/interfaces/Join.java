@@ -1,8 +1,5 @@
 package cn.easyes.core.conditions.interfaces;
 
-import org.apache.lucene.search.join.ScoreMode;
-import org.elasticsearch.index.query.QueryBuilder;
-
 import java.io.Serializable;
 
 /**

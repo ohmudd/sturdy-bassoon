@@ -1,9 +1,9 @@
 package cn.easyes.core.conditions;
 
-import cn.easyes.core.conditions.interfaces.SFunction;
+import cn.easyes.common.params.SFunction;
+import cn.easyes.core.biz.BaseEsParam;
+import cn.easyes.core.biz.EsUpdateParam;
 import cn.easyes.core.conditions.interfaces.Update;
-import cn.easyes.core.params.BaseEsParam;
-import cn.easyes.core.params.EsUpdateParam;
 import org.elasticsearch.action.search.SearchRequest;
 
 import java.util.ArrayList;
@@ -19,6 +19,7 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
         implements Update<LambdaEsUpdateWrapper<T>, SFunction<T, ?>> {
 
     List<EsUpdateParam> updateParamList;
+
     /**
      * 不建议直接 new 该实例，使用 Wrappers.lambdaQuery(entity)
      */

@@ -1,5 +1,6 @@
 package cn.easyes.core.toolkit;
 
+import cn.easyes.common.constants.BaseEsConstants;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -14,8 +15,6 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
-
-import static cn.easyes.core.constants.BaseEsConstants.*;
 
 /**
  * 基于es写的轻量级分布式锁,仅供框架内部使用,可避免引入redis/zk等其它依赖
@@ -50,11 +49,11 @@ public class LockUtils {
             IndexUtils.createEmptyIndex(client, LOCK_INDEX);
         }
 
-        if (maxRetry <= ZERO) {
+        if (maxRetry <= BaseEsConstants.ZERO) {
             return Boolean.FALSE;
         }
 
-        if (getCount(client, idValue) > ZERO) {
+        if (getCount(client, idValue) > BaseEsConstants.ZERO) {
             try {
                 Thread.sleep(WAIT_SECONDS / maxRetry);
             } catch (InterruptedException e) {
@@ -76,7 +75,7 @@ public class LockUtils {
     private static boolean createLock(RestHighLevelClient client, String idValue) {
         IndexRequest indexRequest = new IndexRequest(LOCK_INDEX);
         indexRequest.id(idValue);
-        indexRequest.source(DISTRIBUTED_LOCK_TIP_JSON, XContentType.JSON);
+        indexRequest.source(BaseEsConstants.DISTRIBUTED_LOCK_TIP_JSON, XContentType.JSON);
         IndexResponse response;
         try {
             response = client.index(indexRequest, RequestOptions.DEFAULT);
@@ -98,7 +97,7 @@ public class LockUtils {
     public synchronized static boolean release(RestHighLevelClient client, String idValue, Integer maxRetry) {
         DeleteRequest deleteRequest = new DeleteRequest(LOCK_INDEX);
         deleteRequest.id(idValue);
-        if (maxRetry <= ZERO) {
+        if (maxRetry <= BaseEsConstants.ZERO) {
             return Boolean.FALSE;
         }
 
@@ -150,7 +149,7 @@ public class LockUtils {
             response = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             e.printStackTrace();
-            return ONE;
+            return BaseEsConstants.ONE;
         }
         return (int) response.getHits().getTotalHits().value;
     }

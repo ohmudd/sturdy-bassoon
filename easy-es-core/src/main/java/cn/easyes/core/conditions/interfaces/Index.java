@@ -1,7 +1,7 @@
 package cn.easyes.core.conditions.interfaces;
 
-import cn.easyes.core.enums.Analyzer;
-import cn.easyes.core.enums.FieldType;
+import cn.easyes.common.enums.Analyzer;
+import cn.easyes.common.enums.FieldType;
 import cn.easyes.core.toolkit.FieldUtils;
 import org.elasticsearch.common.settings.Settings;
 

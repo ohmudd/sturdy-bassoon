@@ -1,6 +1,6 @@
 package cn.easyes.core.conditions.interfaces;
 
-import cn.easyes.core.common.EntityFieldInfo;
+import cn.easyes.core.biz.EntityFieldInfo;
 import cn.easyes.core.toolkit.FieldUtils;
 
 import java.io.Serializable;

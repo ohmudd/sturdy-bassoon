@@ -1,6 +1,6 @@
 package cn.easyes.core.conditions;
 
-import cn.easyes.core.conditions.interfaces.SFunction;
+import cn.easyes.common.params.SFunction;
 
 /**
  * 抽象Lambda表达式父类

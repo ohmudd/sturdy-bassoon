@@ -1,12 +1,8 @@
 package cn.easyes.core.conditions;
 
-import cn.easyes.core.common.EntityFieldInfo;
+import cn.easyes.common.params.SFunction;
+import cn.easyes.core.biz.*;
 import cn.easyes.core.conditions.interfaces.Query;
-import cn.easyes.core.conditions.interfaces.SFunction;
-import cn.easyes.core.params.AggregationParam;
-import cn.easyes.core.params.BaseEsParam;
-import cn.easyes.core.params.HighLightParam;
-import cn.easyes.core.params.SortParam;
 import cn.easyes.core.toolkit.EntityInfoHelper;
 import org.elasticsearch.action.search.SearchRequest;
 

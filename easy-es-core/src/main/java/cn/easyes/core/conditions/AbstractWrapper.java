@@ -1,10 +1,9 @@
 package cn.easyes.core.conditions;
 
-import cn.easyes.core.common.OrderByParam;
+import cn.easyes.common.enums.*;
+import cn.easyes.common.utils.*;
+import cn.easyes.core.biz.*;
 import cn.easyes.core.conditions.interfaces.*;
-import cn.easyes.core.enums.*;
-import cn.easyes.core.params.*;
-import cn.easyes.core.toolkit.*;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
@@ -18,10 +17,10 @@ import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
-import static cn.easyes.core.enums.BaseEsParamTypeEnum.*;
-import static cn.easyes.core.enums.EsAttachTypeEnum.*;
-import static cn.easyes.core.enums.EsQueryTypeEnum.*;
-import static cn.easyes.core.enums.JoinTypeEnum.*;
+import static cn.easyes.common.enums.BaseEsParamTypeEnum.*;
+import static cn.easyes.common.enums.EsAttachTypeEnum.*;
+import static cn.easyes.common.enums.EsQueryTypeEnum.*;
+import static cn.easyes.common.enums.JoinTypeEnum.*;
 
 /**
  * 抽象Lambda表达式父类

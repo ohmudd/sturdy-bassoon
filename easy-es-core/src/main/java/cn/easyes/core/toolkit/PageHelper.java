@@ -1,6 +1,6 @@
 package cn.easyes.core.toolkit;
 
-import cn.easyes.core.common.PageInfo;
+import cn.easyes.core.biz.PageInfo;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

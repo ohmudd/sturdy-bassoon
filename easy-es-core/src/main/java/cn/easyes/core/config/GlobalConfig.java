@@ -1,13 +1,13 @@
 package cn.easyes.core.config;
 
-import cn.easyes.core.enums.ProcessIndexStrategyEnum;
-import cn.easyes.core.enums.FieldStrategy;
-import cn.easyes.core.enums.IdType;
-import cn.easyes.core.enums.RefreshPolicy;
+import cn.easyes.common.enums.FieldStrategy;
+import cn.easyes.common.enums.IdType;
+import cn.easyes.common.enums.ProcessIndexStrategyEnum;
+import cn.easyes.common.enums.RefreshPolicy;
 import lombok.Data;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
-import static cn.easyes.core.constants.BaseEsConstants.EMPTY_STR;
+import static cn.easyes.common.constants.BaseEsConstants.EMPTY_STR;
 
 /**
  * easy-es全局置项

@@ -1,11 +1,11 @@
 package cn.easyes.core.conditions;
 
+import cn.easyes.common.enums.Analyzer;
+import cn.easyes.common.enums.FieldType;
+import cn.easyes.common.params.SFunction;
+import cn.easyes.common.utils.StringUtils;
+import cn.easyes.core.biz.EsIndexParam;
 import cn.easyes.core.conditions.interfaces.Index;
-import cn.easyes.core.conditions.interfaces.SFunction;
-import cn.easyes.core.enums.Analyzer;
-import cn.easyes.core.enums.FieldType;
-import cn.easyes.core.params.EsIndexParam;
-import cn.easyes.core.toolkit.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.common.settings.Settings;
 

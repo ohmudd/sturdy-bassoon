@@ -10,6 +10,7 @@ import org.elasticsearch.action.search.SearchRequest;
 public abstract class Wrapper<T> {
     /**
      * 获取查询条件 待优化
+     *
      * @return 查询条件
      */
     protected abstract SearchRequest getSearchRequest();

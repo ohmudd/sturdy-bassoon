@@ -1,14 +1,16 @@
 package cn.easyes.core.conditions;
 
-import cn.easyes.core.config.GlobalConfig;
+import cn.easyes.common.enums.AggregationTypeEnum;
+import cn.easyes.common.utils.ArrayUtils;
+import cn.easyes.common.utils.CollectionUtils;
+import cn.easyes.common.utils.MyOptional;
+import cn.easyes.common.utils.StringUtils;
+import cn.easyes.core.biz.*;
 import cn.easyes.core.cache.GlobalConfigCache;
-import cn.easyes.core.common.EntityInfo;
-import cn.easyes.core.enums.AggregationTypeEnum;
-import cn.easyes.core.params.AggregationParam;
-import cn.easyes.core.params.BaseEsParam;
-import cn.easyes.core.params.GeoParam;
-import cn.easyes.core.params.OrCount;
-import cn.easyes.core.toolkit.*;
+import cn.easyes.core.config.GlobalConfig;
+import cn.easyes.core.toolkit.EntityInfoHelper;
+import cn.easyes.core.toolkit.EsQueryTypeUtil;
+import cn.easyes.core.toolkit.FieldUtils;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.elasticsearch.index.query.*;
@@ -22,9 +24,9 @@ import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.*;
 
-import static cn.easyes.core.constants.BaseEsConstants.*;
-import static cn.easyes.core.enums.BaseEsParamTypeEnum.*;
-import static cn.easyes.core.enums.EsAttachTypeEnum.*;
+import static cn.easyes.common.constants.BaseEsConstants.*;
+import static cn.easyes.common.enums.BaseEsParamTypeEnum.*;
+import static cn.easyes.common.enums.EsAttachTypeEnum.*;
 
 /**
  * 核心 wrpeer处理类

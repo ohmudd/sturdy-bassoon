@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.function.BiPredicate;
 
-import static cn.easyes.core.constants.BaseEsConstants.*;
+import static cn.easyes.common.constants.BaseEsConstants.*;
 
 /**
  * 比较相关

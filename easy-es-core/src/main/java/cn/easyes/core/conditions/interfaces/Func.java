@@ -1,7 +1,7 @@
 package cn.easyes.core.conditions.interfaces;
 
-import cn.easyes.core.common.OrderByParam;
-import cn.easyes.core.constants.BaseEsConstants;
+import cn.easyes.common.constants.BaseEsConstants;
+import cn.easyes.core.biz.OrderByParam;
 import cn.easyes.core.toolkit.FieldUtils;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;

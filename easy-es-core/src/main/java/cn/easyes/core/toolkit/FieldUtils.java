@@ -1,9 +1,10 @@
 package cn.easyes.core.toolkit;
 
-import cn.easyes.core.conditions.interfaces.SFunction;
-import cn.easyes.core.config.GlobalConfig;
+import cn.easyes.common.constants.BaseEsConstants;
+import cn.easyes.common.params.SFunction;
+import cn.easyes.common.utils.StringUtils;
 import cn.easyes.core.cache.GlobalConfigCache;
-import cn.easyes.core.constants.BaseEsConstants;
+import cn.easyes.core.config.GlobalConfig;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

@@ -1,16 +1,16 @@
 package cn.easyes.core.toolkit;
 
+import cn.easyes.common.constants.BaseEsConstants;
+import cn.easyes.common.enums.Analyzer;
+import cn.easyes.common.enums.FieldType;
+import cn.easyes.common.enums.JdkDataTypeEnum;
+import cn.easyes.common.utils.CollectionUtils;
+import cn.easyes.common.utils.ExceptionUtils;
+import cn.easyes.common.utils.LogUtils;
+import cn.easyes.common.utils.StringUtils;
+import cn.easyes.core.biz.*;
 import cn.easyes.core.cache.GlobalConfigCache;
-import cn.easyes.core.common.EntityFieldInfo;
-import cn.easyes.core.common.EntityInfo;
 import cn.easyes.core.config.GlobalConfig;
-import cn.easyes.core.constants.BaseEsConstants;
-import cn.easyes.core.enums.Analyzer;
-import cn.easyes.core.enums.FieldType;
-import cn.easyes.core.enums.JdkDataTypeEnum;
-import cn.easyes.core.params.CreateIndexParam;
-import cn.easyes.core.params.EsIndexInfo;
-import cn.easyes.core.params.EsIndexParam;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.elasticsearch.action.admin.indices.alias.Alias;
@@ -34,7 +34,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 
-import static cn.easyes.core.constants.BaseEsConstants.*;
 
 /**
  * 索引工具类
@@ -154,7 +153,7 @@ public class IndexUtils {
         IndicesAliasesRequest.AliasActions aliasActions =
                 new IndicesAliasesRequest.AliasActions(IndicesAliasesRequest.AliasActions.Type.ADD);
         aliasActions.index(indexName);
-        aliasActions.alias(DEFAULT_ALIAS);
+        aliasActions.alias(BaseEsConstants.DEFAULT_ALIAS);
         indicesAliasesRequest.addAliasAction(aliasActions);
         try {
             client.indices().updateAliases(indicesAliasesRequest, RequestOptions.DEFAULT);
@@ -176,8 +175,8 @@ public class IndexUtils {
         ReindexRequest reindexRequest = new ReindexRequest();
         reindexRequest.setSourceIndices(oldIndexName);
         reindexRequest.setDestIndex(releaseIndexName);
-        reindexRequest.setDestOpType(DEFAULT_DEST_OP_TYPE);
-        reindexRequest.setConflicts(DEFAULT_CONFLICTS);
+        reindexRequest.setDestOpType(BaseEsConstants.DEFAULT_DEST_OP_TYPE);
+        reindexRequest.setConflicts(BaseEsConstants.DEFAULT_CONFLICTS);
         reindexRequest.setRefresh(Boolean.TRUE);
         try {
             BulkByScrollResponse response = client.reindex(reindexRequest, RequestOptions.DEFAULT);
@@ -207,7 +206,7 @@ public class IndexUtils {
                 .flatMap(aliases -> Optional.ofNullable(aliases.get(indexName)))
                 .ifPresent(aliasMetadataList ->
                         aliasMetadataList.forEach(aliasMetadata -> {
-                            if (DEFAULT_ALIAS.equals(aliasMetadata.alias())) {
+                            if (BaseEsConstants.DEFAULT_ALIAS.equals(aliasMetadata.alias())) {
                                 esIndexInfo.setHasDefaultAlias(Boolean.TRUE);
                             }
                         }));
@@ -216,10 +215,10 @@ public class IndexUtils {
         Optional.ofNullable(getIndexResponse.getSettings())
                 .flatMap(settingsMap -> Optional.ofNullable(settingsMap.get(indexName)))
                 .ifPresent(p -> {
-                    String shardsNumStr = p.get(SHARDS_NUM_KEY);
+                    String shardsNumStr = p.get(BaseEsConstants.SHARDS_NUM_KEY);
                     Optional.ofNullable(shardsNumStr)
                             .ifPresent(s -> esIndexInfo.setShardsNum(Integer.parseInt(s)));
-                    String replicasNumStr = p.get(REPLICAS_NUM_KEY);
+                    String replicasNumStr = p.get(BaseEsConstants.REPLICAS_NUM_KEY);
                     Optional.ofNullable(replicasNumStr)
                             .ifPresent(r -> esIndexInfo.setReplicasNum(Integer.parseInt(r)));
                 });
@@ -310,7 +309,7 @@ public class IndexUtils {
 
         indexParamList.forEach(indexParam -> {
             Map<String, Object> info = new HashMap<>();
-            Optional.ofNullable(indexParam.getDateFormat()).ifPresent(format -> info.put(FORMAT, indexParam.getDateFormat()));
+            Optional.ofNullable(indexParam.getDateFormat()).ifPresent(format -> info.put(BaseEsConstants.FORMAT, indexParam.getDateFormat()));
             info.put(BaseEsConstants.TYPE, indexParam.getFieldType());
             // 设置分词器
             if (FieldType.TEXT.getType().equals(indexParam.getFieldType())) {
@@ -344,9 +343,9 @@ public class IndexUtils {
      */
     public static boolean changeAliasAtomic(RestHighLevelClient client, String oldIndexName, String releaseIndexName) {
         IndicesAliasesRequest.AliasActions addIndexAction = new IndicesAliasesRequest.AliasActions(
-                IndicesAliasesRequest.AliasActions.Type.ADD).index(releaseIndexName).alias(DEFAULT_ALIAS);
+                IndicesAliasesRequest.AliasActions.Type.ADD).index(releaseIndexName).alias(BaseEsConstants.DEFAULT_ALIAS);
         IndicesAliasesRequest.AliasActions removeAction = new IndicesAliasesRequest.AliasActions(
-                IndicesAliasesRequest.AliasActions.Type.REMOVE).index(oldIndexName).alias(DEFAULT_ALIAS);
+                IndicesAliasesRequest.AliasActions.Type.REMOVE).index(oldIndexName).alias(BaseEsConstants.DEFAULT_ALIAS);
 
         IndicesAliasesRequest indicesAliasesRequest = new IndicesAliasesRequest();
         indicesAliasesRequest.addAliasAction(addIndexAction);
@@ -487,7 +486,7 @@ public class IndexUtils {
 
         // 重试 看加了后缀的_s0 和_s1是否存在
         for (int i = 0; i <= 1; i++) {
-            String retryIndexName = entityInfo.getIndexName() + S_SUFFIX + i;
+            String retryIndexName = entityInfo.getIndexName() + BaseEsConstants.S_SUFFIX + i;
             exists = IndexUtils.existsIndex(client, retryIndexName);
             if (exists) {
                 entityInfo.setRetrySuccessIndexName(retryIndexName);
@@ -513,14 +512,14 @@ public class IndexUtils {
             }
             try {
                 // 尝试获取分布式锁
-                boolean lock = LockUtils.tryLock(client, entityClass.getSimpleName().toLowerCase(), LOCK_MAX_RETRY);
+                boolean lock = LockUtils.tryLock(client, entityClass.getSimpleName().toLowerCase(), BaseEsConstants.LOCK_MAX_RETRY);
                 if (!lock) {
                     LogUtils.warn("retry get distribute lock failed, please check whether other resources have been preempted or deadlocked");
                     return Boolean.FALSE;
                 }
                 return biFunction.apply(entityClass, client);
             } finally {
-                LockUtils.release(client, entityClass.getSimpleName().toLowerCase(), LOCK_MAX_RETRY);
+                LockUtils.release(client, entityClass.getSimpleName().toLowerCase(), BaseEsConstants.LOCK_MAX_RETRY);
             }
         }).exceptionally((throwable) -> {
             Optional.ofNullable(throwable).ifPresent(e -> LogUtils.error("process index exception", e.toString()));

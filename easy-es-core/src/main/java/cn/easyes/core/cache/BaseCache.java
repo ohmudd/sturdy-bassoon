@@ -1,10 +1,10 @@
 package cn.easyes.core.cache;
 
 import cn.easyes.core.conditions.BaseEsMapperImpl;
-import cn.easyes.core.constants.BaseEsConstants;
-import cn.easyes.core.toolkit.CollectionUtils;
+import cn.easyes.common.constants.BaseEsConstants;
+import cn.easyes.common.utils.CollectionUtils;
 import cn.easyes.core.toolkit.EntityInfoHelper;
-import cn.easyes.core.toolkit.ExceptionUtils;
+import cn.easyes.common.utils.ExceptionUtils;
 import cn.easyes.core.toolkit.FieldUtils;
 import org.elasticsearch.client.RestHighLevelClient;
 

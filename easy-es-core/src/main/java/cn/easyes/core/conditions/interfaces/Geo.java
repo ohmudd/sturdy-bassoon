@@ -1,7 +1,7 @@
 package cn.easyes.core.conditions.interfaces;
 
-import cn.easyes.core.toolkit.CollectionUtils;
-import cn.easyes.core.toolkit.ExceptionUtils;
+import cn.easyes.common.utils.CollectionUtils;
+import cn.easyes.common.utils.ExceptionUtils;
 import cn.easyes.core.toolkit.FieldUtils;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static cn.easyes.core.constants.BaseEsConstants.DEFAULT_BOOST;
+import static cn.easyes.common.constants.BaseEsConstants.DEFAULT_BOOST;
 
 /**
  * 地理位置

@@ -1,7 +1,7 @@
 package cn.easyes.core.conditions;
 
+import cn.easyes.core.biz.OrderByParam;
 import cn.easyes.core.conditions.interfaces.*;
-import cn.easyes.core.common.OrderByParam;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;

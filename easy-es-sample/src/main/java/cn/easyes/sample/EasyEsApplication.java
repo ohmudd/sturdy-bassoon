@@ -1,6 +1,6 @@
 package cn.easyes.sample;
 
-import cn.easyes.autoconfig.annotation.EsMapperScan;
+import cn.easyes.starter.register.EsMapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 @SpringBootApplication
-@EsMapperScan("com.xpc.easyes.sample.mapper")
+@EsMapperScan("cn.easyes.sample.mapper")
 public class EasyEsApplication {
     public static void main(String[] args) {
         SpringApplication.run(EasyEsApplication.class, args);
