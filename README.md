@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://easy-es.cn/">
-   <img alt="East-Es-Logo" src="https://iknow.hs.net/e2ccba53-812e-4927-9cac-d6ca61327752.png">
+   <img alt="East-Es-Logo" src="https://iknow.hs.net/042dd639-5bfa-410f-968f-8bbceb8d8ca7.png">
   </a>
 </p>
 
