@@ -201,24 +201,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children highLight(boolean condition, String preTag, String postTag, R column) {
-        getWrapper().highLight(condition, preTag, postTag, column);
-        return typedThis;
-    }
-
-    @Override
-    public Children highLight(String preTag, String postTag, R column) {
-        getWrapper().highLight(postTag, postTag, column);
-        return typedThis;
-    }
-
-    @Override
-    public Children highLight(boolean condition, String preTag, String postTag, R... columns) {
-        getWrapper().highLight(condition, preTag, postTag, columns);
-        return typedThis;
-    }
-
-    @Override
     public Children orderBy(boolean condition, boolean isAsc, R... columns) {
         getWrapper().orderBy(condition, isAsc, columns);
         return typedThis;
@@ -566,18 +548,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     @Override
     public Children likeRight(boolean condition, String column, Object val, Float boost) {
         getWrapper().likeRight(condition, column, val, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children highLight(boolean condition, String preTag, String postTag, String column) {
-        getWrapper().highLight(column, preTag, postTag, column);
-        return typedThis;
-    }
-
-    @Override
-    public Children highLight(boolean condition, String preTag, String postTag, String... columns) {
-        getWrapper().highLight(condition, preTag, postTag, columns);
         return typedThis;
     }
 

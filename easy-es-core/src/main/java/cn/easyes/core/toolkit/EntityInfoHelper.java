@@ -1,6 +1,6 @@
 package cn.easyes.core.toolkit;
 
-import cn.easyes.annotation.HighLightMappingField;
+import cn.easyes.annotation.HighLight;
 import cn.easyes.annotation.TableField;
 import cn.easyes.annotation.TableId;
 import cn.easyes.annotation.TableName;
@@ -13,6 +13,7 @@ import cn.easyes.common.utils.ReflectionKit;
 import cn.easyes.common.utils.StringUtils;
 import cn.easyes.core.biz.EntityFieldInfo;
 import cn.easyes.core.biz.EntityInfo;
+import cn.easyes.core.biz.HighLightParam;
 import cn.easyes.core.cache.BaseCache;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.config.GlobalConfig;
@@ -76,15 +77,6 @@ public class EntityInfoHelper {
         // 缓存中未获取到,则初始化
         GlobalConfig globalConfig = GlobalConfigCache.getGlobalConfig();
         return initTableInfo(globalConfig, clazz);
-    }
-
-    /**
-     * 获取所有实体映射表信息
-     *
-     * @return 所有实体映射表信息
-     */
-    public static List<EntityInfo> getTableInfos() {
-        return new ArrayList<>(ENTITY_INFO_CACHE.values());
     }
 
     /**
@@ -181,7 +173,7 @@ public class EntityInfoHelper {
                         .ifPresent(preFilters::add));
 
         // 父子类型的字段序列化过滤器
-        if (!entityInfo.isChild()){
+        if (!entityInfo.isChild()) {
             Set<String> notSerialField = new HashSet<>();
             notSerialField.add(PARENT);
             Optional.ofNullable(FastJsonUtils.getSimplePropertyPreFilter(entityInfo.getJoinFieldClass(), notSerialField))
@@ -272,81 +264,113 @@ public class EntityInfoHelper {
                                                         List<EntityFieldInfo> fieldList, Field field, EntityInfo entityInfo) {
         boolean hasAnnotation = false;
 
-        // 获取已知自定义注解
-        HighLightMappingField highLightMappingField = field.getAnnotation(HighLightMappingField.class);
-        TableField tableField = field.getAnnotation(TableField.class);
-
-        if (Objects.nonNull(tableField)) {
-            if (tableField.exist()) {
-                // 存在字段处理
-                EntityFieldInfo entityFieldInfo = new EntityFieldInfo(dbConfig, field, tableField);
-
-                // 自定义字段名及驼峰下划线转换
-                String mappingColumn;
-                if (!StringUtils.isBlank(tableField.value().trim())) {
-                    // 自定义注解指定的名称优先级最高
-                    entityInfo.getMappingColumnMap().putIfAbsent(field.getName(), tableField.value());
-                    entityInfo.getColumnMappingMap().putIfAbsent(tableField.value(), field.getName());
-                    mappingColumn = tableField.value();
-                } else {
-                    // 下划线驼峰
-                    mappingColumn = initMappingColumnMapAndGet(dbConfig, entityInfo, field);
-                }
-
-                // 日期格式化
-                if (StringUtils.isNotBlank(tableField.dateFormat())) {
-                    entityFieldInfo.setDateFormat(tableField.dateFormat());
-                }
-
-                // 其它
-                entityFieldInfo.setMappingColumn(mappingColumn);
-                entityFieldInfo.setAnalyzer(tableField.analyzer());
-                entityFieldInfo.setSearchAnalyzer(tableField.searchAnalyzer());
-                entityFieldInfo.setFieldType(tableField.fieldType());
-                entityFieldInfo.setColumnType(field.getType().getSimpleName());
-
-                // 父子类型
-                if (FieldType.JOIN.equals(tableField.fieldType())) {
-                    entityFieldInfo.setParentName(tableField.parentName());
-                    entityFieldInfo.setChildName(tableField.childName());
-
-                    entityInfo.setJoinFieldName(mappingColumn);
-                    entityInfo.setJoinFieldClass(tableField.joinFieldClass());
-                    entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.joinFieldClass());
-                    processNested(tableField.joinFieldClass(), dbConfig, entityInfo);
-                }
-
-                fieldList.add(entityFieldInfo);
-
-                // 嵌套类处理
-                if (DefaultNestedClass.class != tableField.nestedClass()) {
-                    // 嵌套类
-                    entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.nestedClass());
-                    processNested(tableField.nestedClass(), dbConfig, entityInfo);
-                }
-
-            } else {
-                entityInfo.getNotSerializeField().add(field.getName());
-            }
+        // 初始化封装TableField注解信息
+        if (field.isAnnotationPresent(TableField.class)) {
+            initTableFieldAnnotation(dbConfig, entityInfo, field, fieldList);
             hasAnnotation = true;
         }
 
-        if (Objects.nonNull(highLightMappingField)) {
-            if (StringUtils.isNotBlank(highLightMappingField.value())) {
-                // 高亮映射字段处理
-                String customField = entityInfo.getMappingColumnMap().get(highLightMappingField.value());
-                String realHighLightField = Objects.isNull(customField) ? highLightMappingField.value() : customField;
-                if (dbConfig.isMapUnderscoreToCamelCase()) {
-                    realHighLightField = StringUtils.camelToUnderline(realHighLightField);
-                }
-                entityInfo.getHighlightFieldMap().putIfAbsent(realHighLightField, field.getName());
-
-            }
-            entityInfo.getNotSerializeField().add(field.getName());
+        // 初始化封装HighLight注解信息
+        if (field.isAnnotationPresent(HighLight.class)) {
+            initHighLightAnnotation(dbConfig, entityInfo, field);
             hasAnnotation = true;
         }
 
         return hasAnnotation;
+    }
+
+
+    /**
+     * TableField注解信息初始化
+     *
+     * @param dbConfig   索引配置
+     * @param fieldList  字段列表
+     * @param field      字段
+     * @param entityInfo 实体信息
+     */
+    private static void initTableFieldAnnotation(GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo, Field field,
+                                                 List<EntityFieldInfo> fieldList) {
+        TableField tableField = field.getAnnotation(TableField.class);
+        if (tableField.exist()) {
+            // 存在字段处理
+            EntityFieldInfo entityFieldInfo = new EntityFieldInfo(dbConfig, field, tableField);
+
+            // 自定义字段名及驼峰下划线转换
+            String mappingColumn;
+            if (!StringUtils.isBlank(tableField.value().trim())) {
+                // 自定义注解指定的名称优先级最高
+                entityInfo.getMappingColumnMap().putIfAbsent(field.getName(), tableField.value());
+                entityInfo.getColumnMappingMap().putIfAbsent(tableField.value(), field.getName());
+                mappingColumn = tableField.value();
+            } else {
+                // 下划线驼峰
+                mappingColumn = initMappingColumnMapAndGet(dbConfig, entityInfo, field);
+            }
+
+            // 日期格式化
+            if (StringUtils.isNotBlank(tableField.dateFormat())) {
+                entityFieldInfo.setDateFormat(tableField.dateFormat());
+            }
+
+            // 其它
+            entityFieldInfo.setMappingColumn(mappingColumn);
+            entityFieldInfo.setAnalyzer(tableField.analyzer());
+            entityFieldInfo.setSearchAnalyzer(tableField.searchAnalyzer());
+            entityFieldInfo.setFieldType(tableField.fieldType());
+            entityFieldInfo.setColumnType(field.getType().getSimpleName());
+
+            // 父子类型
+            if (FieldType.JOIN.equals(tableField.fieldType())) {
+                entityFieldInfo.setParentName(tableField.parentName());
+                entityFieldInfo.setChildName(tableField.childName());
+
+                entityInfo.setJoinFieldName(mappingColumn);
+                entityInfo.setJoinFieldClass(tableField.joinFieldClass());
+                entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.joinFieldClass());
+                processNested(tableField.joinFieldClass(), dbConfig, entityInfo);
+            }
+
+            fieldList.add(entityFieldInfo);
+
+            // 嵌套类处理
+            if (DefaultNestedClass.class != tableField.nestedClass()) {
+                // 嵌套类
+                entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.nestedClass());
+                processNested(tableField.nestedClass(), dbConfig, entityInfo);
+            }
+
+        } else {
+            entityInfo.getNotSerializeField().add(field.getName());
+        }
+    }
+
+    /**
+     * HighLight注解初始化
+     *
+     * @param dbConfig   索引配置
+     * @param entityInfo 实体信息
+     * @param field      字段
+     */
+    private static void initHighLightAnnotation(GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo, Field field) {
+        HighLight highLight = field.getAnnotation(HighLight.class);
+        String mappingField = highLight.mappingField();
+        if (StringUtils.isNotBlank(mappingField)) {
+            entityInfo.getNotSerializeField().add(field.getName());
+        } else {
+            // 如果用户未指定高亮映射字段,则高亮映射字段用当前字段
+            mappingField = field.getName();
+        }
+
+        String customField = entityInfo.getMappingColumnMap().get(field.getName());
+        String realHighLightField = Objects.isNull(customField) ? field.getName() : customField;
+        if (dbConfig.isMapUnderscoreToCamelCase()) {
+            realHighLightField = StringUtils.camelToUnderline(realHighLightField);
+        }
+        entityInfo.getHighlightFieldMap().putIfAbsent(realHighLightField, mappingField);
+
+        // 封装高亮参数
+        HighLightParam highLightParam = new HighLightParam(highLight.preTag(), highLight.postTag(), realHighLightField);
+        entityInfo.getHighLightParams().add(highLightParam);
     }
 
     /**

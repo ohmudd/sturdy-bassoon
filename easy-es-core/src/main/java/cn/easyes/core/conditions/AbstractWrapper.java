@@ -37,10 +37,6 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      */
     protected List<BaseEsParam> baseEsParamList;
     /**
-     * 高亮查询参数列表
-     */
-    protected List<HighLightParam> highLightParamList;
-    /**
      * 排序查询参数列表
      */
     protected List<SortParam> sortParamList;
@@ -109,7 +105,6 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      */
     protected final void initNeed() {
         baseEsParamList = new ArrayList<>();
-        highLightParamList = new ArrayList<>();
         sortParamList = new ArrayList<>();
         aggregationParamList = new ArrayList<>();
     }
@@ -300,25 +295,6 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     @Override
     public Children likeRight(boolean condition, String column, Object val, Float boost) {
         return doIt(condition, WILDCARD_QUERY, LIKE_RIGHT, column, val, boost);
-    }
-
-    @Override
-    public Children highLight(boolean condition, String preTag, String postTag, String column) {
-        if (condition) {
-            List<String> fields = new ArrayList<>();
-            fields.add(column);
-            highLightParamList.add(new HighLightParam(preTag, postTag, fields));
-        }
-        return typedThis;
-    }
-
-    @Override
-    public final Children highLight(boolean condition, String preTag, String postTag, String... columns) {
-        if (condition) {
-            List<String> fields = Arrays.asList(columns);
-            highLightParamList.add(new HighLightParam(preTag, postTag, fields));
-        }
-        return typedThis;
     }
 
     @Override

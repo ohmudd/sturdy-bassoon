@@ -110,11 +110,8 @@ public class HighTest {
     @Test
     public void testHighlight() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        String keyword = "乌拉";
-        wrapper.match(Document::getCustomField, keyword);
-
-        // 0.9.7+ 版本可通过自定义注解@HighLightMappingField实现高亮字段与实体类字段绑定
-        wrapper.highLight(Document::getCustomField);
+        String keyword = "内容";
+        wrapper.match(Document::getContent, keyword);
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents);
     }

@@ -195,13 +195,14 @@ public class WrapperProcessor {
      * @return SearchSourceBuilder
      */
     private static SearchSourceBuilder initSearchSourceBuilder(LambdaEsQueryWrapper<?> wrapper, Class<?> entityClass) {
+        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
         // 获取自定义字段map
-        Map<String, String> mappingColumnMap = EntityInfoHelper.getEntityInfo(entityClass).getMappingColumnMap();
+        Map<String, String> mappingColumnMap = entityInfo.getMappingColumnMap();
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         // 设置高亮
-        setHighLight(wrapper, mappingColumnMap, searchSourceBuilder);
+        setHighLight(entityInfo, searchSourceBuilder);
 
         // 设置用户指定的各种排序规则
         setSort(wrapper, mappingColumnMap, searchSourceBuilder);
@@ -479,33 +480,20 @@ public class WrapperProcessor {
     /**
      * 设置高亮参数
      *
-     * @param wrapper             参数包装类
-     * @param mappingColumnMap    字段映射map
+     * @param entityInfo          实体信息
      * @param searchSourceBuilder 查询参数建造者
      */
-    private static void setHighLight(LambdaEsQueryWrapper<?> wrapper, Map<String, String> mappingColumnMap, SearchSourceBuilder searchSourceBuilder) {
-        // 获取配置
-        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
-
-        // 设置高亮字段
-        if (!CollectionUtils.isEmpty(wrapper.highLightParamList)) {
-            wrapper.highLightParamList.forEach(highLightParam -> {
-                HighlightBuilder highlightBuilder = new HighlightBuilder();
-                highLightParam.getFields().forEach(field -> {
-                    String customField = mappingColumnMap.get(field);
-                    if (Objects.nonNull(customField)) {
-                        highlightBuilder.field(customField);
-                    } else {
-                        if (dbConfig.isMapUnderscoreToCamelCase()) {
-                            highlightBuilder.field(StringUtils.camelToUnderline(field));
-                        } else {
-                            highlightBuilder.field(field);
-                        }
-                    }
-                });
-                highlightBuilder.preTags(highLightParam.getPreTag());
-                highlightBuilder.postTags(highLightParam.getPostTag());
-                searchSourceBuilder.highlighter(highlightBuilder);
+    private static void setHighLight(EntityInfo entityInfo, SearchSourceBuilder searchSourceBuilder) {
+        // 设置当前主类的高亮字段
+        if (!CollectionUtils.isEmpty(entityInfo.getHighLightParams())) {
+            entityInfo.getHighLightParams().forEach(highLightParam -> {
+                if (StringUtils.isNotBlank(highLightParam.getHighLightField())) {
+                    HighlightBuilder highlightBuilder = new HighlightBuilder();
+                    highlightBuilder.field(highLightParam.getHighLightField());
+                    highlightBuilder.preTags(highLightParam.getPreTag());
+                    highlightBuilder.postTags(highLightParam.getPostTag());
+                    searchSourceBuilder.highlighter(highlightBuilder);
+                }
             });
         }
     }

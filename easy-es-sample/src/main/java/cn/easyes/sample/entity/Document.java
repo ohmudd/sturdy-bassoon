@@ -1,9 +1,6 @@
 package cn.easyes.sample.entity;
 
-import cn.easyes.annotation.HighLightMappingField;
-import cn.easyes.annotation.TableField;
-import cn.easyes.annotation.TableId;
-import cn.easyes.annotation.TableName;
+import cn.easyes.annotation.*;
 import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldStrategy;
 import cn.easyes.common.enums.FieldType;
@@ -32,6 +29,7 @@ public class Document {
     /**
      * 文档内容,指定了类型及存储/查询分词器
      */
+    @HighLight(mappingField = "highlightContent")
     @TableField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_MAX_WORD)
     private String content;
     /**
@@ -68,7 +66,6 @@ public class Document {
     /**
      * 高亮返回值被映射的字段
      */
-    @HighLightMappingField("content")
     private String highlightContent;
     /**
      * 文档点赞数

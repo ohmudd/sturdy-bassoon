@@ -91,6 +91,10 @@ public class EntityInfo {
      */
     private boolean child = false;
     /**
+     * 当前主类的高亮字段列表
+     */
+    private List<HighLightParam> highLightParams = new ArrayList<>();
+    /**
      * fastjson 字段命名策略
      */
     private PropertyNamingStrategy propertyNamingStrategy;

@@ -1,6 +1,6 @@
 package cn.easyes.test.entity;
 
-import cn.easyes.annotation.HighLightMappingField;
+import cn.easyes.annotation.HighLight;
 import cn.easyes.annotation.TableField;
 import cn.easyes.annotation.TableId;
 import cn.easyes.annotation.TableName;
@@ -35,6 +35,7 @@ public class Document {
     /**
      * 文档内容,指定了类型及存储/查询分词器
      */
+    @HighLight(mappingField = "highlightContent")
     @TableField(fieldType = FieldType.TEXT, analyzer = Analyzer.IK_SMART, searchAnalyzer = Analyzer.IK_MAX_WORD)
     private String content;
     /**
@@ -71,7 +72,6 @@ public class Document {
     /**
      * 高亮返回值被映射的字段
      */
-    @HighLightMappingField("content")
     private String highlightContent;
     /**
      * 文档点赞数
@@ -86,6 +86,6 @@ public class Document {
     /**
      * 父子类型 须通过注解在父文档及子文档的实体类中指明其类型为Join,及其父名称和子名称
      */
-    @TableField(fieldType = FieldType.JOIN, parentName = "document",childName = "comment")
+    @TableField(fieldType = FieldType.JOIN, parentName = "document", childName = "comment")
     private JoinField joinField;
 }

@@ -79,7 +79,7 @@ public class SampleController {
     public List<Document> highlightSearch(@RequestParam String content) {
         // 实际开发中会把这些逻辑写进service层 这里为了演示方便就不创建service层了
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.match(Document::getContent, content).highLight(Document::getContent);
+        wrapper.match(Document::getContent, content);
         return documentMapper.selectList(wrapper);
     }
 }

@@ -59,8 +59,7 @@ public class PerformanceTest {
         // 将查询索引指定为和通过RestHighLevelClient查询时一样的索引名称
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.match(Document::getTitle, "茶叶")
-                .match(Document::getContent, "茶叶")
-                .highLight(Document::getTitle);
+                .match(Document::getContent, "茶叶");
         List<Document> documents = documentMapper.selectList(wrapper);
 
         // 查询总条数

@@ -690,12 +690,12 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @return 实际想要的数据
      */
     private T parseOne(SearchHit searchHit, LambdaEsQueryWrapper<T> wrapper) {
+        EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
         // 解析json
-        T entity = JSON.parseObject(searchHit.getSourceAsString(), entityClass,
-                EntityInfoHelper.getEntityInfo(entityClass).getExtraProcessor());
+        T entity = JSON.parseObject(searchHit.getSourceAsString(), entityClass, entityInfo.getExtraProcessor());
 
         // 高亮字段处理
-        if (!CollectionUtils.isEmpty(wrapper.highLightParamList)) {
+        if (CollectionUtils.isNotEmpty(entityInfo.getHighLightParams())) {
             Map<String, String> highlightFieldMap = getHighlightFieldMap();
             Map<String, HighlightField> highlightFields = searchHit.getHighlightFields();
             highlightFields.forEach((key, value) -> {

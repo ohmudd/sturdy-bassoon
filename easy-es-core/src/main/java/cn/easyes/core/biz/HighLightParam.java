@@ -3,8 +3,6 @@ package cn.easyes.core.biz;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * 高亮参数
  * <p>
@@ -24,5 +22,5 @@ public class HighLightParam {
     /**
      * 高亮字段列表
      */
-    private List<String> fields;
+    private String highLightField;
 }
