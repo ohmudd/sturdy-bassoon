@@ -162,4 +162,4 @@ QQ | 微信:252645816
 
 # 知识星球
 ---
-<img style="zoom:50%;" alt="zsxq" src="https://iknow.hs.net/9038b7ab-c0d9-4a87-9492-e839907a8978.png">
+<img alt="zsxq" src="https://iknow.hs.net/9038b7ab-c0d9-4a87-9492-e839907a8978.png">
