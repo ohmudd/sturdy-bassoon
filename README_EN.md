@@ -137,41 +137,44 @@ String indexName = "document";
 ---
 ![Architecture](https://iknow.hs.net/27fb40b8-22d4-45c2-92e0-1471112d5102.jpg)
 
-## Syntax comparison with MySQL
+## MySQL Easy-Es and Es syntax comparison table
 ---
-|  MySQL   | Easy-Es  |
-|  ----  | ----  |
-| and  | and |
-| or | or |
-| = | eq |
-| != | ne|
-| &gt; | gt |
-| >= | ge |
-| &lt; | lt |
-| <= | le |
-| like '%field%' | like |
-| not like '%field%' |notLike|
-| like '%field' | likeLeft|
-| like 'field%' | likeRight |
-| between | between |
-| notBetween | notBetween |
-| is null | isNull |
-| is notNull | isNotNull |
-| in | in |
-| not in | notIn |
-| group by | groupBy |
-| order by | orderBy |
-|min |min |
-|max |max |
-|avg |avg |
-|sum |sum |
-|sum |sum |
-| - | orderByAsc |
-| - | orderByDesc |
-| - | match |
-|- |highLight |
-| ... | ... |
 
+| MySQL | Easy-Es | Es-DSL/Es java api|
+| --- | --- |--- |
+| and | and |must|
+| or | or | should|
+| = | eq | term|
+| != | ne | boolQueryBuilder.mustNot(queryBuilder)|
+| > | gt | QueryBuilders.rangeQuery('es field').gt()|
+| >= | ge | .rangeQuery('es field').gte()|
+| < | lt | .rangeQuery('es field').lt() |
+| <= | le | .rangeQuery('es field').lte()| 
+| like '%field%' | like | QueryBuilders.wildcardQuery(field,*value*)|
+| not like '%field%' | notLike | must not wildcardQuery(field,*value*)|
+| like '%field' | likeLeft | QueryBuilders.wildcardQuery(field,*value)|
+| like 'field%' | likeRight | QueryBuilders.wildcardQuery(field,value*)|
+| between | between | QueryBuilders.rangeQuery('es field').from(xx).to(xx) |
+| notBetween | notBetween | must not QueryBuilders.rangeQuery('es field').from(xx).to(xx)|
+| is null | isNull | must not QueryBuilders.existsQuery(field) |
+| is notNull | isNotNull | QueryBuilders.existsQuery(field)|
+| in | in | QueryBuilders.termsQuery(" xx es field", xx)|
+| not in | notIn | must not QueryBuilders.termsQuery(" xx es field", xx)|
+| group by | groupBy | AggregationBuilders.terms()|
+| order by | orderBy | fieldSortBuilder.order(ASC/DESC)|
+| min | min | AggregationBuilders.min|
+| max | max |AggregationBuilders.max|
+| avg | avg |AggregationBuilders.avg|
+| sum | sum |AggregationBuilders.sum| 
+| order by xxx asc | orderByAsc | fieldSortBuilder.order(SortOrder.ASC)|
+| order by xxx desc | orderByDesc |fieldSortBuilder.order(SortOrder.DESC)|
+| - | match |matchQuery|
+| - | matchPhrase |QueryBuilders.matchPhraseQuery|
+| - | matchPrefix |QueryBuilders.matchPhrasePrefixQuery|
+| - | queryStringQuery |QueryBuilders.queryStringQuery|
+| select * | matchAllQuery |QueryBuilders.matchAllQuery()|
+| - | highLight |HighlightBuilder.Field |
+| ... | ... | ...|
 ---
 
 ## Donate
