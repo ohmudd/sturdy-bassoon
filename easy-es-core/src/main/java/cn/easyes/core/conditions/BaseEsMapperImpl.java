@@ -518,7 +518,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         // 更新mapping
         PutMappingRequest putMappingRequest = new PutMappingRequest(indexName);
         if (Objects.isNull(wrapper.mapping)) {
-            Assert.isEmpty(wrapper.esIndexParamList, String.format("update index: %s failed, because of empty update args", indexName));
+            Assert.notEmpty(wrapper.esIndexParamList, String.format("update index: %s failed, because of empty update args", indexName));
             Map<String, Object> mapping = IndexUtils.initMapping(EntityInfoHelper.getEntityInfo(entityClass), wrapper.esIndexParamList);
             putMappingRequest.source(mapping);
         } else {
