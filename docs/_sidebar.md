@@ -54,7 +54,8 @@
     - [原生查询](origin-query.md)
     - [打印DSL语句](source.md)
     - [分页](page.md)
-    - [嵌套及父子](nested.md)
+    - [嵌套类型](nested.md)
+    - [父子类型](parent-child.md)
   - 高阶语法
   	- [字段过滤](filter.md)
   	- [排序](sort.md)
