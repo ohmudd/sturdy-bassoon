@@ -59,6 +59,9 @@
 ~~1.修复一处非String类型在NOT_EMPTY字段策略下,执行Insert时未赋值的情况~~
 持续更新中...
 
+~~0.9.12~~
+~~[v0.9.12](https://gitee.com/dromara/easy-es/releases/V0.9.12)~~
+
 > **Tip**
 > 已发布的版本会被用删除线标记
 
