@@ -327,7 +327,7 @@ public class EntityInfoHelper {
                 entityInfo.setJoinFieldName(mappingColumn);
                 entityInfo.setJoinFieldClass(tableField.joinFieldClass());
                 entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.joinFieldClass());
-                processNested(tableField.joinFieldClass(), field.getName(), field.getName(), dbConfig, entityInfo);
+                processNested(tableField.joinFieldClass(),dbConfig, entityInfo);
             }
 
             fieldList.add(entityFieldInfo);
@@ -335,9 +335,8 @@ public class EntityInfoHelper {
             // 嵌套类处理
             if (DefaultNestedClass.class != tableField.nestedClass()) {
                 // 嵌套类
-                entityInfo.getNestedPathClassMap().putIfAbsent(field.getName(), tableField.nestedClass());
                 entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.nestedClass());
-                processNested(tableField.nestedClass(), field.getName(), field.getName(), dbConfig, entityInfo);
+                processNested(tableField.nestedClass(), dbConfig, entityInfo);
             }
 
         } else {
@@ -381,7 +380,7 @@ public class EntityInfoHelper {
      * @param dbConfig    全局配置
      * @param entityInfo  实体信息
      */
-    private static void processNested(Class<?> nestedClass, String path, String prefix, GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo) {
+    private static void processNested(Class<?> nestedClass, GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo) {
         // 将字段映射置入map 对其子节点也执行同样的操作
         List<Field> allFields = getAllFields(nestedClass);
         Map<String, String> mappingColumnMap = new HashMap<>(allFields.size());
@@ -403,9 +402,8 @@ public class EntityInfoHelper {
                 if (tableField.exist()) {
                     // 子嵌套,递归处理
                     if (DefaultNestedClass.class != tableField.nestedClass()) {
-                        entityInfo.getNestedPathClassMap().putIfAbsent(path, nestedClass);
                         entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.nestedClass());
-                        processNested(tableField.nestedClass(), field.getName(), prefix + POINT + field.getName(), dbConfig, entityInfo);
+                        processNested(tableField.nestedClass(), dbConfig, entityInfo);
                     }
 
                     // 字段名称

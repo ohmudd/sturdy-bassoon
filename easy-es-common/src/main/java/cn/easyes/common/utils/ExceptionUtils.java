@@ -3,6 +3,9 @@ package cn.easyes.common.utils;
 
 import cn.easyes.common.exception.EasyEsException;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
+
 /**
  * 异常辅助工具类
  * <p>
@@ -44,6 +47,25 @@ public final class ExceptionUtils {
      */
     public static EasyEsException eee(Throwable t) {
         return new EasyEsException(t);
+    }
+
+    /**
+     * 异常包装
+     *
+     * @param wrapped 异常
+     * @return 异常
+     */
+    public static Throwable unwrapThrowable(Throwable wrapped) {
+        Throwable unwrapped = wrapped;
+        while (true) {
+            if (unwrapped instanceof InvocationTargetException) {
+                unwrapped = ((InvocationTargetException) unwrapped).getTargetException();
+            } else if (unwrapped instanceof UndeclaredThrowableException) {
+                unwrapped = ((UndeclaredThrowableException) unwrapped).getUndeclaredThrowable();
+            } else {
+                return unwrapped;
+            }
+        }
     }
 
 }

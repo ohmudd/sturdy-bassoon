@@ -3,7 +3,7 @@ package cn.easyes.extension.plugins;
 
 import cn.easyes.annotation.Intercepts;
 import cn.easyes.annotation.Signature;
-import cn.easyes.common.utils.ExceptionUtil;
+import cn.easyes.common.utils.ExceptionUtils;
 import cn.easyes.extension.context.Interceptor;
 import cn.easyes.extension.context.Invocation;
 
@@ -61,7 +61,7 @@ public class Plugin implements InvocationHandler {
             }
             return method.invoke(target, args);
         } catch (Exception e) {
-            throw ExceptionUtil.unwrapThrowable(e);
+            throw ExceptionUtils.unwrapThrowable(e);
         }
     }
 
