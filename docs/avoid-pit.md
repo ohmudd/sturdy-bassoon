@@ -42,7 +42,9 @@ public class Document {
 
 4.项目中同时使用Mybatis-Plus和Easy-Es
 在此场景下,您需要将MP的mapper和EE的mapper分别放在不同的目录下,并在配置扫描路径时各自配各自的扫描路径,如此便可共存使用了,否则两者在SpringBoot启动时都去扫描同一路径,并尝试注册为自己的bean,由于底层实现依赖的类完全不一样,所以会导致其中之一注册失败,整个项目无法正常启动.可参考下图:
+
 ![image4](https://iknow.hs.net/30f08bc4-cb07-4ac6-8a52-59e062105238.png)
+
 ![image5](https://iknow.hs.net/f018fd5b-a932-445f-8ce0-b76d58caf931.png)
 
 5.and和or的使用
