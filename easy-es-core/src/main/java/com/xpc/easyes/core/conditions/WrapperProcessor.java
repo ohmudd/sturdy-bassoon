@@ -4,8 +4,6 @@ import com.xpc.easyes.core.cache.GlobalConfigCache;
 import com.xpc.easyes.core.common.EntityInfo;
 import com.xpc.easyes.core.config.GlobalConfig;
 import com.xpc.easyes.core.enums.AggregationTypeEnum;
-import com.xpc.easyes.core.enums.BaseEsParamTypeEnum;
-import com.xpc.easyes.core.enums.EsAttachTypeEnum;
 import com.xpc.easyes.core.params.AggregationParam;
 import com.xpc.easyes.core.params.BaseEsParam;
 import com.xpc.easyes.core.params.GeoParam;
@@ -26,6 +24,7 @@ import java.util.*;
 
 import static com.xpc.easyes.core.constants.BaseEsConstants.*;
 import static com.xpc.easyes.core.enums.BaseEsParamTypeEnum.*;
+import static com.xpc.easyes.core.enums.EsAttachTypeEnum.*;
 
 /**
  * 核心 wrpeer处理类
@@ -373,71 +372,69 @@ public class WrapperProcessor {
         boolean enableMust2Filter = Objects.isNull(baseEsParam.getEnableMust2Filter()) ? dbConfig.isEnableMust2Filter() :
                 baseEsParam.getEnableMust2Filter();
 
-        int attachType = enableMust2Filter ? EsAttachTypeEnum.FILTER.getType() : EsAttachTypeEnum.MUST.getType();
         baseEsParam.getMustList().forEach(fieldValueModel -> EsQueryTypeUtil.addQueryByType(boolQueryBuilder,
-                attachType, fieldValueModel, entityInfo, dbConfig));
+                MUST.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         // 多字段情形
         baseEsParam.getMustMultiFieldList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), attachType,
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), MUST.getType(), enableMust2Filter,
                         FieldUtils.getRealFields(fieldValueModel.getFields(), entityInfo.getMappingColumnMap()), fieldValueModel.getValue(),
                         fieldValueModel.getExt(), fieldValueModel.getMinimumShouldMatch(), fieldValueModel.getBoost()));
 
         baseEsParam.getFilterList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EsAttachTypeEnum.FILTER.getType(), fieldValueModel, entityInfo, dbConfig));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, FILTER.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getShouldList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder,
-                        EsAttachTypeEnum.SHOULD.getType(), fieldValueModel, entityInfo, dbConfig));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, SHOULD.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         // 多字段情形
-        baseEsParam.getMustMultiFieldList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), EsAttachTypeEnum.SHOULD.getType(),
+        baseEsParam.getShouldMultiFieldList().forEach(fieldValueModel ->
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), SHOULD.getType(), enableMust2Filter,
                         FieldUtils.getRealFields(fieldValueModel.getFields(), entityInfo.getMappingColumnMap()), fieldValueModel.getValue(),
                         fieldValueModel.getExt(), fieldValueModel.getMinimumShouldMatch(), fieldValueModel.getBoost()));
 
         baseEsParam.getMustNotList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EsAttachTypeEnum.MUST_NOT.getType(), fieldValueModel, entityInfo, dbConfig));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, MUST_NOT.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getGtList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EsAttachTypeEnum.GT.getType(), fieldValueModel, entityInfo, dbConfig));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, GT.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getLtList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EsAttachTypeEnum.LT.getType(), fieldValueModel, entityInfo, dbConfig));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, LT.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getGeList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EsAttachTypeEnum.GE.getType(), fieldValueModel, entityInfo, dbConfig));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, GE.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getLeList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EsAttachTypeEnum.LE.getType(), fieldValueModel, entityInfo, dbConfig));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, LE.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getBetweenList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
-                        EsAttachTypeEnum.BETWEEN.getType(), entityInfo.getMappingColumn(fieldValueModel.getField()),
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), BETWEEN.getType(),
+                        enableMust2Filter, entityInfo.getMappingColumn(fieldValueModel.getField()),
                         fieldValueModel.getLeftValue(), fieldValueModel.getRightValue(), fieldValueModel.getBoost()));
 
         baseEsParam.getNotBetweenList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(),
-                        EsAttachTypeEnum.NOT_BETWEEN.getType(), entityInfo.getMappingColumn(fieldValueModel.getField()),
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, fieldValueModel.getEsQueryType(), NOT_BETWEEN.getType(),
+                        enableMust2Filter, entityInfo.getMappingColumn(fieldValueModel.getField()),
                         fieldValueModel.getLeftValue(), fieldValueModel.getRightValue(), fieldValueModel.getBoost()));
 
         baseEsParam.getInList().forEach(fieldValueModel -> EsQueryTypeUtil.addQueryByType(boolQueryBuilder,
-                EsAttachTypeEnum.IN.getType(), fieldValueModel, entityInfo, dbConfig));
+                IN.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getNotInList().forEach(fieldValueModel -> EsQueryTypeUtil.addQueryByType(boolQueryBuilder,
-                EsAttachTypeEnum.NOT_IN.getType(), fieldValueModel, entityInfo, dbConfig));
+                NOT_IN.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getIsNullList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EsAttachTypeEnum.NOT_EXISTS.getType(), fieldValueModel, entityInfo, dbConfig));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, NOT_EXISTS.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getNotNullList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EsAttachTypeEnum.EXISTS.getType(), fieldValueModel, entityInfo, dbConfig));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EXISTS.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getLikeLeftList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EsAttachTypeEnum.LIKE_LEFT.getType(), fieldValueModel, entityInfo, dbConfig));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, LIKE_LEFT.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
 
         baseEsParam.getLikeRightList().forEach(fieldValueModel ->
-                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, EsAttachTypeEnum.LIKE_RIGHT.getType(), fieldValueModel, entityInfo, dbConfig));
+                EsQueryTypeUtil.addQueryByType(boolQueryBuilder, LIKE_RIGHT.getType(), enableMust2Filter, fieldValueModel, entityInfo, dbConfig));
     }
 
     /**
