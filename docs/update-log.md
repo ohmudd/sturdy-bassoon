@@ -60,6 +60,7 @@
 持续更新中...
 
 ~~0.9.12~~
+
 ~~[v0.9.12](https://gitee.com/dromara/easy-es/releases/V0.9.12)~~
 
 > **Tip**
