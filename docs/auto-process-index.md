@@ -25,7 +25,7 @@
 ---
 
 在此模式下,索引的所有维护工作EE框架均不介入,由用户自行处理,EE提供了开箱即用的索引[CRUD](https://www.yuque.com/laohan-14b9d/foyrfa/myborf)相关API,您可以选择使用该API手动维护索引,亦可通过es-head等工具来维护索引,总之在此模式下,您拥有更高的自由度,比较适合那些质疑EE框架的保守用户或追求极致灵活度的用户使用,类似汽车的手动挡,新手不建议使用此模式,老司机请随便.
-![手动模式.png](https://cdn.nlark.com/yuque/0/2022/png/21559896/1650105357060-879a2f4b-5145-483b-9b44-caf809b28330.png)
+![手动模式.png](https://iknow.hs.net/3faa18ce-c39f-44d5-b0e5-244b4828df3e.png)
 
 **配置启用模式**
 
