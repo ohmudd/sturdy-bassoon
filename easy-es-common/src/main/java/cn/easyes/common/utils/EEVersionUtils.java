@@ -16,7 +16,7 @@ import java.util.Optional;
  * @since 0.9.80
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class EEVersionUtil {
+public class EEVersionUtils {
 
     /**
      * 获取指定类版本号
