@@ -4,6 +4,7 @@
   - [快速开始](quick-start.md)
     - [Springboot集成Demo](demo.md)
   - 核心功能
+    - [自动托管索引](auto-process-index.md)
   	- [index索引API](index.md)
   	  - [是否存在索引](exists-index.md)
   	  - [删除索引](del-index.md)
@@ -11,7 +12,6 @@
   	  - [创建索引](create-index.md)
   	    - [索引分片](index-shard.md)
   	    - [索引别名](index-alias.md)
-        - [自动托管索引](auto-process-index.md)
   	- CRUD接口
   	  - [Select](select.md)   
   	  - [Update](update.md) 
