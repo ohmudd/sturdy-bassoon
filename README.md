@@ -18,7 +18,7 @@
   </a>
 </p>
 
-# 官网地址 | Official website
+# 官方地址 | Official website
 ---
 
 **easy-es官网** https://easy-es.cn/
@@ -143,6 +143,9 @@ compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Vers
 ---
 
 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+# 知识星球
+[zsxq](https://iknow.hs.net/3a400598-fb2a-4b91-9a23-d123411cb4ac.jpg)
 
 # 捐赠 | Donate
 ---
