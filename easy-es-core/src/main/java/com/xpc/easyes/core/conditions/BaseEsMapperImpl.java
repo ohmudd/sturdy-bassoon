@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import com.xpc.easyes.core.cache.BaseCache;
-import com.xpc.easyes.core.cache.GlobalConfigCache;
 import com.xpc.easyes.core.common.EntityFieldInfo;
 import com.xpc.easyes.core.common.EntityInfo;
 import com.xpc.easyes.core.common.PageInfo;
@@ -88,7 +87,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public Boolean existsIndex(String indexName) {
-        indexName = getFullIndexName(indexName);
+        if (StringUtils.isEmpty(indexName)) {
+            throw ExceptionUtils.eee("indexName can not be empty");
+        }
         GetIndexRequest getIndexRequest = new GetIndexRequest(indexName);
         try {
             return client.indices().exists(getIndexRequest, RequestOptions.DEFAULT);
@@ -99,7 +100,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public Boolean createIndex(LambdaEsIndexWrapper<T> wrapper) {
-        wrapper.indexName(getFullIndexName(wrapper.indexName));
         CreateIndexRequest createIndexRequest = new CreateIndexRequest(wrapper.indexName);
 
         // 分片个副本信息
@@ -138,10 +138,10 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     @Override
     public Boolean updateIndex(LambdaEsIndexWrapper<T> wrapper) {
         boolean existsIndex = this.existsIndex(wrapper.indexName);
-        wrapper.indexName(getFullIndexName(wrapper.indexName));
         if (!existsIndex) {
             throw ExceptionUtils.eee("index: %s not exists", wrapper.indexName);
         }
+
         // 更新mapping
         PutMappingRequest putMappingRequest = new PutMappingRequest(wrapper.indexName);
         if (Objects.isNull(wrapper.mapping)) {
@@ -166,7 +166,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public Boolean deleteIndex(String indexName) {
-        indexName = getFullIndexName(indexName);
+        if (StringUtils.isEmpty(indexName)) {
+            throw ExceptionUtils.eee("indexName can not be empty");
+        }
         DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
         try {
             AcknowledgedResponse response = client.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
@@ -216,24 +218,16 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     @Override
     public PageInfo<SearchHit> pageQueryOriginal(LambdaEsQueryWrapper<T> wrapper, Integer pageNum, Integer pageSize) throws IOException {
-        PageInfo<SearchHit> pageInfo = new PageInfo<>();
         long total = this.selectCount(wrapper);
         if (total <= BaseEsConstants.ZERO) {
-            return pageInfo;
+            return new PageInfo<>();
         }
-        pageNum = pageNum == null || pageNum <= 0 ? BaseEsConstants.PAGE_NUM : pageNum;
-        pageSize = pageSize == null || pageSize <= 0 ? BaseEsConstants.PAGE_SIZE : pageSize;
+
         // 查询数据
         SearchHit[] searchHitArray = getSearchHitArray(wrapper, pageNum, pageSize);
         List<SearchHit> list = Arrays.stream(searchHitArray).collect(Collectors.toList());
-        Integer pages =  (int) (total / pageSize + ((total % pageSize == 0) ? 0 : 1));
-        pageInfo.setList(list);
-        pageInfo.setSize(list.size());
-        pageInfo.setTotal(total);
-        pageInfo.setPages(pages);
-        pageInfo.setPageNum(pageNum);
-        pageInfo.setPageSize(pageSize);
-        return pageInfo;
+
+        return PageHelper.getPageInfo(list, total, pageNum, pageSize);
     }
 
     @Override
@@ -578,10 +572,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @return 分页数据
      */
     private PageInfo<T> initPageInfo(LambdaEsQueryWrapper<T> wrapper, Integer pageNum, Integer pageSize) {
-        PageInfo<T> pageInfo = new PageInfo<>();
         long total = this.selectCount(wrapper);
         if (total <= ZERO) {
-            return pageInfo;
+            return new PageInfo<>();
         }
         pageNum = pageNum == null || pageNum <= 0 ? BaseEsConstants.PAGE_NUM : pageNum;
         pageSize = pageSize == null || pageSize <= 0 ? BaseEsConstants.PAGE_SIZE : pageSize;
@@ -591,15 +584,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         } catch (IOException e) {
             throw ExceptionUtils.eee("page select exception:%s", e);
         }
-        Integer pages =  (int) (total / pageSize + ((total % pageSize == 0) ? 0 : 1));
+
         List<T> list = hitsToArray(searchHits, wrapper);
-        pageInfo.setList(list);
-        pageInfo.setSize(list.size());
-        pageInfo.setTotal(total);
-        pageInfo.setPages(pages);
-        pageInfo.setPageNum(pageNum);
-        pageInfo.setPageSize(pageSize);
-        return pageInfo;
+        return PageHelper.getPageInfo(list, total, pageNum, pageSize);
     }
 
     /**
@@ -977,21 +964,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         } catch (IllegalAccessException e) {
             throw ExceptionUtils.eee("get id value exception", e);
         }
-    }
-
-    /**
-     * 根据配置获取完整的indexName
-     *
-     * @param indexName
-     * @return tablePrefix + indexName
-     */
-    private String getFullIndexName(String indexName) {
-        if (StringUtils.isEmpty(indexName)) {
-            throw ExceptionUtils.eee("indexName can not be empty");
-        }
-        GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
-        String tablePrefix = Optional.ofNullable(dbConfig.getTablePrefix()).orElse(EMPTY_STR);
-        return tablePrefix + indexName;
     }
 
     /**
