@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://en.easy-es.cn/">
-   <img alt="East-Es-Logo" src="https://iknow.hs.net/9fa0407f-30ff-4d8b-82da-a4990e41a04b.png">
+   <img alt="East-Es-Logo" src="https://iknow.hs.net/042dd639-5bfa-410f-968f-8bbceb8d8ca7.png">
   </a>
 </p>
 
@@ -26,7 +26,15 @@ Easy-Es is a powerfully enhanced toolkit of RestHighLevelClient for simplify dev
 ## Official website
 ---
 
-https://en.easy-es.cn/
+**easy-es website**  https://en.easy-es.cn/
+
+**easy-es gitee** https://gitee.com/dromara/easy-es
+
+**easy-es github** https://github.com/dromara/easy-es
+
+**dromara website** https://dromara.org/
+
+**dromara gitee homepage** https://gitee.com/dromara/
 
 ## Links
 ---
