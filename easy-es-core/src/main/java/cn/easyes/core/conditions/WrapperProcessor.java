@@ -680,7 +680,7 @@ public class WrapperProcessor {
     private static AggregationBuilder getRealAggregationBuilder(AggregationTypeEnum aggType, String name, String realField) {
         AggregationBuilder aggregationBuilder;
         // 解决同一个字段聚合多次，如min(starNum), max(starNum) 字段名重复问题
-        name += aggType.name();
+        name += aggType.getValue();
         switch (aggType) {
             case AVG:
                 aggregationBuilder = AggregationBuilders.avg(name).field(realField);

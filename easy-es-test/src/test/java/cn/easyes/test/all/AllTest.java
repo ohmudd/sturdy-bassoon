@@ -355,7 +355,7 @@ public class AllTest {
                 .groupBy(Document::getStarNum);
         SearchResponse response = documentMapper.search(wrapper);
         ParsedLongTerms parsedLongTerms = response.getAggregations()
-                .get("starNum");
+                .get("starNumTerms");
         for (Terms.Bucket bucket : parsedLongTerms.getBuckets()) {
             Assertions.assertTrue(bucket.getKey().equals(1L) && bucket.getDocCount() == 2L);
             break;
@@ -370,7 +370,7 @@ public class AllTest {
                 .max(Document::getStarNum);
         SearchResponse response = documentMapper.search(wrapper);
         ParsedMax parsedMax = response.getAggregations()
-                .get("starNum");
+                .get("starNumMax");
         Assertions.assertTrue(parsedMax.getValue() > 21);
     }
 
@@ -382,7 +382,7 @@ public class AllTest {
                 .min(Document::getStarNum);
         SearchResponse response = documentMapper.search(wrapper);
         ParsedMin parsedMin = response.getAggregations()
-                .get("starNum");
+                .get("starNumMin");
         Assertions.assertTrue(parsedMin.getValue() > 0 && parsedMin.getValue() < 2);
     }
 
@@ -394,7 +394,7 @@ public class AllTest {
                 .sum(Document::getStarNum);
         SearchResponse response = documentMapper.search(wrapper);
         ParsedSum parsedSum = response.getAggregations()
-                .get("starNum");
+                .get("starNumSum");
         Assertions.assertTrue(parsedSum.getValue() >= 252);
     }
 
@@ -407,7 +407,7 @@ public class AllTest {
                 .avg(Document::getStarNum);
         SearchResponse response = documentMapper.search(wrapper);
         ParsedAvg parsedAvg = response.getAggregations()
-                .get("starNum");
+                .get("starNumAvg");
         Assertions.assertTrue(parsedAvg.getValue() > 11 && parsedAvg.getValue() < 12);
     }
 
