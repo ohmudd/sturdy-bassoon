@@ -44,27 +44,25 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动�
 - **零魔法值:** 字段名称直接从实体中获取,无需输入字段名称字符串这种魔法值
 - **零额外学习成本:** 开发者只要会国内最受欢迎的Mybatis-Plus语法,即可无缝迁移至Easy-Es
 - **降低开发者门槛:** 即便是只了解ES基础的初学者也可以轻松驾驭ES完成绝大多数需求的开发
-- **功能强大:** 支持MySQL的几乎全部功能,且对ES特有的分词,权重,高亮,地理位置Geo等功能都支持
+- **功能强大:** 支持MySQL的几乎全部功能,且对ES特有的分词,权重,高亮,嵌套,地理位置Geo,Ip地址查询等功能都支持
 - **完善的中英文文档:** 提供了中英文双语操作文档,文档全面可靠,帮助您节省更多时间
 - **...**
 
 # 对比 | Compare
 ---
-> 需求:查询出文档标题为 "中国功夫"且作者为"老汉"的所有文档
+> 需求:查询出文档标题为 "传统功夫"且作者为"码保国"的所有文档
 ```java
-    // 使用Easy-Es仅需3行代码即可完成查询
-    LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-    wrapper.eq(Document::getTitle, "中国功夫").eq(Document::getCreator, "老汉");
-    List<Document> documents = documentMapper.selectList(wrapper);
+    // 使用Easy-Es仅需1行代码即可完成查询
+    List<Document> documents = documentMapper.selectList(EsWrappers.lambdaQuery(Document.class).eq(Document::getTitle, "传统功夫").eq(Document::getCreator, "码保国"));
 ```
 
 ```java
-    // 传统方式, 直接用RestHighLevelClient进行查询 需要11行代码,还不包含解析JSON代码
+    // 传统方式, 直接用RestHighLevelClient进行查询 需要19行代码,还不包含下划线转驼峰,自定义字段处理及_id处理等代码
     String indexName = "document";
     SearchRequest searchRequest = new SearchRequest(indexName);
     BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-    TermQueryBuilder titleTerm = QueryBuilders.termQuery("title", "中国功夫");
-    TermsQueryBuilder creatorTerm = QueryBuilders.termsQuery("creator", "老汉");
+    TermQueryBuilder titleTerm = QueryBuilders.termQuery("title", "传统功夫");
+    TermsQueryBuilder creatorTerm = QueryBuilders.termsQuery("creator", "码保国");
     boolQueryBuilder.must(titleTerm);
     boolQueryBuilder.must(creatorTerm);
     SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -72,13 +70,17 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动�
     searchRequest.source(searchSourceBuilder);
     try {
          SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-         // 然后从searchResponse中通过各种方式解析出DocumentList 省略这些代码...
+         List<Document> documents = Optional.ofNullable(searchResponse)
+                .map(SearchResponse::getHits)
+                .map(SearchHits::getHits)
+                .map(hit->Document document = JSON.parseObject(searchHit.getSourceAsString(),Document.class))
+                .collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
         }
 ```
-> * 以上只是简单查询演示,实际使用场景越复杂,效果就越好,平均可节省3-5倍代码量
-> * 传统功夫,点到为止! 上述功能仅供演示,仅为Easy-Es支持功能的冰山一角
+> * 以上只是简单查询演示,实际使用场景越复杂,效果就越好,平均可节省至少3-8倍代码量
+> * 传统功夫,点到为止! 上述功能仅供演示,仅为Easy-Es支持功能的冰山一角,Easy-Es就是这么不讲武德💪
 
 # 官网地址 | Official website
 ---
