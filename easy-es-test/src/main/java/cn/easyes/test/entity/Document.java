@@ -46,6 +46,11 @@ public class Document {
     @IndexField(strategy = FieldStrategy.NOT_EMPTY, fieldType = FieldType.KEYWORD_TEXT, analyzer = Analyzer.IK_SMART)
     private String creator;
     /**
+     * 可以聚合的text类型,字段名字随便取,注解中指定fieldData=true后text类型也可以支持聚合
+     */
+    @IndexField(fieldType = FieldType.TEXT, fieldData = true)
+    private String filedData;
+    /**
      * 创建时间
      */
     @IndexField(fieldType = FieldType.DATE, dateFormat = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis")
