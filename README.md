@@ -153,6 +153,12 @@ compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Vers
 
 > 如果您愿意捐赠本项目,推荐直接在右下方通过Gitee直接捐赠.
 
+> 如果您想支持我们,奈何囊中羞涩,没事,您可以借花献佛,点击下方链接进入注册,则该赞助商会代您捐赠一笔小钱给我们买辣条.
+
+<a href="https://easy-es.cn/">
+  <img alt="ad" src="https://iknow.hs.net/540914b7-126c-488e-91ce-dc7a41fa7278.png">
+</a>
+
 # 关注我 | About Me
 ---
 
