@@ -201,7 +201,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         pageSize = pageSize == null || pageSize <= ZERO ? BaseEsConstants.PAGE_SIZE : pageSize;
 
         wrapper.from((pageNum - 1) * pageSize);
-        wrapper.size(pageNum * pageSize);
+        wrapper.size(pageSize);
 
         // 请求es获取数据
         SearchResponse response = getSearchResponse(wrapper);
