@@ -6,6 +6,8 @@
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.like(Document::getContent,"world");
         wrapper.groupBy(Document::getCreator);
+        // if multiple fields
+        // wrapper.groupBy(Document::getCreator,Document::getModifier);
         SearchResponse response = documentMapper.search(wrapper);
         System.out.println(response);
     }
