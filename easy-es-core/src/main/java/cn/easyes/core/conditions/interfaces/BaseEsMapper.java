@@ -86,6 +86,32 @@ public interface BaseEsMapper<T> {
     Boolean deleteIndex(String... indexNames);
 
     /**
+     * 刷新索引
+     *
+     * @return 是否刷新成功
+     * @author 社区roin贡献 ee作者整合提交
+     */
+    Boolean refresh();
+
+    /**
+     * 刷新指定索引
+     *
+     * @param indexName 索引名称
+     * @return 是否刷新成功
+     * @author 社区roin贡献 ee作者整合提交
+     */
+    Boolean refresh(String indexName);
+
+    /**
+     * 刷新指定索引
+     *
+     * @param indexNames 索引名称
+     * @return 是否刷新成功
+     * @author 社区roin贡献 ee作者整合提交
+     */
+    Boolean refresh(String... indexNames);
+
+    /**
      * 标准查询
      *
      * @param wrapper 条件

@@ -1,4 +1,4 @@
-package cn.easyes.core;
+package cn.easyes.core.biz;
 
 import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.core.toolkit.Tree;
@@ -19,6 +19,10 @@ public class Param extends Tree {
      * 节点类型
      */
     private EsQueryTypeEnum queryTypeEnum;
+    /**
+     * 是否nested嵌套查询类型
+     */
+    private boolean nested;
     /**
      * 字段名称
      */
@@ -41,11 +45,22 @@ public class Param extends Tree {
      * 多用途拓展字段2
      */
     private Object ext2;
+    /**
+     * 多用途拓展字段3
+     */
+    private Object ext3;
+    /**
+     * 多用途拓展字段4
+     */
+    private Object ext4;
 
     /**
      * 多字段名称
      */
     private String[] columns;
 
-
+    /**
+     * 字段是否需要拼接.keyword后缀 默认不需要
+     */
+    private boolean needAddKeywordSuffix;
 }

@@ -3,6 +3,7 @@ package cn.easyes.core.conditions;
 import cn.easyes.core.biz.OrderByParam;
 import cn.easyes.core.conditions.interfaces.*;
 import org.apache.lucene.search.join.ScoreMode;
+import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.unit.DistanceUnit;
@@ -11,6 +12,7 @@ import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -94,12 +96,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     @Override
     public Children match(boolean condition, R column, Object val, Float boost) {
         getWrapper().match(condition, column, val, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children nestedMatch(boolean condition, String path, String column, Object val, ScoreMode scoreMode, Float boost) {
-        getWrapper().nestedMatch(condition, path, column, val, scoreMode, boost);
         return typedThis;
     }
 
@@ -380,34 +376,32 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children gt(boolean condition, String column, Object val, Float boost) {
-        getWrapper().gt(condition, column, val, boost);
-        return typedThis;
-
-    }
-
-    @Override
-    public Children ge(boolean condition, String column, Object val, Float boost) {
-        getWrapper().ge(condition, column, val, boost);
+    public Children gt(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost) {
+        getWrapper().gt(condition, column, val, timeZone, format, boost);
         return typedThis;
     }
 
     @Override
-    public Children lt(boolean condition, String column, Object val, Float boost) {
-        getWrapper().lt(condition, column, val, boost);
-        return typedThis;
-
-    }
-
-    @Override
-    public Children le(boolean condition, String column, Object val, Float boost) {
-        getWrapper().le(condition, column, val, boost);
+    public Children ge(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost) {
+        getWrapper().ge(condition, column, val, timeZone, format, boost);
         return typedThis;
     }
 
     @Override
-    public Children between(boolean condition, String column, Object val1, Object val2, Float boost) {
-        getWrapper().between(condition, column, val1, val2, boost);
+    public Children lt(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost) {
+        getWrapper().ge(condition, column, val, timeZone, format, boost);
+        return typedThis;
+    }
+
+    @Override
+    public Children le(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost) {
+        getWrapper().le(condition, column, val, timeZone, format, boost);
+        return typedThis;
+    }
+
+    @Override
+    public Children between(boolean condition, String column, Object from, Object to, ZoneId timeZone, String format, Float boost) {
+        getWrapper().between(condition, column, from, to, timeZone, format, boost);
         return typedThis;
     }
 
@@ -535,6 +529,73 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     @Override
     public Children hasParent(boolean condition, String type, String column, Object val, boolean score, Float boost) {
         getWrapper().hasParent(condition, type, column, val, score, boost);
+        return typedThis;
+    }
+
+    @Override
+    public Children parentId(boolean condition, Object parentId, String type, Float boost) {
+        getWrapper().parentId(condition, parentId, type, boost);
+        return typedThis;
+    }
+
+    @Override
+    public Children matchAllQuery(boolean condition, Float boost) {
+        getWrapper().matchAllQuery(condition, boost);
+        return typedThis;
+    }
+
+
+    @Override
+    public Children orderByDistanceAsc(boolean condition, String column, DistanceUnit unit, GeoDistance geoDistance, GeoPoint... geoPoints) {
+        getWrapper().orderByDistanceAsc(condition, column, unit, geoDistance, geoPoints);
+        return typedThis;
+    }
+
+    @Override
+    public Children orderByDistanceDesc(boolean condition, String column, DistanceUnit unit, GeoDistance geoDistance, GeoPoint... geoPoints) {
+        getWrapper().orderByDistanceDesc(condition, column, unit, geoDistance, geoPoints);
+        return typedThis;
+    }
+
+    @Override
+    public Children exists(boolean condition, String column, Float boost) {
+        getWrapper().exists(condition, column, boost);
+        return typedThis;
+    }
+
+    @Override
+    public Children or(boolean condition) {
+        getWrapper().exists(condition);
+        return typedThis;
+    }
+
+    @Override
+    public Children must(boolean condition, Consumer<Param> consumer) {
+        getWrapper().must(condition, consumer);
+        return typedThis;
+    }
+
+    @Override
+    public Children should(boolean condition, Consumer<Param> consumer) {
+        getWrapper().should(condition, consumer);
+        return typedThis;
+    }
+
+    @Override
+    public Children filter(boolean condition, Consumer<Param> consumer) {
+        getWrapper().filter(condition, consumer);
+        return typedThis;
+    }
+
+    @Override
+    public Children mustNot(boolean condition, Consumer<Param> consumer) {
+        getWrapper().mustNot(condition, consumer);
+        return typedThis;
+    }
+
+    @Override
+    public Children nested(boolean condition, String path, Consumer<Param> consumer, ScoreMode scoreMode) {
+        getWrapper().nested(condition, path, consumer, scoreMode);
         return typedThis;
     }
 }

@@ -16,6 +16,10 @@ public class Tree {
      */
     private String id;
     /**
+     * 层级
+     */
+    private int level;
+    /**
      * 父节点id
      */
     private String parentId;

@@ -1,13 +1,10 @@
 package cn.easyes.core.conditions;
 
+import cn.easyes.annotation.rely.FieldType;
 import cn.easyes.common.enums.AggregationTypeEnum;
 import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.utils.*;
-import cn.easyes.core.Param;
-import cn.easyes.core.biz.AggregationParam;
-import cn.easyes.core.biz.BaseSortParam;
-import cn.easyes.core.biz.EntityInfo;
-import cn.easyes.core.biz.HighLightParam;
+import cn.easyes.core.biz.*;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.config.GlobalConfig;
 import cn.easyes.core.toolkit.EntityInfoHelper;
@@ -35,7 +32,9 @@ import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
+import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static cn.easyes.common.constants.BaseEsConstants.*;
 import static cn.easyes.common.enums.EsQueryTypeEnum.*;
@@ -97,20 +96,33 @@ public class WrapperProcessor {
     private static void preProcessData(List<Param> paramList, List<Param> rootList, Class<?> entityClass) {
         EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
         GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
+        Map<String, String> fieldTypeMap = entityInfo.getFieldList().stream()
+                .collect(Collectors.toMap(EntityFieldInfo::getColumn, item -> Optional.ofNullable(item.getFieldType())
+                        .map(FieldType::getType).orElse(FieldType.KEYWORD_TEXT.getType())));
+
+        Map<Class<?>, List<EntityFieldInfo>> nestedFieldListMap = entityInfo.getNestedFieldListMap();
+
         paramList.forEach(param -> {
             // 驼峰及自定义字段转换
             String realField = FieldUtils.getRealField(param.getColumn(), entityInfo.getMappingColumnMap(), dbConfig);
             param.setColumn(realField);
             if (ArrayUtils.isNotEmpty(param.getColumns())) {
-                String[] columns = Arrays.stream(param.getColumns())
-                        .map(column -> FieldUtils.getRealField(column, entityInfo.getMappingColumnMap(), dbConfig))
-                        .toArray(String[]::new);
+                String[] columns = FieldUtils.getRealFields(param.getColumns(), entityInfo.getMappingColumnMap(), dbConfig);
                 param.setColumns(columns);
             }
-            if (NESTED_MATCH.equals(param.getQueryTypeEnum()) || HAS_CHILD.equals(param.getQueryTypeEnum()) || HAS_PARENT.equals(param.getQueryTypeEnum())) {
+            if (HAS_CHILD.equals(param.getQueryTypeEnum()) || HAS_PARENT.equals(param.getQueryTypeEnum())) {
                 String realPath = FieldUtils.getRealField(param.getExt1().toString(), entityInfo.getMappingColumnMap(), dbConfig);
                 param.setExt1(realPath);
             }
+
+            // 是否需要智能拼接.keyword后缀
+            Optional.ofNullable(fieldTypeMap.get(realField))
+                    .ifPresent(fieldType -> {
+                        if (FieldType.KEYWORD_TEXT.getType().equals(fieldType)) {
+                            param.setNeedAddKeywordSuffix(true);
+                        }
+                    });
+
             if (param.getParentId() == null) {
                 // 仙人板板
                 rootList.add(param);
@@ -128,12 +140,15 @@ public class WrapperProcessor {
     private static void initBool(BoolQueryBuilder bool, Param param) {
         List<Param> children = (List<Param>) param.getChildren();
         QueryBuilder queryBuilder;
+        RangeQueryBuilder rangeBuilder;
+        String finalField;
         switch (param.getQueryTypeEnum()) {
             case OR:
-                // just skip
+                // 渣男行为,*完就不认人了,因为拼接OR已处理过了 直接跳过
                 break;
             case TERM:
-                queryBuilder = QueryBuilders.termQuery(param.getColumn(), param.getVal()).boost(param.getBoost());
+                finalField = getFinalField(param.getColumn(), param.isNeedAddKeywordSuffix());
+                queryBuilder = QueryBuilders.termQuery(finalField, param.getVal()).boost(param.getBoost());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MATCH:
@@ -165,31 +180,43 @@ public class WrapperProcessor {
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GT:
-                queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).gt(param.getVal()).boost(param.getBoost());
-                setBool(bool, queryBuilder, param.getPrevQueryType());
+                rangeBuilder = QueryBuilders.rangeQuery(param.getColumn()).gt(param.getVal()).boost(param.getBoost());
+                Optional.ofNullable(param.getExt1()).ifPresent(ext1 -> rangeBuilder.timeZone(((ZoneId) ext1).getId()));
+                Optional.ofNullable(param.getExt2()).ifPresent(ext2 -> rangeBuilder.format(ext2.toString()));
+                setBool(bool, rangeBuilder, param.getPrevQueryType());
                 break;
             case GE:
-                queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).gte(param.getVal()).boost(param.getBoost());
-                setBool(bool, queryBuilder, param.getPrevQueryType());
+                rangeBuilder = QueryBuilders.rangeQuery(param.getColumn()).gte(param.getVal()).boost(param.getBoost());
+                Optional.ofNullable(param.getExt1()).ifPresent(ext1 -> rangeBuilder.timeZone(((ZoneId) ext1).getId()));
+                Optional.ofNullable(param.getExt2()).ifPresent(ext2 -> rangeBuilder.format(ext2.toString()));
+                setBool(bool, rangeBuilder, param.getPrevQueryType());
                 break;
             case LT:
-                queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).lt(param.getVal()).boost(param.getBoost());
-                setBool(bool, queryBuilder, param.getPrevQueryType());
+                rangeBuilder = QueryBuilders.rangeQuery(param.getColumn()).lt(param.getVal()).boost(param.getBoost());
+                Optional.ofNullable(param.getExt1()).ifPresent(ext1 -> rangeBuilder.timeZone(((ZoneId) ext1).getId()));
+                Optional.ofNullable(param.getExt2()).ifPresent(ext2 -> rangeBuilder.format(ext2.toString()));
+                setBool(bool, rangeBuilder, param.getPrevQueryType());
                 break;
             case LE:
-                queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).lte(param.getVal()).boost(param.getBoost());
-                setBool(bool, queryBuilder, param.getPrevQueryType());
+                rangeBuilder = QueryBuilders.rangeQuery(param.getColumn()).lte(param.getVal()).boost(param.getBoost());
+                Optional.ofNullable(param.getExt1()).ifPresent(ext1 -> rangeBuilder.timeZone(((ZoneId) ext1).getId()));
+                Optional.ofNullable(param.getExt2()).ifPresent(ext2 -> rangeBuilder.format(ext2.toString()));
+                setBool(bool, rangeBuilder, param.getPrevQueryType());
                 break;
             case BETWEEN:
-                queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).gte(param.getExt1()).lte(param.getExt2()).boost(param.getBoost());
-                setBool(bool, queryBuilder, param.getPrevQueryType());
+                rangeBuilder = QueryBuilders.rangeQuery(param.getColumn()).gte(param.getExt1()).lte(param.getExt2()).boost(param.getBoost());
+                Optional.ofNullable(param.getExt3()).ifPresent(ext3 -> rangeBuilder.timeZone(((ZoneId) ext3).getId()));
+                Optional.ofNullable(param.getExt4()).ifPresent(ext4 -> rangeBuilder.format(ext4.toString()));
+                setBool(bool, rangeBuilder, param.getPrevQueryType());
                 break;
             case WILDCARD:
-                queryBuilder = QueryBuilders.wildcardQuery(param.getColumn(), param.getVal().toString());
+                finalField = getFinalField(param.getColumn(), param.isNeedAddKeywordSuffix());
+                queryBuilder = QueryBuilders.wildcardQuery(finalField, param.getVal().toString());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case TERMS:
-                queryBuilder = QueryBuilders.termsQuery(param.getColumn(), (Collection<?>) param.getVal());
+                finalField = getFinalField(param.getColumn(), param.isNeedAddKeywordSuffix());
+                queryBuilder = QueryBuilders.termsQuery(finalField, (Collection<?>) param.getVal());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case EXISTS:
@@ -218,10 +245,6 @@ public class WrapperProcessor {
                 queryBuilder = QueryBuilders.geoShapeQuery(param.getColumn(), (Geometry) param.getVal()).relation((ShapeRelation) param.getExt1()).boost(param.getBoost());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
-            case NESTED_MATCH:
-                queryBuilder = QueryBuilders.nestedQuery(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + param.getColumn(), param.getVal()).boost(param.getBoost()), (ScoreMode) param.getExt2());
-                setBool(bool, queryBuilder, param.getPrevQueryType());
-                break;
             case HAS_CHILD:
                 queryBuilder = new HasChildQueryBuilder(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + param.getColumn(), param.getVal()).boost(param.getBoost()), (ScoreMode) param.getExt2());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
@@ -234,7 +257,7 @@ public class WrapperProcessor {
                 queryBuilder = new ParentIdQueryBuilder(param.getColumn(), param.getVal().toString());
                 setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
-            // 下面四种嵌套类型 需要对孩子节点递归处理
+            // 下面五种嵌套类型 需要对孩子节点递归处理
             case AND_MUST:
                 queryBuilder = getBool(children, QueryBuilders.boolQuery());
                 setBool(bool, queryBuilder, AND_MUST);
@@ -251,10 +274,17 @@ public class WrapperProcessor {
                 queryBuilder = getBool(children, QueryBuilders.boolQuery());
                 setBool(bool, queryBuilder, OR_SHOULD);
                 break;
+            case NESTED:
+                queryBuilder = getBool(children, QueryBuilders.boolQuery());
+                queryBuilder = QueryBuilders.nestedQuery(param.getColumn(), queryBuilder, (ScoreMode) param.getVal());
+                setBool(bool, queryBuilder, param.getPrevQueryType());
+                break;
             default:
+                // just ignore,almost never happen
                 throw ExceptionUtils.eee("非法参数类型");
         }
     }
+
 
     /**
      * 设置节点的bool
@@ -264,14 +294,16 @@ public class WrapperProcessor {
      * @param parentType   查询类型
      */
     private static void setBool(BoolQueryBuilder bool, QueryBuilder queryBuilder, EsQueryTypeEnum parentType) {
-        if (EsQueryTypeEnum.AND_MUST.equals(parentType)) {
+        if (AND_MUST.equals(parentType)) {
             bool.must(queryBuilder);
-        } else if (EsQueryTypeEnum.OR_SHOULD.equals(parentType)) {
+        } else if (OR_SHOULD.equals(parentType)) {
             bool.should(queryBuilder);
-        } else if (EsQueryTypeEnum.FILTER.equals(parentType)) {
+        } else if (FILTER.equals(parentType)) {
             bool.filter(queryBuilder);
-        } else if (EsQueryTypeEnum.MUST_NOT.equals(parentType)) {
+        } else if (MUST_NOT.equals(parentType)) {
             bool.mustNot(queryBuilder);
+        } else {
+            bool.must(queryBuilder);
         }
     }
 
@@ -288,6 +320,22 @@ public class WrapperProcessor {
         }
         paramList.forEach(param -> initBool(builder, param));
         return builder;
+    }
+
+    /**
+     * 获取字段最终名称
+     *
+     * @param origin    初始值
+     * @param condition 是否拼接
+     * @return 最终字段名
+     */
+    private static String getFinalField(String origin, boolean condition) {
+        if (condition && origin != null) {
+            if (!origin.endsWith(KEYWORD_SUFFIX)) {
+                return origin + KEYWORD_SUFFIX;
+            }
+        }
+        return origin;
     }
 
 

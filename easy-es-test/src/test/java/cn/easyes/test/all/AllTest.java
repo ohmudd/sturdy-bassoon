@@ -7,7 +7,6 @@ import cn.easyes.core.biz.SAPageInfo;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.conditions.LambdaEsQueryWrapper;
 import cn.easyes.core.conditions.LambdaEsUpdateWrapper;
-import cn.easyes.core.conditions.WrapperProcessor;
 import cn.easyes.core.toolkit.EntityInfoHelper;
 import cn.easyes.core.toolkit.EsWrappers;
 import cn.easyes.core.toolkit.FieldUtils;
@@ -15,8 +14,6 @@ import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.unit.DistanceUnit;
@@ -33,17 +30,17 @@ import org.elasticsearch.search.aggregations.metrics.ParsedMin;
 import org.elasticsearch.search.aggregations.metrics.ParsedSum;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import static cn.easyes.common.constants.BaseEsConstants.KEYWORD_SUFFIX;
 
 /**
  * 全部核心功能测试-除手动挡索引相关API
@@ -57,8 +54,6 @@ import java.util.*;
 public class AllTest {
     @Resource
     private DocumentMapper documentMapper;
-    @Autowired
-    private RestHighLevelClient client;
 
     // 1.新增
     @Test
@@ -137,7 +132,7 @@ public class AllTest {
     public void testUpdateBySetSearchSourceBuilder() {
         LambdaEsUpdateWrapper<Document> wrapper = new LambdaEsUpdateWrapper<>();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.termQuery(FieldUtils.val(Document::getTitle), "测试文档2"));
+        searchSourceBuilder.query(QueryBuilders.termQuery(FieldUtils.val(Document::getTitle) + KEYWORD_SUFFIX, "测试文档2"));
         wrapper.setSearchSourceBuilder(searchSourceBuilder);
         Document document = new Document();
         document.setContent("测试文档内容2的内容再次被更新了");
@@ -464,21 +459,19 @@ public class AllTest {
     @Order(6)
     public void testConditionOr() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.and(w -> w.in(Document::getStarNum, 1, 2, 3, 4, 10, 11)
-                .eq(Document::getTitle, "测试文档10")
-                .match(Document::getCreator, "老汉")
-                .or(i -> i.eq(Document::getTitle, "测试文档11")));
+        wrapper.in(Document::getStarNum,1,10,12,13)
+                .or(i -> i.eq(Document::getTitle, "测试文档11").eq(Document::getTitle, "测试文档10"));
         List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals(2, documents.size());
+        Assertions.assertEquals(5, documents.size());
     }
 
     @Test
     @Order(6)
     public void testConditionOrInner() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.and(w -> w.match(Document::getContent, "测试").match(Document::getCreator, "老汉")
-                .or(i -> i.eq(Document::getStarNum, 12))
-        );
+        wrapper.eq(Document::getTitle, "测试文档10")
+                .or()
+                .eq(Document::getTitle, "测试文档20");
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(2, documents.size());
     }
@@ -798,27 +791,28 @@ public class AllTest {
     }
 
     @Test
-    @Order(21)
-    public void testDSL(){
+    @Order(9)
+    public void testDSL() {
         // SQL写法
         // where business_type = 1 and (state = 9 or (state = 8 and bidding_sign = 1)) or business_type = 2 and state in (2,3)
 
         // RestHighLevelClient写法
-        List<Integer> values = Arrays.asList(2,3);
+        List<Integer> values = Arrays.asList(2, 3);
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        boolQueryBuilder.must(QueryBuilders.termQuery("business_type",1));
-        boolQueryBuilder.must(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("state",9))
-                .should(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("state",8)).must(QueryBuilders.termQuery("bidding_sign",1))));
-        boolQueryBuilder.should(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("business_type",2)).must(QueryBuilders.termsQuery("state",values)));
+        boolQueryBuilder.must(QueryBuilders.termQuery("business_type", 1));
+        boolQueryBuilder.must(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("state", 9))
+                .should(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("state", 8)).must(QueryBuilders.termQuery("bidding_sign", 1))));
+        boolQueryBuilder.should(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("business_type", 2)).must(QueryBuilders.termsQuery("state", values)));
 
+        System.out.println(boolQueryBuilder);
+        System.out.println("--------------------");
         // MP及EE写法
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.eq("business_type",1)
-                .and(a->a.eq("state",9).or(b->b.eq("state",8).eq("bidding_sign",1))
+        wrapper.eq("business_type", 1)
+                .and(a -> a.eq("state", 9).or(b -> b.eq("state", 8).eq("bidding_sign", 1))
                 )
-                .or(i->i.eq("business_type",2).in("state",2,3));
+                .or(i -> i.eq("business_type", 2).in("state", 2, 3));
         documentMapper.selectList(wrapper);
-
     }
 
 }

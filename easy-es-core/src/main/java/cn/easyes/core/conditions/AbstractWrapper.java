@@ -4,10 +4,10 @@ import cn.easyes.common.enums.AggregationTypeEnum;
 import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.enums.OrderTypeEnum;
 import cn.easyes.common.utils.*;
-import cn.easyes.core.Param;
 import cn.easyes.core.biz.AggregationParam;
 import cn.easyes.core.biz.BaseSortParam;
 import cn.easyes.core.biz.OrderByParam;
+import cn.easyes.core.biz.Param;
 import cn.easyes.core.conditions.interfaces.*;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoDistance;
@@ -19,6 +19,7 @@ import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -36,11 +37,14 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         implements Compare<Children, R>, Nested<Children, Children>, Func<Children, R>, Join<Children>, Geo<Children, R> {
 
     protected final Children typedThis = (Children) this;
-
+    /**
+     * 折叠去重字段
+     */
+    protected String distinctField;
     /**
      * 存放树的高度
      */
-    protected Integer level;
+    protected int level;
     /**
      * 全局父节点 每次指向nested条件后
      */
@@ -52,7 +56,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     /**
      * 参数列表
      */
-    protected List<Param> paramList;
+    protected LinkedList<Param> paramList;
     /**
      * 队列 存放父id
      */
@@ -70,10 +74,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * 聚合查询参数列表
      */
     protected List<AggregationParam> aggregationParamList;
-    /**
-     * 折叠去重字段
-     */
-    protected String distinctField;
+
     /**
      * 排序参数列表
      */
@@ -117,8 +118,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     protected final void initNeed() {
         baseSortParams = new ArrayList<>();
         aggregationParamList = new ArrayList<>();
-        paramList = new ArrayList<>();
-        level = 0;
+        paramList = new LinkedList<>();
         prevQueryType = AND_MUST;
         parentIdQueue = new LinkedList<>();
         prevQueryTypeQueue = new LinkedList<>();
@@ -163,6 +163,12 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children or(boolean condition) {
+        if (!paramList.isEmpty()) {
+            Param param = paramList.peekLast();
+            if (Objects.equals(level, param.getLevel())) {
+                param.setPrevQueryType(OR_SHOULD);
+            }
+        }
         return addParam(condition, OR, null, null, null);
     }
 
@@ -187,15 +193,15 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
+    public Children nested(boolean condition, String path, Consumer<Children> consumer, ScoreMode scoreMode) {
+        return addNested(condition, path, scoreMode, consumer);
+    }
+
+    @Override
     public Children match(boolean condition, String column, Object val, Float boost) {
         return addParam(condition, MATCH, column, val, boost);
     }
 
-    @Override
-    public Children nestedMatch(boolean condition, String path, String column, Object val, ScoreMode scoreMode, Float boost) {
-        Assert.notNull(path, "nested query path must not be null");
-        return addParam(condition, NESTED_MATCH, column, val, path, scoreMode, boost);
-    }
 
     @Override
     public Children hasChild(boolean condition, String type, String column, Object val, ScoreMode scoreMode, Float boost) {
@@ -249,28 +255,30 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
 
     @Override
-    public Children gt(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, GT, column, val, boost);
+    public Children gt(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost) {
+        return addParam(condition, GT, column, val, timeZone, format, boost);
     }
 
     @Override
-    public Children ge(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, GE, column, val, boost);
+    public Children ge(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost) {
+        return addParam(condition, GE, column, val, timeZone, format, boost);
     }
 
     @Override
-    public Children lt(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, LT, column, val, boost);
+    public Children lt(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost) {
+        return addParam(condition, LT, column, val, timeZone, format, boost);
     }
 
     @Override
-    public Children le(boolean condition, String column, Object val, Float boost) {
-        return addParam(condition, LE, column, val, boost);
+    public Children le(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost) {
+        return addParam(condition, LE, column, val, timeZone, format, boost);
     }
 
     @Override
-    public Children between(boolean condition, String column, Object val1, Object val2, Float boost) {
-        return addParam(condition, BETWEEN, column, null, val1, val2, boost);
+    public Children between(boolean condition, String column, Object from, Object to, ZoneId timeZone, String format, Float boost) {
+        Assert.notNull(from, "from must not be null in between query");
+        Assert.notNull(to, "to must not be null in between query");
+        return addParam(condition, column, from, to, timeZone, format, boost);
     }
 
     @Override
@@ -536,9 +544,9 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         param.setColumn(column);
         param.setBoost(boost);
 
-        // 入队之前需要先对MP中的拼接or()特殊处理,嵌套or则不需要处理 之所以在此处处理,是因为可以少遍历一遍树 节省OLog(N) 时间复杂度
-        if (CollectionUtils.isNotEmpty(paramList)) {
-            Param prev = paramList.get(paramList.size() - 1);
+        // 入队之前需要先对MP中的拼接or()特殊处理之所以在此处处理,是因为可以少遍历一遍树 节省OLog(N) 时间复杂度
+        if (!paramList.isEmpty()) {
+            Param prev = paramList.peekLast();
             if (OR.equals(prev.getQueryTypeEnum())) {
                 // 上一节点是拼接or() 则修改当前节点的prevQueryType为OR_SHOULD 让其走should查询
                 param.setPrevQueryType(OR_SHOULD);
@@ -588,6 +596,31 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         return typedThis;
     }
 
+
+    /**
+     * 重载，追加拓展参数
+     *
+     * @param condition 条件
+     * @param column    列
+     * @param var1      拓展字段1
+     * @param var2      拓展字段2
+     * @param var3      拓展字段3
+     * @param var4      拓展字段4
+     * @param boost     权重
+     * @return 泛型
+     */
+    private Children addParam(boolean condition, String column, Object var1, Object var2, Object var3, Object var4, Float boost) {
+        if (condition) {
+            Param param = new Param();
+            param.setExt1(var1);
+            param.setExt2(var2);
+            param.setExt3(var3);
+            param.setExt4(var4);
+            addBaseParam(param, BETWEEN, column, null, boost);
+        }
+        return typedThis;
+    }
+
     /**
      * 重载，追加拓展参数
      *
@@ -612,7 +645,40 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
 
     /**
-     * 添加嵌套查询条件
+     * 追加基础嵌套
+     *
+     * @param param         参数
+     * @param queryTypeEnum 查询类型
+     * @param consumer      消费者
+     */
+    private void addBaseNested(Param param, EsQueryTypeEnum queryTypeEnum, Consumer<Children> consumer) {
+        param.setId(UUID.randomUUID().toString());
+        Optional.ofNullable(parentId).ifPresent(param::setParentId);
+        param.setQueryTypeEnum(queryTypeEnum);
+        level++;
+        param.setLevel(level);
+        paramList.add(param);
+        this.parentId = param.getId();
+        parentIdQueue.push(parentId);
+        prevQueryTypeQueue.push(queryTypeEnum);
+        consumer.accept(instance());
+        // 深度优先在consumer条件消费完后会来执行这里 此时parentId需要重置 至于为什么 可断点打在consumer前后观察一波 整个框架最难的地方就在此
+        level--;
+        if (!parentIdQueue.isEmpty()) {
+            this.parentId = parentIdQueue.pollLast();
+        }
+        if (!prevQueryTypeQueue.isEmpty()) {
+            this.prevQueryType = prevQueryTypeQueue.pollLast();
+        }
+        if (level == 0) {
+            // 仙人板板 根节点
+            this.parentId = null;
+            this.prevQueryType = AND_MUST;
+        }
+    }
+
+    /**
+     * 重载，追加嵌套条件
      *
      * @param condition     条件
      * @param queryTypeEnum 查询类型
@@ -622,28 +688,26 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     private Children addNested(boolean condition, EsQueryTypeEnum queryTypeEnum, Consumer<Children> consumer) {
         if (condition) {
             Param param = new Param();
-            param.setId(UUID.randomUUID().toString());
-            Optional.ofNullable(parentId).ifPresent(param::setParentId);
-            param.setQueryTypeEnum(queryTypeEnum);
-            level++;
-            paramList.add(param);
-            this.parentId = param.getId();
-            parentIdQueue.push(parentId);
-            prevQueryTypeQueue.push(queryTypeEnum);
-            consumer.accept(instance());
-            // 深度优先在consumer条件消费完后会来执行这里 此时parentId需要重置 至于为什么 可断点打在consumer前后观察一波 整个框架最难的地方就在此
-            level--;
-            if (!parentIdQueue.isEmpty()) {
-                this.parentId = parentIdQueue.pollLast();
-            }
-            if (!prevQueryTypeQueue.isEmpty()) {
-                this.prevQueryType = prevQueryTypeQueue.pollLast();
-            }
-            if (level == 0) {
-                // 仙人板板
-                this.parentId = null;
-                this.prevQueryType = AND_MUST;
-            }
+            addBaseNested(param, queryTypeEnum, consumer);
+        }
+        return typedThis;
+    }
+
+    /**
+     * 重载，追加加嵌套类型查询条件
+     *
+     * @param condition 条件
+     * @param path      路径
+     * @param scoreMode 评分模式
+     * @param consumer  消费者
+     * @return 泛型
+     */
+    private Children addNested(boolean condition, String path, ScoreMode scoreMode, Consumer<Children> consumer) {
+        if (condition) {
+            Param param = new Param();
+            param.setColumn(path);
+            param.setVal(scoreMode);
+            addBaseNested(param, NESTED, consumer);
         }
         return typedThis;
     }

@@ -224,5 +224,8 @@ public interface BaseEsConstants {
      * 未知的版本号
      */
     String UNKNOWN = "unknown";
-
+    /**
+     * keyword后缀
+     */
+    String KEYWORD_SUFFIX = ".keyword";
 }

@@ -4,7 +4,7 @@ import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.params.SFunction;
 import cn.easyes.common.utils.ArrayUtils;
 import cn.easyes.common.utils.ExceptionUtils;
-import cn.easyes.core.Param;
+import cn.easyes.core.biz.Param;
 import cn.easyes.core.biz.AggregationParam;
 import cn.easyes.core.biz.BaseSortParam;
 import cn.easyes.core.biz.EntityFieldInfo;
@@ -59,23 +59,23 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
         exclude = new String[]{};
     }
 
-    LambdaEsQueryWrapper(T entity, List<Param> paramList, LinkedList<String> parentIdQueue,
-                         LinkedList<EsQueryTypeEnum> prevQueryTypeQueue, Integer level, String parentId,
-                         EsQueryTypeEnum pervQueryType, List<BaseSortParam> baseSortParams, List<AggregationParam> aggregationParamList) {
+    LambdaEsQueryWrapper(T entity, int level, String parentId, EsQueryTypeEnum pervQueryType, LinkedList<Param> paramList,
+                         LinkedList<String> parentIdQueue, LinkedList<EsQueryTypeEnum> prevQueryTypeQueue,
+                         List<BaseSortParam> baseSortParams, List<AggregationParam> aggregationParamList) {
         super.setEntity(entity);
-        this.parentIdQueue = parentIdQueue;
-        this.prevQueryTypeQueue = prevQueryTypeQueue;
         this.level = level;
         this.parentId = parentId;
         this.prevQueryType = pervQueryType;
         this.paramList = paramList;
+        this.parentIdQueue = parentIdQueue;
+        this.prevQueryTypeQueue = prevQueryTypeQueue;
         this.baseSortParams = baseSortParams;
         this.aggregationParamList = aggregationParamList;
     }
 
     @Override
     protected LambdaEsQueryWrapper<T> instance() {
-        return new LambdaEsQueryWrapper<>(entity, paramList, parentIdQueue, prevQueryTypeQueue, level, parentId, prevQueryType, baseSortParams, aggregationParamList);
+        return new LambdaEsQueryWrapper<>(entity, level, parentId, prevQueryType, paramList, parentIdQueue, prevQueryTypeQueue, baseSortParams, aggregationParamList);
     }
 
     @Override

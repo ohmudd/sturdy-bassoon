@@ -1,13 +1,14 @@
 package cn.easyes.core.conditions;
 
+import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.params.SFunction;
-import cn.easyes.core.Param;
+import cn.easyes.core.biz.Param;
 import cn.easyes.core.biz.EsUpdateParam;
 import cn.easyes.core.conditions.interfaces.Update;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -40,7 +41,8 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
         updateParamList = new ArrayList<>();
     }
 
-    LambdaEsUpdateWrapper(T entity, List<Param> paramList, List<EsUpdateParam> updateParamList) {
+    LambdaEsUpdateWrapper(T entity, int level, String parentId, EsQueryTypeEnum pervQueryType, LinkedList<Param> paramList,
+                          LinkedList<String> parentIdQueue, LinkedList<EsQueryTypeEnum> prevQueryTypeQueue, List<EsUpdateParam> updateParamList) {
         super.setEntity(entity);
         this.paramList = paramList;
         this.updateParamList = updateParamList;
@@ -65,7 +67,7 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
 
     @Override
     protected LambdaEsUpdateWrapper<T> instance() {
-        return new LambdaEsUpdateWrapper<>(entity, paramList, updateParamList);
+        return new LambdaEsUpdateWrapper<>(entity, level, parentId, prevQueryType, paramList, parentIdQueue, prevQueryTypeQueue, updateParamList);
     }
 
     @Override

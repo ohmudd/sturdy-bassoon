@@ -84,10 +84,6 @@ public enum EsQueryTypeEnum {
     GEO_SHAPE_ID,
     GEO_SHAPE,
     /**
-     * 嵌套查询
-     */
-    NESTED_MATCH,
-    /**
      * 父子类型查询
      */
     HAS_CHILD,
@@ -109,6 +105,10 @@ public enum EsQueryTypeEnum {
      * 或条件，相当于MYSQL中的OR 和MP中的or嵌套用法一致
      */
     OR_SHOULD,
+    /**
+     * 嵌套查询 ES独有 对嵌套类型的查询
+     */
+    NESTED,
     /**
      * 或条件，仅影响紧跟其后的一个条件，和MP中的拼接or用法一致
      */

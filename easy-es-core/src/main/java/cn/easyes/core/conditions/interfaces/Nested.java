@@ -1,5 +1,7 @@
 package cn.easyes.core.conditions.interfaces;
 
+import org.apache.lucene.search.join.ScoreMode;
+
 import java.io.Serializable;
 import java.util.function.Consumer;
 
@@ -87,4 +89,28 @@ public interface Nested<Param, Children> extends Serializable {
      * @return 泛型
      */
     Children mustNot(boolean condition, Consumer<Param> consumer);
+
+
+    default Children nested(String path, Consumer<Param> consumer) {
+        return nested(true, path, consumer);
+    }
+
+    default Children nested(String path, Consumer<Param> consumer, ScoreMode scoreMode) {
+        return nested(true, path, consumer, scoreMode);
+    }
+
+    default Children nested(boolean condition, String path, Consumer<Param> consumer) {
+        return nested(condition, path, consumer, ScoreMode.None);
+    }
+
+    /**
+     * 嵌套查询
+     *
+     * @param condition 条件
+     * @param path      上级路径
+     * @param consumer  嵌套里的条件函数
+     * @return 泛型
+     * @author 此方法由社区开发者lym于1.x贡献，EE作者负责调整及整合至2.0
+     */
+    Children nested(boolean condition, String path, Consumer<Param> consumer, ScoreMode scoreMode);
 }

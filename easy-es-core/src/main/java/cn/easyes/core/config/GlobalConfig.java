@@ -62,7 +62,7 @@ public class GlobalConfig {
         /**
          * enable underscore to camel case default false 是否开启下划线自动转驼峰 默认关闭
          */
-        private boolean mapUnderscoreToCamelCase = false;
+        private boolean mapUnderscoreToCamelCase;
         /**
          * es id generate type. es id生成类型 默认由es自动生成
          */
@@ -83,5 +83,9 @@ public class GlobalConfig {
          * Batch update threshold 10000 by default 批量更新阈值 默认值为1万
          */
         private Integer batchUpdateThreshold = 10000;
+        /**
+         * Whether to intelligently add the. keyword suffix to the field. This configuration is enabled by default. The field type is KEYWORD only for annotation configuration_ The String field of TEXT or unconfigured type takes effect and only takes effect when the query requires that the field be of keyword type, so it is called smart! 是否智能为字段添加.keyword后缀 默认开启 此配置仅对注解配置字段类型为KEYWORD_TEXT或未配置类型的String字段生效，并且只会在查询要求该字段必须为keyword类型的查询中才生效，因此谓之智能!
+         */
+        private boolean smartAddKeywordSuffix = true;
     }
 }

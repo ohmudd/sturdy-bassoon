@@ -19,6 +19,8 @@ import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import lombok.Setter;
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -140,6 +142,30 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
                     Assert.isTrue(success, String.format("delete index: %s failed,", indexName));
                 });
         return Boolean.TRUE;
+    }
+
+    @Override
+    public Boolean refresh() {
+        return this.refresh(EntityInfoHelper.getEntityInfo(entityClass).getIndexName());
+    }
+
+    @Override
+    public Boolean refresh(String indexName) {
+        String[] indexNames = new String[1];
+        indexNames[0] = indexName;
+        return this.refresh(indexNames);
+    }
+
+    @Override
+    public Boolean refresh(String... indexNames) {
+        RefreshRequest request = new RefreshRequest(indexNames);
+        try {
+            RefreshResponse refresh = client.indices().refresh(request, RequestOptions.DEFAULT);
+            return refresh.getSuccessfulShards() == Arrays.stream(indexNames).count();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw ExceptionUtils.eee("refresh index exception e", e);
+        }
     }
 
     @Override

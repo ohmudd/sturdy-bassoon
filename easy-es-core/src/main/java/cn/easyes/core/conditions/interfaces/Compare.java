@@ -5,6 +5,7 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.Operator;
 
 import java.io.Serializable;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.BiPredicate;
@@ -126,80 +127,6 @@ public interface Compare<Children, R> extends Serializable {
      * @return 泛型
      */
     Children match(boolean condition, String column, Object val, Float boost);
-
-
-    default Children nestedMatch(R path, String column, Object val) {
-        return nestedMatch(true, path, column, val, ScoreMode.Avg, DEFAULT_BOOST);
-    }
-
-    default Children nestedMatch(R path, String column, Object val, ScoreMode scoreMode) {
-        return nestedMatch(true, path, column, val, scoreMode, DEFAULT_BOOST);
-    }
-
-    default Children nestedMatch(boolean condition, R path, String column, Object val) {
-        return nestedMatch(condition, path, column, val, ScoreMode.Avg, DEFAULT_BOOST);
-    }
-
-    default Children nestedMatch(boolean condition, R path, String column, Object val, Float boost) {
-        return nestedMatch(condition, path, column, val, ScoreMode.Avg, boost);
-    }
-
-    default Children nestedMatch(R path, String column, Object val, Float boost) {
-        return nestedMatch(true, path, column, val, ScoreMode.Avg, boost);
-    }
-
-    default Children nestedMatch(boolean condition, R path, String column, Object val, ScoreMode scoreMode) {
-        return nestedMatch(condition, path, column, val, scoreMode, DEFAULT_BOOST);
-    }
-
-    default Children nestedMatch(R path, String column, Object val, ScoreMode scoreMode, Float boost) {
-        return nestedMatch(true, path, column, val, scoreMode, boost);
-    }
-
-    default Children nestedMatch(boolean condition, R path, String column, Object val, ScoreMode scoreMode, Float boost) {
-        return nestedMatch(condition, FieldUtils.getFieldName(path), column, val, scoreMode, boost);
-    }
-
-    default Children nestedMatch(String path, String column, Object val) {
-        return nestedMatch(true, path, column, val, ScoreMode.Avg, DEFAULT_BOOST);
-    }
-
-    default Children nestedMatch(String path, String column, Object val, ScoreMode scoreMode) {
-        return nestedMatch(true, path, column, val, scoreMode, DEFAULT_BOOST);
-    }
-
-    default Children nestedMatch(boolean condition, String path, String column, Object val) {
-        return nestedMatch(condition, path, column, val, ScoreMode.Avg, DEFAULT_BOOST);
-    }
-
-    default Children nestedMatch(boolean condition, String path, String column, Object val, Float boost) {
-        return nestedMatch(condition, path, column, val, ScoreMode.Avg, boost);
-    }
-
-    default Children nestedMatch(String path, String column, Object val, Float boost) {
-        return nestedMatch(true, path, column, val, ScoreMode.Avg, boost);
-    }
-
-    default Children nestedMatch(boolean condition, String path, String column, Object val, ScoreMode scoreMode) {
-        return nestedMatch(condition, path, column, val, scoreMode, DEFAULT_BOOST);
-    }
-
-    default Children nestedMatch(String path, String column, Object val, ScoreMode scoreMode, Float boost) {
-        return nestedMatch(true, path, column, val, scoreMode, boost);
-    }
-
-    /**
-     * 嵌套查询 嵌套层级大于1级时适用
-     *
-     * @param condition 条件
-     * @param path      路径
-     * @param column    列名
-     * @param val       值
-     * @param scoreMode 得分模式
-     * @param boost     权重
-     * @return 泛型
-     */
-    Children nestedMatch(boolean condition, String path, String column, Object val, ScoreMode scoreMode, Float boost);
 
 
     default Children hasChild(String type, String column, Object val) {
@@ -578,13 +505,20 @@ public interface Compare<Children, R> extends Serializable {
      */
     Children prefixQuery(boolean condition, String column, String prefix, Float boost);
 
-
     default Children gt(R column, Object val) {
         return gt(true, column, val);
     }
 
     default Children gt(R column, Object val, Float boost) {
         return gt(true, column, val, boost);
+    }
+
+    default Children gt(R column, Object val, ZoneId timeZone, String format) {
+        return gt(true, column, val, timeZone, format, DEFAULT_BOOST);
+    }
+
+    default Children gt(R column, Object val, ZoneId timeZone, String format, Float boost) {
+        return gt(true, column, val, timeZone, format, boost);
     }
 
     default Children gt(boolean condition, R column, Object val) {
@@ -596,8 +530,16 @@ public interface Compare<Children, R> extends Serializable {
         return gt(true, column, val);
     }
 
+    default Children gt(String column, Object val, ZoneId timeZone, String format) {
+        return gt(true, column, val, timeZone, format, DEFAULT_BOOST);
+    }
+
     default Children gt(String column, Object val, Float boost) {
         return gt(true, column, val, boost);
+    }
+
+    default Children gt(String column, Object val, ZoneId timeZone, String format, Float boost) {
+        return gt(true, column, val, timeZone, format, boost);
     }
 
     default Children gt(boolean condition, String column, Object val) {
@@ -608,19 +550,39 @@ public interface Compare<Children, R> extends Serializable {
         return gt(condition, FieldUtils.getFieldName(column), val, boost);
     }
 
+    default Children gt(boolean condition, R column, Object val, ZoneId timeZone, String format, Float boost) {
+        return gt(condition, FieldUtils.getFieldName(column), val, timeZone, format, boost);
+    }
+
+    default Children gt(boolean condition, String column, Object val, Float boost) {
+        return gt(condition, column, val, null, null, boost);
+    }
+
     /**
      * 大于
      *
      * @param condition 条件
      * @param column    列
      * @param val       值
+     * @param timeZone  时区 不设置为：UTC（0时区）;val中包含时区，timeZone设置无效
+     * @param format    日期字符串格式
+     *                  如1：val是Date、java.time中对象，使用："yyyy-MM-dd'T'HH:mm:ss.SSSz"、
+     *                  如2：val是String，需要保证format格式和，val字符串格式相同，如：format="yyyy-MM-dd HH:mm:ss" 对应：val="2019-01-01 12:00:00"
+     *                  如果：未设置：取es mapper format格式；
+     *                  es mapper format未设置，则es内置默认格式为："strict_date_optional_time||epoch_millis"
      * @param boost     权重
      * @return 泛型
+     * @author 其中时区和format由社区dazer007贡献
      */
-    Children gt(boolean condition, String column, Object val, Float boost);
+    Children gt(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost);
+
 
     default Children ge(R column, Object val) {
         return ge(true, column, val);
+    }
+
+    default Children ge(R column, Object val, ZoneId timeZone, String format) {
+        return ge(true, FieldUtils.getFieldName(column), val, timeZone, format, DEFAULT_BOOST);
     }
 
     default Children ge(R column, Object val, Float boost) {
@@ -629,6 +591,14 @@ public interface Compare<Children, R> extends Serializable {
 
     default Children ge(boolean condition, R column, Object val) {
         return ge(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children ge(String column, Object val, ZoneId timeZone, String format) {
+        return ge(true, column, val, timeZone, format, DEFAULT_BOOST);
+    }
+
+    default Children ge(String column, Object val, ZoneId timeZone, String format, Float boost) {
+        return ge(true, column, val, timeZone, format, boost);
     }
 
     default Children ge(String column, Object val) {
@@ -647,16 +617,32 @@ public interface Compare<Children, R> extends Serializable {
         return ge(condition, FieldUtils.getFieldName(column), val, boost);
     }
 
+    default Children ge(boolean condition, String column, Object val, Float boost) {
+        return ge(condition, column, val, null, null, boost);
+    }
+
+    default Children ge(boolean condition, String column, Object val, ZoneId timeZone, String format) {
+        return ge(condition, column, val, timeZone, format, DEFAULT_BOOST);
+    }
+
     /**
      * 大于等于
      *
      * @param condition 条件
      * @param column    列
      * @param val       值
+     * @param timeZone  时区 不设置为：UTC（0时区）;val中包含时区，timeZone设置无效
+     * @param format    日期字符串格式
+     *                  如1：val是Date、java.time中对象，使用："yyyy-MM-dd'T'HH:mm:ss.SSSz"、
+     *                  如2：val是String，需要保证format格式和，val字符串格式相同，如：format="yyyy-MM-dd HH:mm:ss" 对应：val="2019-01-01 12:00:00"
+     *                  如果：未设置：取es mapper format格式；
+     *                  es mapper format未设置，则es内置默认格式为："strict_date_optional_time||epoch_millis"
      * @param boost     权重
      * @return 泛型
+     * @author 其中时区和format由社区dazer007贡献
      */
-    Children ge(boolean condition, String column, Object val, Float boost);
+    Children ge(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost);
+
 
     default Children lt(R column, Object val) {
         return lt(true, column, val);
@@ -664,6 +650,14 @@ public interface Compare<Children, R> extends Serializable {
 
     default Children lt(R column, Object val, Float boost) {
         return lt(true, column, val, boost);
+    }
+
+    default Children lt(R column, Object val, ZoneId timeZone, String format) {
+        return lt(true, column, val, timeZone, format, null);
+    }
+
+    default Children lt(R column, Object val, ZoneId timeZone, String format, Float boost) {
+        return lt(true, column, val, timeZone, format, boost);
     }
 
     default Children lt(boolean condition, R column, Object val) {
@@ -678,12 +672,28 @@ public interface Compare<Children, R> extends Serializable {
         return lt(true, column, val, boost);
     }
 
+    default Children lt(String column, Object val, ZoneId timeZone, String format, Float boost) {
+        return lt(true, column, val, timeZone, format, boost);
+    }
+
     default Children lt(boolean condition, String column, Object val) {
         return lt(condition, column, val, DEFAULT_BOOST);
     }
 
+    default Children lt(boolean condition, String column, Object val, Float boost) {
+        return lt(condition, column, val, null, null, boost);
+    }
+
     default Children lt(boolean condition, R column, Object val, Float boost) {
-        return lt(condition, FieldUtils.getFieldName(column), val, boost);
+        return lt(condition, FieldUtils.getFieldName(column), val, null, null, boost);
+    }
+
+    default Children lt(boolean condition, R column, Object val, ZoneId timeZone, String format) {
+        return lt(condition, FieldUtils.getFieldName(column), val, timeZone, format, DEFAULT_BOOST);
+    }
+
+    default Children lt(boolean condition, R column, Object val, ZoneId timeZone, String format, Float boost) {
+        return lt(condition, FieldUtils.getFieldName(column), val, timeZone, format, boost);
     }
 
     /**
@@ -692,10 +702,18 @@ public interface Compare<Children, R> extends Serializable {
      * @param condition 条件
      * @param column    列
      * @param val       值
+     * @param timeZone  时区 不设置为：UTC（0时区）;val中包含时区，timeZone设置无效
+     * @param format    日期字符串格式
+     *                  如1：val是Date、java.time中对象，使用："yyyy-MM-dd'T'HH:mm:ss.SSSz"、
+     *                  如2：val是String，需要保证format格式和，val字符串格式相同，如：format="yyyy-MM-dd HH:mm:ss" 对应：val="2019-01-01 12:00:00"
+     *                  如果：未设置：取es mapper format格式；
+     *                  es mapper format未设置，则es内置默认格式为："strict_date_optional_time||epoch_millis"
      * @param boost     权重
      * @return 泛型
+     * @author 其中时区和format由社区dazer007贡献
      */
-    Children lt(boolean condition, String column, Object val, Float boost);
+    Children lt(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost);
+
 
     default Children le(R column, Object val) {
         return le(true, column, val);
@@ -705,8 +723,20 @@ public interface Compare<Children, R> extends Serializable {
         return le(true, column, val, boost);
     }
 
+    default Children le(R column, Object val, ZoneId timeZone, String format) {
+        return le(true, FieldUtils.getFieldName(column), val, timeZone, format, DEFAULT_BOOST);
+    }
+
+    default Children le(R column, Object val, ZoneId timeZone, String format, Float boost) {
+        return le(true, FieldUtils.getFieldName(column), val, timeZone, format, boost);
+    }
+
     default Children le(boolean condition, R column, Object val) {
         return le(condition, column, val, DEFAULT_BOOST);
+    }
+
+    default Children le(boolean condition, R column, Object val, ZoneId timeZone, String format) {
+        return le(condition, FieldUtils.getFieldName(column), val, timeZone, format, DEFAULT_BOOST);
     }
 
     default Children le(String column, Object val) {
@@ -717,6 +747,14 @@ public interface Compare<Children, R> extends Serializable {
         return le(true, column, val, boost);
     }
 
+    default Children le(String column, Object val, ZoneId timeZone, String format) {
+        return le(true, column, val, timeZone, format, DEFAULT_BOOST);
+    }
+
+    default Children le(String column, Object val, ZoneId timeZone, String format, Float boost) {
+        return le(true, column, val, timeZone, format, boost);
+    }
+
     default Children le(boolean condition, String column, Object val) {
         return le(condition, column, val, DEFAULT_BOOST);
     }
@@ -725,44 +763,84 @@ public interface Compare<Children, R> extends Serializable {
         return le(condition, FieldUtils.getFieldName(column), val, boost);
     }
 
+    default Children le(boolean condition, R column, Object val, ZoneId timeZone, String format, Float boost) {
+        return le(condition, FieldUtils.getFieldName(column), val, timeZone, format, boost);
+    }
+
+    default Children le(boolean condition, String column, Object val, Float boost) {
+        return le(condition, column, val, null, null, boost);
+    }
+
+    default Children le(boolean condition, String column, Object val, ZoneId timeZone, String format) {
+        return le(condition, column, val, timeZone, format, null);
+    }
+
     /**
      * 小于等于
      *
      * @param condition 条件
      * @param column    列
      * @param val       值
+     * @param timeZone  时区 不设置为：UTC（0时区）;val中包含时区，timeZone设置无效
+     * @param format    日期字符串格式
+     *                  如1：val是Date、java.time中对象，使用："yyyy-MM-dd'T'HH:mm:ss.SSSz"、
+     *                  如2：val是String，需要保证format格式和，val字符串格式相同，如：format="yyyy-MM-dd HH:mm:ss" 对应：val="2019-01-01 12:00:00"
+     *                  如果：未设置：取es mapper format格式；
+     *                  es mapper format未设置，则es内置默认格式为："strict_date_optional_time||epoch_millis"
      * @param boost     权重
      * @return 泛型
+     * @author 其中时区和format由社区dazer007贡献
      */
-    Children le(boolean condition, String column, Object val, Float boost);
+
+    Children le(boolean condition, String column, Object val, ZoneId timeZone, String format, Float boost);
 
 
-    default Children between(R column, Object val1, Object val2) {
-        return between(true, column, val1, val2);
+    default Children between(R column, Object from, Object to) {
+        return between(true, column, from, to);
     }
 
-    default Children between(R column, Object val1, Object val2, Float boost) {
-        return between(true, column, val1, val2, boost);
+    default Children between(R column, Object from, Object to, Float boost) {
+        return between(true, column, from, to, boost);
     }
 
-    default Children between(boolean condition, R column, Object val1, Object val2) {
-        return between(condition, column, val1, val2, DEFAULT_BOOST);
+    default Children between(R column, Object from, Object to, ZoneId timeZone, String format) {
+        return between(true, column, from, to, timeZone, format, DEFAULT_BOOST);
     }
 
-    default Children between(String column, Object val1, Object val2) {
-        return between(true, column, val1, val2);
+    default Children between(R column, Object from, Object to, ZoneId timeZone, String format, Float boost) {
+        return between(true, column, from, to, timeZone, format, boost);
     }
 
-    default Children between(String column, Object val1, Object val2, Float boost) {
-        return between(true, column, val1, val2, boost);
+    default Children between(boolean condition, R column, Object from, Object to) {
+        return between(condition, column, from, to, DEFAULT_BOOST);
     }
 
-    default Children between(boolean condition, String column, Object val1, Object val2) {
-        return between(condition, column, val1, val2, DEFAULT_BOOST);
+    default Children between(String column, Object from, Object to) {
+        return between(true, column, from, to);
     }
 
-    default Children between(boolean condition, R column, Object val1, Object val2, Float boost) {
-        return between(condition, FieldUtils.getFieldName(column), val1, val2, boost);
+    default Children between(String column, Object from, Object to, Float boost) {
+        return between(true, column, from, to, boost);
+    }
+
+    default Children between(boolean condition, String column, Object from, Object to) {
+        return between(condition, column, from, to, DEFAULT_BOOST);
+    }
+
+    default Children between(boolean condition, R column, Object from, Object to, Float boost) {
+        return between(condition, FieldUtils.getFieldName(column), from, to, boost);
+    }
+
+    default Children between(boolean condition, R column, Object from, Object to, ZoneId timeZone, String format) {
+        return between(condition, FieldUtils.getFieldName(column), from, to, timeZone, format, DEFAULT_BOOST);
+    }
+
+    default Children between(boolean condition, R column, Object from, Object to, ZoneId timeZone, String format, Float boost) {
+        return between(condition, FieldUtils.getFieldName(column), from, to, timeZone, format, boost);
+    }
+
+    default Children between(boolean condition, String column, Object from, Object to, Float boost) {
+        return between(condition, column, from, to, null, null, boost);
     }
 
     /**
@@ -770,12 +848,19 @@ public interface Compare<Children, R> extends Serializable {
      *
      * @param condition 条件
      * @param column    列
-     * @param val1      左区间值
-     * @param val2      右区间值
+     * @param from      左区间值
+     * @param to        右区间值
+     * @param timeZone  时区 不设置为：UTC（0时区）;val中包含时区，timeZone设置无效
+     * @param format    日期字符串格式
+     *                  如1：val是Date、java.time中对象，使用："yyyy-MM-dd'T'HH:mm:ss.SSSz"、
+     *                  如2：val是String，需要保证format格式和，val字符串格式相同，如：format="yyyy-MM-dd HH:mm:ss" 对应：val="2019-01-01 12:00:00"
+     *                  如果：未设置：取es mapper format格式；
+     *                  es mapper format未设置，则es内置默认格式为："strict_date_optional_time||epoch_millis"
      * @param boost     权重
      * @return 泛型
+     * @author 其中时区和format由社区dazer007贡献
      */
-    Children between(boolean condition, String column, Object val1, Object val2, Float boost);
+    Children between(boolean condition, String column, Object from, Object to, ZoneId timeZone, String format, Float boost);
 
     default Children like(R column, Object val) {
         return like(true, column, val);
