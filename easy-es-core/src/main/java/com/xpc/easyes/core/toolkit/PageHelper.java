@@ -24,8 +24,6 @@ public class PageHelper {
      */
     public static <T> PageInfo<T> getPageInfo(List<T> list, Long total, Integer pageNum, Integer pageSize) {
         PageInfo<T> pageInfo = new PageInfo<>();
-        pageNum = pageNum == null || pageNum <= 0 ? BaseEsConstants.PAGE_NUM : pageNum;
-        pageSize = pageSize == null || pageSize <= 0 ? BaseEsConstants.PAGE_SIZE : pageSize;
         int pages = (int) (total / pageSize + ((total % pageSize == 0) ? 0 : 1));
         pageInfo.setList(list);
         pageInfo.setSize(list.size());
