@@ -7,11 +7,15 @@ import com.xpc.easyes.core.params.AggregationParam;
 import com.xpc.easyes.core.params.BaseEsParam;
 import com.xpc.easyes.core.params.HighLightParam;
 import com.xpc.easyes.core.params.SortParam;
+import com.xpc.easyes.core.toolkit.ArrayUtils;
 import com.xpc.easyes.core.toolkit.EntityInfoHelper;
+import com.xpc.easyes.core.toolkit.FieldUtils;
 import org.elasticsearch.action.search.SearchRequest;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * 查询Lambda表达式
@@ -51,14 +55,9 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
         exclude = new String[]{};
     }
 
-    /**
-     * 不建议直接 new 该实例，使用 Wrappers.lambdaQuery(entity)
-     *
-     * @param entity 实体
-     */
-    public LambdaEsQueryWrapper(T entity) {
+    public LambdaEsQueryWrapper(Class<T> entityClass) {
         super.initNeed();
-        super.setEntity(entity);
+        super.setEntityClass(entityClass);
         include = new String[]{};
         exclude = new String[]{};
     }

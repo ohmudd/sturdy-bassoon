@@ -277,7 +277,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         bulkRequest.setRefreshPolicy(getRefreshPolicy());
         entityList.forEach(entity -> {
             IndexRequest indexRequest = buildIndexRequest(entity, indexName);
-            indexRequest.setRefreshPolicy(getRefreshPolicy());
             bulkRequest.add(indexRequest);
         });
         // 执行批量请求并返回结果
@@ -292,6 +291,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     @Override
     public Integer deleteById(Serializable id, String indexName) {
         DeleteRequest deleteRequest = generateDelRequest(id, indexName);
+        deleteRequest.setRefreshPolicy(getRefreshPolicy());
         try {
             DeleteResponse deleteResponse = client.delete(deleteRequest, RequestOptions.DEFAULT);
             if (Objects.equals(deleteResponse.status(), RestStatus.OK)) {
@@ -319,7 +319,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
                     DeleteRequest deleteRequest = new DeleteRequest();
                     deleteRequest.id(id.toString());
                     deleteRequest.index(getIndexName(wrapper.indexName));
-                    deleteRequest.setRefreshPolicy(getRefreshPolicy());
                     bulkRequest.add(deleteRequest);
                 }
             } catch (Exception e) {
@@ -390,7 +389,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         entityList.forEach(entity -> {
             String idValue = getIdValue(entityClass, entity);
             UpdateRequest updateRequest = buildUpdateRequest(entity, idValue, indexName);
-            updateRequest.setRefreshPolicy(getRefreshPolicy());
             bulkRequest.add(updateRequest);
         });
 
@@ -431,7 +429,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             UpdateRequest updateRequest = new UpdateRequest();
             updateRequest.id(id).index(index);
             updateRequest.doc(jsonData, XContentType.JSON);
-            updateRequest.setRefreshPolicy(getRefreshPolicy());
             bulkRequest.add(updateRequest);
         });
         return doBulkRequest(bulkRequest, RequestOptions.DEFAULT);
@@ -548,7 +545,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         DeleteRequest deleteRequest = new DeleteRequest();
         deleteRequest.id(id.toString());
         deleteRequest.index(getIndexName(indexName));
-        deleteRequest.setRefreshPolicy(getRefreshPolicy());
         return deleteRequest;
     }
 
@@ -731,26 +727,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         }
         return parseSearchHitArray(response);
     }
-
-    /**
-     * 获取查询结果数组
-     *
-     * @param wrapper  条件
-     * @param pageNum  当前页
-     * @param pageSize 每页条数
-     * @return es返回结果体
-     * @throws IOException IO异常
-     */
-    private SearchHit[] getSearchHitArray(LambdaEsQueryWrapper<T> wrapper, Integer pageNum, Integer pageSize) throws IOException {
-        wrapper.from((pageNum - 1) * pageSize);
-        wrapper.size(pageSize);
-        SearchResponse response = search(wrapper);
-        return Optional.ofNullable(response)
-                .map(SearchResponse::getHits)
-                .map(SearchHits::getHits)
-                .orElseThrow(() -> ExceptionUtils.eee("get searchHits exception,the response from es is null"));
-    }
-
 
     /**
      * 构建,插入/更新 的JSON对象

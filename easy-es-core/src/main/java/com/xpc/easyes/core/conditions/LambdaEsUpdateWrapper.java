@@ -32,14 +32,9 @@ public class LambdaEsUpdateWrapper<T> extends AbstractLambdaUpdateWrapper<T, Lam
         this(null);
     }
 
-    /**
-     * 不建议直接 new 该实例，使用 Wrappers.lambdaQuery(entity)
-     *
-     * @param entity 实体
-     */
-    public LambdaEsUpdateWrapper(T entity) {
+    public LambdaEsUpdateWrapper(Class<T> entityClass) {
         super.initNeed();
-        super.setEntity(entity);
+        super.setEntityClass(entityClass);
         updateParamList = new ArrayList<>();
     }
 

@@ -13,4 +13,6 @@ easy-es:
       #      table-prefix: dev_
       id-type: customize
       field-strategy: not_empty
+      refresh-policy: none
+      enable-track-total-hits: true
 

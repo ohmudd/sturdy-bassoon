@@ -12,7 +12,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * es 数据模型
@@ -78,8 +77,8 @@ public class Document {
      */
     private Integer starNum;
     /**
-     * 嵌套类型
+     * 嵌套类型 注意,务必像下面示例一样指定类型为nested及其nested class,否则会导致框架无法正常运行
      */
-    @TableField(fieldType = FieldType.NESTED,nestedClass = User.class)
+    @TableField(fieldType = FieldType.NESTED, nestedClass = User.class)
     private List<User> users;
 }

@@ -13,69 +13,37 @@ import lombok.NoArgsConstructor;
  **/
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EsWrappers {
-
-    /**
-     * 获取 LambdaEsQueryWrapper
-     *
-     * @param <T> 实体类泛型
-     * @return LambdaEsQueryWrapper
-     */
-    public static <T> LambdaEsQueryWrapper<T> lambdaQuery() {
-        return new LambdaEsQueryWrapper<>();
-    }
-
     /**
      * 获取 LambdaQueryWrapper
      *
-     * @param entity 实体类
-     * @param <T>    实体类泛型
+     * @param entityClass 实体类
+     * @param <T>         实体类泛型
      * @return LambdaQueryWrapper
      */
-    public static <T> LambdaEsQueryWrapper<T> lambdaQuery(T entity) {
-        return new LambdaEsQueryWrapper<>(entity);
-    }
-
-    /**
-     * 获取 LambdaEsUpdateWrapper
-     *
-     * @param <T> 实体类泛型
-     * @return LambdaEsUpdateWrapper
-     */
-    public static <T> LambdaEsUpdateWrapper<T> lambdaUpdate() {
-        return new LambdaEsUpdateWrapper<>();
+    public static <T> LambdaEsQueryWrapper<T> lambdaQuery(Class<T> entityClass) {
+        return new LambdaEsQueryWrapper<>(entityClass);
     }
 
     /**
      * 获取 LambdaUpdateWrapper
      *
-     * @param entity 实体类
-     * @param <T>    实体类泛型
+     * @param entityClass 实体类
+     * @param <T>         实体类泛型
      * @return LambdaUpdateWrapper
      */
-    public static <T> LambdaEsUpdateWrapper<T> lambdaUpdate(T entity) {
-        return new LambdaEsUpdateWrapper<>(entity);
+    public static <T> LambdaEsUpdateWrapper<T> lambdaUpdate(Class<T> entityClass) {
+        return new LambdaEsUpdateWrapper<>(entityClass);
     }
 
     /**
      * 获取 LambdaEsIndexWrapper
      *
-     * @param <T> 实体类泛型
+     * @param entityClass 实体类
+     * @param <T>         实体类泛型
      * @return LambdaEsIndexWrapper
      */
-    public static <T> LambdaEsIndexWrapper<T> lambdaIndex() {
-        return new LambdaEsIndexWrapper<>();
-    }
-
-
-    /**
-     * 获取 LambdaEsIndexWrapper
-     *
-     * @param entity 实体类
-     * @param <T>    实体类泛型
-     * @return LambdaEsIndexWrapper
-     */
-    public static <T> LambdaEsIndexWrapper<T> lambdaIndex(T entity) {
-        return new LambdaEsIndexWrapper<>(entity);
+    public static <T> LambdaEsIndexWrapper<T> lambdaIndex(Class<T> entityClass) {
+        return new LambdaEsIndexWrapper<>(entityClass);
     }
 
 }

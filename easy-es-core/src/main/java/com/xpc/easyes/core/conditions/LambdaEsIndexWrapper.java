@@ -5,7 +5,6 @@ import com.xpc.easyes.core.conditions.interfaces.SFunction;
 import com.xpc.easyes.core.enums.Analyzer;
 import com.xpc.easyes.core.enums.FieldType;
 import com.xpc.easyes.core.params.EsIndexParam;
-import com.xpc.easyes.core.toolkit.FieldUtils;
 import com.xpc.easyes.core.toolkit.StringUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.common.settings.Settings;
@@ -51,9 +50,11 @@ public class LambdaEsIndexWrapper<T> extends Wrapper<T> implements Index<LambdaE
      */
     List<EsIndexParam> esIndexParamList;
     /**
-     * 对应实体
+     * 对应实体类
      */
-    private final T entity;
+    private final Class<T> entityClass;
+
+
     /**
      * 此包装类本身
      */
@@ -66,13 +67,8 @@ public class LambdaEsIndexWrapper<T> extends Wrapper<T> implements Index<LambdaE
         this(null);
     }
 
-    /**
-     * 不建议直接 new 该实例，使用 Wrappers.lambdaQuery(entity)
-     *
-     * @param entity 实体
-     */
-    public LambdaEsIndexWrapper(T entity) {
-        this.entity = entity;
+    public LambdaEsIndexWrapper(Class<T> entityClass) {
+        this.entityClass = entityClass;
         esIndexParamList = new ArrayList<>();
     }
 

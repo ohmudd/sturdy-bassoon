@@ -90,6 +90,12 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         return typedThis;
     }
 
+    public Children setEntityClass(Class<T> entityClass) {
+        this.entityClass = entityClass;
+        this.initEntityClass();
+        return typedThis;
+    }
+
     protected void initEntityClass() {
         if (this.entityClass == null && this.entity != null) {
             this.entityClass = (Class<T>) entity.getClass();
