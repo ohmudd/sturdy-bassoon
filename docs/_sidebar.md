@@ -3,8 +3,8 @@
   - [顾虑粉碎](worry-free.md)
   - [快速开始](quick-start.md)
     - [Springboot集成Demo](demo.md)
+  - [自动托管索引](auto-process-index.md)
   - 核心功能
-        - [自动托管索引](index.md)
   	- [index索引API](index.md)
   	  - [是否存在索引](exists-index.md)
   	  - [删除索引](del-index.md)
