@@ -122,7 +122,7 @@ public class HighTest {
     @Test
     public void testPageQuery() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.match(Document::getTitle, "老汉");
+        wrapper.match(Document::getContent, "技术");
         PageInfo<Document> documentPageInfo = documentMapper.pageQuery(wrapper,1,10);
         System.out.println(documentPageInfo);
     }
