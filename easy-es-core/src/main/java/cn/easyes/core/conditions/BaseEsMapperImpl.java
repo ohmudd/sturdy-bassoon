@@ -1,6 +1,7 @@
 package cn.easyes.core.conditions;
 
 import cn.easyes.common.constants.BaseEsConstants;
+import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.enums.FieldStrategy;
 import cn.easyes.common.enums.IdType;
 import cn.easyes.common.utils.*;
@@ -8,10 +9,7 @@ import cn.easyes.core.biz.*;
 import cn.easyes.core.cache.BaseCache;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.conditions.interfaces.BaseEsMapper;
-import cn.easyes.core.toolkit.EntityInfoHelper;
-import cn.easyes.core.toolkit.FieldUtils;
-import cn.easyes.core.toolkit.IndexUtils;
-import cn.easyes.core.toolkit.PageHelper;
+import cn.easyes.core.toolkit.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializeFilter;
@@ -63,6 +61,12 @@ import static cn.easyes.common.constants.BaseEsConstants.*;
 /**
  * 核心 所有支持方法接口实现类
  * <p>
+ *  内部实现:
+ *  核心网络请求类：{@link RestHighLevelClient}、
+ *  动态封装request类：{@link WrapperProcessor}、
+ *  查询参数封装：{@link EsQueryTypeUtil}、
+ *  查询类型枚举：{@link EsQueryTypeEnum}、
+ * </p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
