@@ -35,6 +35,7 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.client.core.CountResponse;
+import org.elasticsearch.client.indices.GetIndexResponse;
 import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.xcontent.XContentType;
@@ -80,6 +81,16 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             throw ExceptionUtils.eee("indexName can not be empty");
         }
         return IndexUtils.existsIndex(client, indexName);
+    }
+
+    @Override
+    public GetIndexResponse getIndex() {
+        return IndexUtils.getIndex(client, EntityInfoHelper.getEntityInfo(entityClass).getIndexName());
+    }
+
+    @Override
+    public GetIndexResponse getIndex(String indexName) {
+        return IndexUtils.getIndex(client, getIndexName(indexName));
     }
 
     @Override
@@ -954,7 +965,8 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             Method invokeMethod = BaseCache.setterMethod(entityClass, highlightField);
             invokeMethod.invoke(entity, value);
         } catch (Throwable e) {
-            e.printStackTrace();
+            LogUtils.error("setHighlightValue error,entity:{},highlightField:{},value:{},e:{}",
+                    entity.toString(), highlightField, value, e.toString());
         }
     }
 
@@ -1051,4 +1063,5 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             throw ExceptionUtils.eee("getRouting error", e);
         }
     }
+
 }

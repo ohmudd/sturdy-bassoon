@@ -75,6 +75,10 @@ public class EntityInfo {
      */
     private Class<?> joinFieldClass = JoinField.class;
     /**
+     * 嵌套类的path和类对应关系
+     */
+    private Map<String, Class<?>> nestedPathClassMap = new HashMap<>();
+    /**
      * 嵌套类的字段信息列表
      */
     private Map<Class<?>, List<EntityFieldInfo>> nestedFieldListMap = new HashMap<>();

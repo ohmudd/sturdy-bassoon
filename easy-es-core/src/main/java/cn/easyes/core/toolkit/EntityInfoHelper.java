@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static cn.easyes.common.constants.BaseEsConstants.PARENT;
+import static cn.easyes.common.constants.BaseEsConstants.POINT;
 
 /**
  * 实体字段信息工具类
@@ -326,7 +327,7 @@ public class EntityInfoHelper {
                 entityInfo.setJoinFieldName(mappingColumn);
                 entityInfo.setJoinFieldClass(tableField.joinFieldClass());
                 entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.joinFieldClass());
-                processNested(tableField.joinFieldClass(), dbConfig, entityInfo);
+                processNested(tableField.joinFieldClass(), field.getName(), field.getName(), dbConfig, entityInfo);
             }
 
             fieldList.add(entityFieldInfo);
@@ -334,8 +335,9 @@ public class EntityInfoHelper {
             // 嵌套类处理
             if (DefaultNestedClass.class != tableField.nestedClass()) {
                 // 嵌套类
+                entityInfo.getNestedPathClassMap().putIfAbsent(field.getName(), tableField.nestedClass());
                 entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.nestedClass());
-                processNested(tableField.nestedClass(), dbConfig, entityInfo);
+                processNested(tableField.nestedClass(), field.getName(), field.getName(), dbConfig, entityInfo);
             }
 
         } else {
@@ -379,46 +381,63 @@ public class EntityInfoHelper {
      * @param dbConfig    全局配置
      * @param entityInfo  实体信息
      */
-    private static void processNested(Class<?> nestedClass, GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo) {
+    private static void processNested(Class<?> nestedClass, String path, String prefix, GlobalConfig.DbConfig dbConfig, EntityInfo entityInfo) {
         // 将字段映射置入map 对其子节点也执行同样的操作
         List<Field> allFields = getAllFields(nestedClass);
         Map<String, String> mappingColumnMap = new HashMap<>(allFields.size());
+        Map<String, String> columnMappingMap = new HashMap<>(allFields.size());
         List<EntityFieldInfo> entityFieldInfoList = new ArrayList<>();
         Set<String> notSerializedFields = new HashSet<>();
         allFields.forEach(field -> {
+            String mappingColumn;
+            // 处理TableField注解
             TableField tableField = field.getAnnotation(TableField.class);
             if (Objects.isNull(tableField)) {
-                String mappingColumn = getMappingColumn(dbConfig, field);
+                mappingColumn = getMappingColumn(dbConfig, field);
                 EntityFieldInfo entityFieldInfo = new EntityFieldInfo(dbConfig, field);
                 entityFieldInfo.setMappingColumn(mappingColumn);
-                mappingColumnMap.putIfAbsent(field.getName(), mappingColumn);
                 entityFieldInfo.setFieldType(FieldType.TEXT);
                 entityFieldInfo.setColumnType(FieldType.TEXT.getType());
                 entityFieldInfoList.add(entityFieldInfo);
             } else {
                 if (tableField.exist()) {
-                    EntityFieldInfo entityFieldInfo = new EntityFieldInfo(dbConfig, field, tableField);
+                    // 子嵌套,递归处理
                     if (DefaultNestedClass.class != tableField.nestedClass()) {
+                        entityInfo.getNestedPathClassMap().putIfAbsent(path, nestedClass);
                         entityInfo.getPathClassMap().putIfAbsent(field.getName(), tableField.nestedClass());
-                        processNested(tableField.nestedClass(), dbConfig, entityInfo);
+                        processNested(tableField.nestedClass(), field.getName(), prefix + POINT + field.getName(), dbConfig, entityInfo);
                     }
+
+                    // 字段名称
+                    if (StringUtils.isNotBlank(tableField.value().trim())) {
+                        mappingColumn = tableField.value();
+                    } else {
+                        mappingColumn = getMappingColumn(dbConfig, field);
+                    }
+
+                    // 设置实体字段信息
+                    EntityFieldInfo entityFieldInfo = new EntityFieldInfo(dbConfig, field, tableField);
+                    entityFieldInfo.setMappingColumn(mappingColumn);
                     FieldType fieldType = FieldType.NESTED.equals(tableField.fieldType()) ? FieldType.NESTED : FieldType.TEXT;
                     entityFieldInfo.setFieldType(fieldType);
                     entityFieldInfo.setColumnType(fieldType.getType());
-                    String realField = StringUtils.isEmpty(tableField.value()) ? getMappingColumn(dbConfig, field) : tableField.value();
-                    mappingColumnMap.putIfAbsent(field.getName(), realField);
                     entityFieldInfo.setAnalyzer(tableField.analyzer());
                     entityFieldInfo.setSearchAnalyzer(tableField.searchAnalyzer());
-                    entityFieldInfo.setMappingColumn(realField);
                     entityFieldInfoList.add(entityFieldInfo);
                 } else {
+                    mappingColumn = getMappingColumn(dbConfig, field);
                     notSerializedFields.add(field.getName());
                 }
             }
+            columnMappingMap.putIfAbsent(mappingColumn, field.getName());
+            mappingColumnMap.putIfAbsent(field.getName(), mappingColumn);
+
         });
         entityInfo.getNestedNotSerializeField().putIfAbsent(nestedClass, notSerializedFields);
+        entityInfo.getNestedClassColumnMappingMap().putIfAbsent(nestedClass, columnMappingMap);
         entityInfo.getNestedClassMappingColumnMap().putIfAbsent(nestedClass, mappingColumnMap);
         entityInfo.getNestedFieldListMap().put(nestedClass, entityFieldInfoList);
+
     }
 
 
@@ -432,8 +451,12 @@ public class EntityInfoHelper {
      */
     private static void initTableFieldWithoutAnnotation(GlobalConfig.DbConfig dbConfig, List<EntityFieldInfo> fieldList,
                                                         Field field, EntityInfo entityInfo) {
-        EntityFieldInfo entityFieldInfo = new EntityFieldInfo(dbConfig, field);
+        boolean isNotSerializedField = entityInfo.getNotSerializeField().contains(field.getName());
+        if (isNotSerializedField) {
+            return;
+        }
 
+        EntityFieldInfo entityFieldInfo = new EntityFieldInfo(dbConfig, field);
         // 初始化
         String mappingColumn = initMappingColumnMapAndGet(dbConfig, entityInfo, field);
         entityFieldInfo.setMappingColumn(mappingColumn);

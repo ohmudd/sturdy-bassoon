@@ -8,6 +8,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.indices.GetIndexResponse;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
@@ -28,6 +29,21 @@ public interface BaseEsMapper<T> {
      * @return 返回是否存在的布尔值
      */
     Boolean existsIndex(String indexName);
+
+    /**
+     * 获取当前索引信息
+     *
+     * @return 当前索引信息
+     */
+    GetIndexResponse getIndex();
+
+    /**
+     * 获取指定索引信息
+     *
+     * @param indexName 指定索引名
+     * @return 指定索引信息
+     */
+    GetIndexResponse getIndex(String indexName);
 
     /**
      * 创建索引,根据当前mapper对应实体类信息及其注解配置生成索引信息

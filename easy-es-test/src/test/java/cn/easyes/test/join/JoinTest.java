@@ -80,7 +80,7 @@ public class JoinTest {
 
         // case3: parentId查询,返回的是相关的子文档,与case2类似,所以查询用子文档实体及其mapper
         commentWrapper = new LambdaEsQueryWrapper<>();
-        commentWrapper.parentId("2", "comment");
+        commentWrapper.parentId("1", "comment");
         List<Comment> commentList = commentMapper.selectList(commentWrapper);
         System.out.println(commentList);
     }

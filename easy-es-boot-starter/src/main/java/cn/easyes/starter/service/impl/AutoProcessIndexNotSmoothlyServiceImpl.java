@@ -50,7 +50,7 @@ public class AutoProcessIndexNotSmoothlyServiceImpl implements AutoProcessIndexS
 
     private boolean doUpdateIndex(EntityInfo entityInfo, RestHighLevelClient client) {
         // 获取索引信息
-        EsIndexInfo esIndexInfo = IndexUtils.getIndex(client, entityInfo.getRetrySuccessIndexName());
+        EsIndexInfo esIndexInfo = IndexUtils.getIndexInfo(client, entityInfo.getRetrySuccessIndexName());
 
         // 索引是否有变化 若有则直接删除旧索引,创建新索引 若无则直接返回托管成功
         boolean isIndexNeedChange = IndexUtils.isIndexNeedChange(esIndexInfo, entityInfo);

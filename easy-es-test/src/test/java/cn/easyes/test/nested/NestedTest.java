@@ -69,6 +69,7 @@ public class NestedTest {
         wrapper.match(Document::getContent, "人才");
         // 其中嵌套类的字段名称获取我们提供了工具类FieldUtils.val帮助用户通过lambda函数式获取字段名称,当然如果不想用也可以直接传字符串
         wrapper.nestedMatch(Document::getUsers, FieldUtils.val(User::getUsername), "用户");
+        wrapper.nestedMatch("users.faqs", "faq_name", "问题");
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents);
     }

@@ -134,6 +134,7 @@ public class LambdaEsIndexWrapper<T> extends Wrapper<T> implements Index<LambdaE
         esIndexParam.setFieldName(column);
         esIndexParam.setParentName(parentName);
         esIndexParam.setChildName(childName);
+        esIndexParam.setFieldType(FieldType.JOIN.getType());
         esIndexParamList.add(esIndexParam);
         return typedThis;
     }

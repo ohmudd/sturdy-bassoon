@@ -21,7 +21,7 @@ public interface BaseEsConstants {
     /**
      * 默认索引别名
      */
-    String DEFAULT_ALIAS = "default_alias";
+    String DEFAULT_ALIAS = "ee_default_alias";
     /**
      * 高亮默认前缀标签
      */
@@ -55,9 +55,9 @@ public interface BaseEsConstants {
      */
     String COLON = ":";
     /**
-     * 分号
+     * ee内置es分布式锁索引名称
      */
-    String SEMICOLON = ";";
+    String LOCK_INDEX = "ee-distribute-lock";
     /**
      * get 方法前缀
      */
@@ -202,5 +202,9 @@ public interface BaseEsConstants {
      * 索引权重key
      */
     String BOOST_KEY = "boost";
+    /**
+     * 点
+     */
+    String POINT = ".";
 
 }

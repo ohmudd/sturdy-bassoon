@@ -1,5 +1,6 @@
 package cn.easyes.test.entity;
 
+import cn.easyes.annotation.HighLight;
 import cn.easyes.annotation.TableField;
 import cn.easyes.common.enums.Analyzer;
 import cn.easyes.common.enums.FieldType;

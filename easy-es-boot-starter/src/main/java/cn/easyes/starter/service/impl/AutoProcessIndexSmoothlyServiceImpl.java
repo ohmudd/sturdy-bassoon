@@ -54,7 +54,7 @@ public class AutoProcessIndexSmoothlyServiceImpl implements AutoProcessIndexServ
 
     private boolean doUpdateIndex(EntityInfo entityInfo, RestHighLevelClient client) {
         // 获取索引信息
-        EsIndexInfo esIndexInfo = IndexUtils.getIndex(client, entityInfo.getIndexName());
+        EsIndexInfo esIndexInfo = IndexUtils.getIndexInfo(client, entityInfo.getIndexName());
 
         // 是否存在默认别名,若无则给添加
         if (!esIndexInfo.getHasDefaultAlias()) {

@@ -83,6 +83,7 @@ public class IndexUtils {
      * 创建索引
      *
      * @param client     RestHighLevelClient
+     * @param entityInfo 实体信息
      * @param indexParam 创建索引参数
      * @return 是否创建成功
      */
@@ -151,15 +152,25 @@ public class IndexUtils {
      * @param indexName 索引名
      * @return 索引信息
      */
-    public static EsIndexInfo getIndex(RestHighLevelClient client, String indexName) {
+    public static EsIndexInfo getIndexInfo(RestHighLevelClient client, String indexName) {
+        GetIndexResponse getIndexResponse = getIndex(client, indexName);
+        return parseGetIndexResponse(getIndexResponse, indexName);
+    }
+
+    /**
+     * 获取索引信息
+     *
+     * @param client    RestHighLevelClient
+     * @param indexName 索引名
+     * @return 索引信息
+     */
+    public static GetIndexResponse getIndex(RestHighLevelClient client, String indexName) {
         GetIndexRequest request = new GetIndexRequest(indexName);
-        GetIndexResponse getIndexResponse;
         try {
-            getIndexResponse = client.indices().get(request, RequestOptions.DEFAULT);
+            return client.indices().get(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw ExceptionUtils.eee("getIndex exception indexName: %s", e, indexName);
         }
-        return parseGetIndexResponse(getIndexResponse, indexName);
     }
 
     /**
@@ -314,6 +325,7 @@ public class IndexUtils {
     /**
      * 初始化索引mapping
      *
+     * @param entityInfo     实体信息
      * @param indexParamList 索引参数列表
      * @return 索引mapping
      */
@@ -613,16 +625,18 @@ public class IndexUtils {
             }
         }).exceptionally((throwable) -> {
             Optional.ofNullable(throwable).ifPresent(e -> LogUtils.error("process index exception", e.toString()));
-            // 异常,需清除新创建的索引,避免新旧索引同时存在
+            // 异常,需清除新创建的索引,避免新旧索引同时存在 同时也清除分布式锁索引,避免用户未正确使用时可能出现的死锁
             deleteIndex(client, EntityInfoHelper.getEntityInfo(entityClass).getReleaseIndexName());
+            deleteIndex(client, LOCK_INDEX);
             return Boolean.FALSE;
         }).whenCompleteAsync((success, throwable) -> {
             if (success) {
                 LogUtils.info("===> Congratulations auto process index by Easy-Es is done !");
             } else {
-                // 未成功完成迁移,需清除新创建的索引,避免新旧索引同时存在
-                deleteIndex(client, EntityInfoHelper.getEntityInfo(entityClass).getReleaseIndexName());
                 LogUtils.warn("===> Unfortunately, auto process index by Easy-Es failed, please check your configuration");
+                // 未成功完成迁移,需清除新创建的索引,避免新旧索引同时存在 同时也清除分布式锁索引,避免用户未正确使用时可能出现的死锁
+                deleteIndex(client, EntityInfoHelper.getEntityInfo(entityClass).getReleaseIndexName());
+                deleteIndex(client, LOCK_INDEX);
             }
         });
 

@@ -202,7 +202,7 @@ public class WrapperProcessor {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         // 设置高亮
-        setHighLight(entityInfo, searchSourceBuilder);
+        setHighLight(entityInfo.getHighLightParams(), searchSourceBuilder);
 
         // 设置用户指定的各种排序规则
         setSort(wrapper, mappingColumnMap, searchSourceBuilder);
@@ -481,19 +481,40 @@ public class WrapperProcessor {
     /**
      * 设置高亮参数
      *
-     * @param entityInfo          实体信息
+     * @param highLightParams     高亮参数列表
      * @param searchSourceBuilder 查询参数建造者
      */
-    private static void setHighLight(EntityInfo entityInfo, SearchSourceBuilder searchSourceBuilder) {
-        // 设置当前主类的高亮字段
-        if (!CollectionUtils.isEmpty(entityInfo.getHighLightParams())) {
-            entityInfo.getHighLightParams().forEach(highLightParam -> {
+    private static void setHighLight(List<HighLightParam> highLightParams, SearchSourceBuilder searchSourceBuilder) {
+        if (CollectionUtils.isEmpty(highLightParams)) {
+            return;
+        }
+
+        // 封装高亮参数
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highLightParams.forEach(highLightParam -> {
+            if (StringUtils.isNotBlank(highLightParam.getHighLightField())) {
+                highlightBuilder.field(highLightParam.getHighLightField());
+                highlightBuilder.preTags(highLightParam.getPreTag());
+                highlightBuilder.postTags(highLightParam.getPostTag());
+
+            }
+        });
+        searchSourceBuilder.highlighter(highlightBuilder);
+    }
+
+    /**
+     * 初始化高亮参数建造者
+     *
+     * @param highlightBuilder   高亮参数建造者
+     * @param highLightParamList 高亮参数列表
+     */
+    private static void initHighlightBuilder(HighlightBuilder highlightBuilder, List<HighLightParam> highLightParamList) {
+        if (!CollectionUtils.isEmpty(highLightParamList)) {
+            highLightParamList.forEach(highLightParam -> {
                 if (StringUtils.isNotBlank(highLightParam.getHighLightField())) {
-                    HighlightBuilder highlightBuilder = new HighlightBuilder();
                     highlightBuilder.field(highLightParam.getHighLightField());
                     highlightBuilder.preTags(highLightParam.getPreTag());
                     highlightBuilder.postTags(highLightParam.getPostTag());
-                    searchSourceBuilder.highlighter(highlightBuilder);
                 }
             });
         }

@@ -16,16 +16,14 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
 
+import static cn.easyes.common.constants.BaseEsConstants.LOCK_INDEX;
+
 /**
  * 基于es写的轻量级分布式锁,仅供框架内部使用,可避免引入redis/zk等其它依赖
  * <p>
  * Copyright © 2022 xpc1024 All Rights Reserved
  **/
 public class LockUtils {
-    /**
-     * 锁所在索引
-     */
-    private final static String LOCK_INDEX = "ee-distribute-lock";
     /**
      * id字段名
      */

@@ -62,9 +62,16 @@ public class BaseCache {
 
         // 初始化父子类型JoinField中的所有方法
         Map<String, Method> joinInvokeMethodsMap = initInvokeMethodsMap(entityInfo.getJoinFieldClass());
-        baseEsEntityMethodMap.putIfAbsent(entityInfo.getJoinFieldClass(), joinInvokeMethodsMap);
+        BaseCache.baseEsEntityMethodMap.putIfAbsent(entityInfo.getJoinFieldClass(), joinInvokeMethodsMap);
     }
 
+
+    /**
+     * 初始化get及set方法容器
+     *
+     * @param clazz 类
+     * @return 指定类的get及set方法容器
+     */
     private static Map<String, Method> initInvokeMethodsMap(Class<?> clazz) {
         Method[] methods = clazz.getMethods();
         Map<String, Method> invokeMethodsMap = new ConcurrentHashMap<>(methods.length);
