@@ -61,13 +61,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
         return typedThis;
     }
 
-
-    @Override
-    public Children ne(boolean condition, R column, Object val, Float boost) {
-        getWrapper().ne(condition, column, val, boost);
-        return typedThis;
-    }
-
     @Override
     public Children gt(boolean condition, R column, Object val, Float boost) {
         getWrapper().gt(condition, column, val, boost);
@@ -153,22 +146,11 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children notMatch(boolean condition, R column, Object val, Float boost) {
-        getWrapper().notMatch(condition, column, val, boost);
-        return typedThis;
-    }
-
-    @Override
     public Children like(boolean condition, R column, Object val, Float boost) {
         getWrapper().like(condition, column, val, boost);
         return typedThis;
     }
 
-    @Override
-    public Children notLike(boolean condition, R column, Object val, Float boost) {
-        getWrapper().notLike(condition, column, val, boost);
-        return typedThis;
-    }
 
     @Override
     public Children likeLeft(boolean condition, R column, Object val, Float boost) {
@@ -278,20 +260,8 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children or(boolean condition) {
-        getWrapper().or(condition);
-        return typedThis;
-    }
-
-    @Override
     public Children match(R column, Object val, Float boost) {
         getWrapper().match(column, val, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children notMatch(R column, Object val, Float boost) {
-        getWrapper().notMatch(column, val, boost);
         return typedThis;
     }
 
@@ -334,12 +304,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     @Override
     public Children like(R column, Object val, Float boost) {
         getWrapper().like(column, val, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children notLike(R column, Object val, Float boost) {
-        getWrapper().notLike(column, val, boost);
         return typedThis;
     }
 
@@ -446,13 +410,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public Children ne(boolean condition, String column, Object val, Float boost) {
-        getWrapper().ne(condition, column, val, boost);
-        return typedThis;
-
-    }
-
-    @Override
     public Children match(boolean condition, String column, Object val, Float boost) {
         getWrapper().match(condition, column, val, boost);
         return typedThis;
@@ -479,12 +436,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     @Override
     public Children prefixQuery(boolean condition, String column, String prefix, Float boost) {
         getWrapper().prefixQuery(condition, column, prefix, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children notMatch(boolean condition, String column, Object val, Float boost) {
-        getWrapper().notMatch(condition, column, val, boost);
         return typedThis;
     }
 
@@ -529,12 +480,6 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     @Override
     public Children like(boolean condition, String column, Object val, Float boost) {
         getWrapper().like(condition, column, val, boost);
-        return typedThis;
-    }
-
-    @Override
-    public Children notLike(boolean condition, String column, Object val, Float boost) {
-        getWrapper().notLike(condition, column, val, boost);
         return typedThis;
     }
 

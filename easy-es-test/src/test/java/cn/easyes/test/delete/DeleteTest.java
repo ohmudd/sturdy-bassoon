@@ -48,7 +48,7 @@ public class DeleteTest {
 //        System.out.println(successCount);
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.isNotNull(Document::getTitle)
-                .and(w -> w.match(Document::getCustomField, "乌拉").or().eq(Document::getCustomField, "魔鬼"));
+                .or(w -> w.match(Document::getCustomField, "乌拉").eq(Document::getCustomField, "魔鬼"));
         int successCount = documentMapper.delete(wrapper);
         System.out.println(successCount);
     }

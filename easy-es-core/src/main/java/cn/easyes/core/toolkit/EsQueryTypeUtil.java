@@ -39,101 +39,101 @@ public class EsQueryTypeUtil {
     public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer attachType, boolean enableMust2Filter,
                                       BaseEsParam.FieldValueModel model, EntityInfo entityInfo, GlobalConfig.DbConfig dbConfig) {
 
-        Integer queryType = model.getEsQueryType();
-        Object value = model.getValue();
-        Float boost = model.getBoost();
-        String path = model.getPath();
-        Integer originalAttachType = model.getOriginalAttachType();
-        String field = model.getField();
-        // 自定义字段名称及驼峰和嵌套字段名称的处理
-        if (StringUtils.isBlank(path)) {
-            field = FieldUtils.getRealField(field, entityInfo.getMappingColumnMap(), dbConfig);
-        } else {
-            // 嵌套或父子类型
-            field = FieldUtils.getRealField(field, entityInfo.getNestedMappingColumnMapByPath(path), dbConfig);
-        }
-
-        // 封装查询参数
-        if (Objects.equals(queryType, EsQueryTypeEnum.TERM_QUERY.getType())) {
-            // 封装精确查询参数
-            TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery(field, value).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, termQueryBuilder);
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.TERMS_QUERY.getType())) {
-            // 此处兼容由or转入shouldList的in参数
-            Collection<?> values = Objects.isNull(value) ? model.getValues() : (Collection<?>) value;
-            TermsQueryBuilder termsQueryBuilder = QueryBuilders.termsQuery(field, values).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, termsQueryBuilder);
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.MATCH_PHRASE.getType())) {
-            // 封装模糊分词查询参数(分词必须按原关键词顺序)
-            MatchPhraseQueryBuilder matchPhraseQueryBuilder = QueryBuilders.matchPhraseQuery(field, value).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, matchPhraseQueryBuilder);
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.MATCH_PHRASE_PREFIX.getType())) {
-            MatchPhrasePrefixQueryBuilder matchPhrasePrefixQueryBuilder = QueryBuilders.matchPhrasePrefixQuery(field, value)
-                    .maxExpansions((Integer) model.getExt()).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, matchPhrasePrefixQueryBuilder);
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.PREFIX_QUERY.getType())) {
-            PrefixQueryBuilder prefixQueryBuilder = QueryBuilders.prefixQuery(field, value.toString()).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, prefixQueryBuilder);
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.QUERY_STRING_QUERY.getType())) {
-            QueryStringQueryBuilder queryStringQueryBuilder = QueryBuilders.queryStringQuery(value.toString()).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, queryStringQueryBuilder);
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.MATCH_QUERY.getType())) {
-            // 封装模糊分词查询参数(可无序)
-            MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery(field, value).boost(boost);
-            if (StringUtils.isBlank(path)) {
-                setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, matchQueryBuilder);
-            } else {
-                // 嵌套类型及父子类型处理
-                path = FieldUtils.getRealField(path, entityInfo.getMappingColumnMap(), dbConfig);
-                if (JoinTypeEnum.NESTED.equals(model.getExt())) {
-                    matchQueryBuilder = QueryBuilders.matchQuery(path + PATH_FIELD_JOIN + field, value).boost(boost);
-                    NestedQueryBuilder nestedQueryBuilder = QueryBuilders.nestedQuery(path, matchQueryBuilder, (ScoreMode) model.getScoreMode());
-                    setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, nestedQueryBuilder);
-                } else if (JoinTypeEnum.HAS_CHILD.equals(model.getExt())) {
-                    HasChildQueryBuilder hasChildQueryBuilder = new HasChildQueryBuilder(path, matchQueryBuilder, (ScoreMode) model.getScoreMode()).boost(boost);
-                    setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, hasChildQueryBuilder);
-                } else if (JoinTypeEnum.HAS_PARENT.equals(model.getExt())) {
-                    HasParentQueryBuilder hasParentQueryBuilder = new HasParentQueryBuilder(path, matchQueryBuilder, (Boolean) model.getScoreMode()).boost(boost);
-                    setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, hasParentQueryBuilder);
-                } else if (JoinTypeEnum.PARENT_ID.equals(model.getExt())) {
-                    ParentIdQueryBuilder parentIdQueryBuilder = new ParentIdQueryBuilder(path, model.getValue().toString()).boost(boost);
-                    setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, parentIdQueryBuilder);
-                }
-            }
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.RANGE_QUERY.getType())) {
-            // 封装范围查询参数
-            RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(field).boost(boost);
-            if (Objects.equals(originalAttachType, EsAttachTypeEnum.GT.getType())) {
-                rangeQueryBuilder.gt(value);
-            } else if (Objects.equals(originalAttachType, EsAttachTypeEnum.LT.getType())) {
-                rangeQueryBuilder.lt(value);
-            } else if (Objects.equals(originalAttachType, EsAttachTypeEnum.GE.getType())) {
-                rangeQueryBuilder.gte(value);
-            } else if (Objects.equals(originalAttachType, EsAttachTypeEnum.LE.getType())) {
-                rangeQueryBuilder.lte(value);
-            }
-            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, rangeQueryBuilder);
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.EXISTS_QUERY.getType())) {
-            // 封装是否存在查询参数
-            ExistsQueryBuilder existsQueryBuilder = QueryBuilders.existsQuery(field).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, existsQueryBuilder);
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.WILDCARD_QUERY.getType())) {
-            String query;
-            if (Objects.equals(attachType, EsAttachTypeEnum.LIKE_LEFT.getType())) {
-                query = BaseEsConstants.WILDCARD_SIGN + value;
-            } else if (Objects.equals(attachType, EsAttachTypeEnum.LIKE_RIGHT.getType())) {
-                query = value + BaseEsConstants.WILDCARD_SIGN;
-            } else {
-                query = BaseEsConstants.WILDCARD_SIGN + value + BaseEsConstants.WILDCARD_SIGN;
-            }
-            WildcardQueryBuilder wildcardQueryBuilder = QueryBuilders.wildcardQuery(field, query).boost(boost);
-            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, wildcardQueryBuilder);
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.INTERVAL_QUERY.getType())) {
-            // 封装between及notBetween
-            RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(field).boost(boost);
-            rangeQueryBuilder.gte(model.getLeftValue()).lte(model.getRightValue());
-            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, rangeQueryBuilder);
-        }
+//        Integer queryType = model.getEsQueryType();
+//        Object value = model.getValue();
+//        Float boost = model.getBoost();
+//        String path = model.getPath();
+//        Integer originalAttachType = model.getOriginalAttachType();
+//        String field = model.getField();
+//        // 自定义字段名称及驼峰和嵌套字段名称的处理
+//        if (StringUtils.isBlank(path)) {
+//            field = FieldUtils.getRealField(field, entityInfo.getMappingColumnMap(), dbConfig);
+//        } else {
+//            // 嵌套或父子类型
+//            field = FieldUtils.getRealField(field, entityInfo.getNestedMappingColumnMapByPath(path), dbConfig);
+//        }
+//
+//        // 封装查询参数
+//        if (Objects.equals(queryType, EsQueryTypeEnum.TERM_QUERY.getType())) {
+//            // 封装精确查询参数
+//            TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery(field, value).boost(boost);
+//            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, termQueryBuilder);
+//        } else if (Objects.equals(queryType, EsQueryTypeEnum.TERMS_QUERY.getType())) {
+//            // 此处兼容由or转入shouldList的in参数
+//            Collection<?> values = Objects.isNull(value) ? model.getValues() : (Collection<?>) value;
+//            TermsQueryBuilder termsQueryBuilder = QueryBuilders.termsQuery(field, values).boost(boost);
+//            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, termsQueryBuilder);
+//        } else if (Objects.equals(queryType, EsQueryTypeEnum.MATCH_PHRASE.getType())) {
+//            // 封装模糊分词查询参数(分词必须按原关键词顺序)
+//            MatchPhraseQueryBuilder matchPhraseQueryBuilder = QueryBuilders.matchPhraseQuery(field, value).boost(boost);
+//            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, matchPhraseQueryBuilder);
+//        } else if (Objects.equals(queryType, EsQueryTypeEnum.MATCH_PHRASE_PREFIX.getType())) {
+//            MatchPhrasePrefixQueryBuilder matchPhrasePrefixQueryBuilder = QueryBuilders.matchPhrasePrefixQuery(field, value)
+//                    .maxExpansions((Integer) model.getExt()).boost(boost);
+//            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, matchPhrasePrefixQueryBuilder);
+//        } else if (Objects.equals(queryType, EsQueryTypeEnum.PREFIX_QUERY.getType())) {
+//            PrefixQueryBuilder prefixQueryBuilder = QueryBuilders.prefixQuery(field, value.toString()).boost(boost);
+//            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, prefixQueryBuilder);
+//        } else if (Objects.equals(queryType, EsQueryTypeEnum.QUERY_STRING_QUERY.getType())) {
+//            QueryStringQueryBuilder queryStringQueryBuilder = QueryBuilders.queryStringQuery(value.toString()).boost(boost);
+//            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, queryStringQueryBuilder);
+//        } else if (Objects.equals(queryType, EsQueryTypeEnum.MATCH_QUERY.getType())) {
+//            // 封装模糊分词查询参数(可无序)
+//            MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery(field, value).boost(boost);
+//            if (StringUtils.isBlank(path)) {
+//                setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, matchQueryBuilder);
+//            } else {
+//                // 嵌套类型及父子类型处理
+//                path = FieldUtils.getRealField(path, entityInfo.getMappingColumnMap(), dbConfig);
+//                if (JoinTypeEnum.NESTED.equals(model.getExt())) {
+//                    matchQueryBuilder = QueryBuilders.matchQuery(path + PATH_FIELD_JOIN + field, value).boost(boost);
+//                    NestedQueryBuilder nestedQueryBuilder = QueryBuilders.nestedQuery(path, matchQueryBuilder, (ScoreMode) model.getScoreMode());
+//                    setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, nestedQueryBuilder);
+//                } else if (JoinTypeEnum.HAS_CHILD.equals(model.getExt())) {
+//                    HasChildQueryBuilder hasChildQueryBuilder = new HasChildQueryBuilder(path, matchQueryBuilder, (ScoreMode) model.getScoreMode()).boost(boost);
+//                    setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, hasChildQueryBuilder);
+//                } else if (JoinTypeEnum.HAS_PARENT.equals(model.getExt())) {
+//                    HasParentQueryBuilder hasParentQueryBuilder = new HasParentQueryBuilder(path, matchQueryBuilder, (Boolean) model.getScoreMode()).boost(boost);
+//                    setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, hasParentQueryBuilder);
+//                } else if (JoinTypeEnum.PARENT_ID.equals(model.getExt())) {
+//                    ParentIdQueryBuilder parentIdQueryBuilder = new ParentIdQueryBuilder(path, model.getValue().toString()).boost(boost);
+//                    setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, parentIdQueryBuilder);
+//                }
+//            }
+//        } else if (Objects.equals(queryType, EsQueryTypeEnum.RANGE_QUERY.getType())) {
+//            // 封装范围查询参数
+//            RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(field).boost(boost);
+//            if (Objects.equals(originalAttachType, EsAttachTypeEnum.GT.getType())) {
+//                rangeQueryBuilder.gt(value);
+//            } else if (Objects.equals(originalAttachType, EsAttachTypeEnum.LT.getType())) {
+//                rangeQueryBuilder.lt(value);
+//            } else if (Objects.equals(originalAttachType, EsAttachTypeEnum.GE.getType())) {
+//                rangeQueryBuilder.gte(value);
+//            } else if (Objects.equals(originalAttachType, EsAttachTypeEnum.LE.getType())) {
+//                rangeQueryBuilder.lte(value);
+//            }
+//            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, rangeQueryBuilder);
+//        } else if (Objects.equals(queryType, EsQueryTypeEnum.EXISTS_QUERY.getType())) {
+//            // 封装是否存在查询参数
+//            ExistsQueryBuilder existsQueryBuilder = QueryBuilders.existsQuery(field).boost(boost);
+//            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, existsQueryBuilder);
+//        } else if (Objects.equals(queryType, EsQueryTypeEnum.WILDCARD_QUERY.getType())) {
+//            String query;
+//            if (Objects.equals(attachType, EsAttachTypeEnum.LIKE_LEFT.getType())) {
+//                query = BaseEsConstants.WILDCARD_SIGN + value;
+//            } else if (Objects.equals(attachType, EsAttachTypeEnum.LIKE_RIGHT.getType())) {
+//                query = value + BaseEsConstants.WILDCARD_SIGN;
+//            } else {
+//                query = BaseEsConstants.WILDCARD_SIGN + value + BaseEsConstants.WILDCARD_SIGN;
+//            }
+//            WildcardQueryBuilder wildcardQueryBuilder = QueryBuilders.wildcardQuery(field, query).boost(boost);
+//            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, wildcardQueryBuilder);
+//        } else if (Objects.equals(queryType, EsQueryTypeEnum.INTERVAL_QUERY.getType())) {
+//            // 封装between及notBetween
+//            RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(field).boost(boost);
+//            rangeQueryBuilder.gte(model.getLeftValue()).lte(model.getRightValue());
+//            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, rangeQueryBuilder);
+//        }
     }
 
 
@@ -153,15 +153,15 @@ public class EsQueryTypeUtil {
      */
     public static void addQueryByType(BoolQueryBuilder boolQueryBuilder, Integer queryType, Integer attachType, Integer originalAttachType,
                                       boolean enableMust2Filter, List<String> fields, Object value, Object ext, Integer minShouldMatch, Float boost) {
-        if (Objects.equals(queryType, EsQueryTypeEnum.MULTI_MATCH_QUERY.getType())) {
-            MultiMatchQueryBuilder multiMatchQueryBuilder = QueryBuilders.multiMatchQuery(value, fields.toArray(new String[0])).boost(boost);
-            if (ext instanceof Operator) {
-                Operator operator = (Operator) ext;
-                multiMatchQueryBuilder.operator(operator);
-                multiMatchQueryBuilder.minimumShouldMatch(minShouldMatch + BaseEsConstants.PERCENT);
-            }
-            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, multiMatchQueryBuilder);
-        }
+//        if (Objects.equals(queryType, EsQueryTypeEnum.MULTI_MATCH_QUERY.getType())) {
+//            MultiMatchQueryBuilder multiMatchQueryBuilder = QueryBuilders.multiMatchQuery(value, fields.toArray(new String[0])).boost(boost);
+//            if (ext instanceof Operator) {
+//                Operator operator = (Operator) ext;
+//                multiMatchQueryBuilder.operator(operator);
+//                multiMatchQueryBuilder.minimumShouldMatch(minShouldMatch + BaseEsConstants.PERCENT);
+//            }
+//            setQueryBuilder(boolQueryBuilder, attachType, originalAttachType, enableMust2Filter, multiMatchQueryBuilder);
+//        }
     }
 
 

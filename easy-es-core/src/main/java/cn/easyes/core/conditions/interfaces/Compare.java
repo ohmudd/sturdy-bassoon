@@ -97,44 +97,6 @@ public interface Compare<Children, R> extends Serializable {
      */
     Children eq(boolean condition, String column, Object val, Float boost);
 
-    default Children ne(R column, Object val) {
-        return ne(true, column, val);
-    }
-
-    default Children ne(R column, Object val, Float boost) {
-        return ne(true, column, val, boost);
-    }
-
-    default Children ne(boolean condition, R column, Object val) {
-        return ne(condition, column, val, DEFAULT_BOOST);
-    }
-
-    default Children ne(String column, Object val) {
-        return ne(true, column, val);
-    }
-
-    default Children ne(String column, Object val, Float boost) {
-        return ne(true, column, val, boost);
-    }
-
-    default Children ne(boolean condition, String column, Object val) {
-        return ne(condition, column, val, DEFAULT_BOOST);
-    }
-
-    default Children ne(boolean condition, R column, Object val, Float boost) {
-        return ne(condition, FieldUtils.getFieldName(column), val, boost);
-    }
-
-    /**
-     * 不等于
-     *
-     * @param condition 条件
-     * @param column    列
-     * @param val       值
-     * @param boost     权重值
-     * @return 泛型
-     */
-    Children ne(boolean condition, String column, Object val, Float boost);
 
     default Children match(R column, Object val) {
         return match(true, column, val);
@@ -618,45 +580,6 @@ public interface Compare<Children, R> extends Serializable {
     Children prefixQuery(boolean condition, String column, String prefix, Float boost);
 
 
-    default Children notMatch(R column, Object val) {
-        return notMatch(true, column, val);
-    }
-
-    default Children notMatch(R column, Object val, Float boost) {
-        return notMatch(true, column, val, boost);
-    }
-
-    default Children notMatch(boolean condition, R column, Object val) {
-        return notMatch(condition, column, val, DEFAULT_BOOST);
-    }
-
-    default Children notMatch(String column, Object val) {
-        return notMatch(true, column, val);
-    }
-
-    default Children notMatch(String column, Object val, Float boost) {
-        return notMatch(true, column, val, boost);
-    }
-
-    default Children notMatch(boolean condition, String column, Object val) {
-        return notMatch(condition, column, val, DEFAULT_BOOST);
-    }
-
-    default Children notMatch(boolean condition, R column, Object val, Float boost) {
-        return notMatch(condition, FieldUtils.getFieldName(column), val, boost);
-    }
-
-    /**
-     * NOT MATCH 分词不匹配
-     *
-     * @param condition 条件
-     * @param column    列
-     * @param val       值
-     * @param boost     权重
-     * @return 泛型
-     */
-    Children notMatch(boolean condition, String column, Object val, Float boost);
-
     default Children gt(R column, Object val) {
         return gt(true, column, val);
     }
@@ -936,44 +859,6 @@ public interface Compare<Children, R> extends Serializable {
      */
     Children like(boolean condition, String column, Object val, Float boost);
 
-    default Children notLike(R column, Object val) {
-        return notLike(true, column, val);
-    }
-
-    default Children notLike(R column, Object val, Float boost) {
-        return notLike(true, column, val, boost);
-    }
-
-    default Children notLike(boolean condition, R column, Object val) {
-        return notLike(condition, column, val, DEFAULT_BOOST);
-    }
-
-    default Children notLike(String column, Object val) {
-        return notLike(true, column, val);
-    }
-
-    default Children notLike(String column, Object val, Float boost) {
-        return notLike(true, column, val, boost);
-    }
-
-    default Children notLike(boolean condition, String column, Object val) {
-        return notLike(condition, column, val, DEFAULT_BOOST);
-    }
-
-    default Children notLike(boolean condition, R column, Object val, Float boost) {
-        return notLike(condition, FieldUtils.getFieldName(column), val, boost);
-    }
-
-    /**
-     * NOT LIKE
-     *
-     * @param condition 条件
-     * @param column    列
-     * @param val       值
-     * @param boost     权重
-     * @return 泛型
-     */
-    Children notLike(boolean condition, String column, Object val, Float boost);
 
     default Children likeLeft(R column, Object val) {
         return likeLeft(true, column, val, DEFAULT_BOOST);

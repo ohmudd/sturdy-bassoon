@@ -2,8 +2,12 @@ package cn.easyes.core.conditions;
 
 import cn.easyes.common.enums.*;
 import cn.easyes.common.utils.*;
+import cn.easyes.core.Param;
 import cn.easyes.core.biz.*;
-import cn.easyes.core.conditions.interfaces.*;
+import cn.easyes.core.conditions.interfaces.Compare;
+import cn.easyes.core.conditions.interfaces.Func;
+import cn.easyes.core.conditions.interfaces.Geo;
+import cn.easyes.core.conditions.interfaces.Nested;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
@@ -18,8 +22,8 @@ import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-import static cn.easyes.common.enums.BaseEsParamTypeEnum.*;
-import static cn.easyes.common.enums.EsAttachTypeEnum.*;
+import static cn.easyes.common.enums.EsAttachTypeEnum.MUST;
+import static cn.easyes.common.enums.EsAttachTypeEnum.MUST_MULTI_FIELDS;
 import static cn.easyes.common.enums.EsQueryTypeEnum.*;
 import static cn.easyes.common.enums.JoinTypeEnum.*;
 import static cn.easyes.common.enums.OrderTypeEnum.CUSTOMIZE;
@@ -30,10 +34,23 @@ import static cn.easyes.common.enums.OrderTypeEnum.CUSTOMIZE;
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, R, Children>> extends Wrapper<T>
-        implements Compare<Children, R>, Nested<Children, Children>, Join<Children>, Func<Children, R>, Geo<Children, R> {
+        implements Compare<Children, R>, Nested<Children, Children>, Func<Children, R>, Geo<Children, R> {
 
     protected final Children typedThis = (Children) this;
 
+    /**
+     * 存放树的高度
+     */
+    protected Integer level;
+    /**
+     * 全局父节点 每次指向nested条件后
+     */
+    protected String parentId;
+    /**
+     *
+     */
+    protected List<Param> paramList;
+    protected LinkedList<String> queue;
     /**
      * 基础查询参数列表
      */
@@ -105,6 +122,9 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         baseEsParamList = new ArrayList<>();
         baseSortParams = new ArrayList<>();
         aggregationParamList = new ArrayList<>();
+        paramList = new ArrayList<>();
+        level = 0;
+        queue = new LinkedList<>();
     }
 
     @Override
@@ -143,27 +163,61 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children eq(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, TERM_QUERY, MUST, column, val, boost);
+        return addParam(condition, TERM_QUERY, column, val, boost);
     }
 
-    @Override
-    public Children ne(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, TERM_QUERY, MUST_NOT, column, val, boost);
+
+    private Children addParam(boolean condition, EsQueryTypeEnum queryTypeEnum, String column, Object val, Float boost) {
+        if (condition) {
+            Param param = new Param();
+            param.setId(UUID.randomUUID().toString());
+            Optional.ofNullable(parentId).ifPresent(param::setParentId);
+            param.setQueryTypeEnum(queryTypeEnum);
+            param.setVal(val);
+            param.setColumn(column);
+            param.setBoost(boost);
+            paramList.add(param);
+        }
+        return typedThis;
     }
 
     @Override
     public Children and(boolean condition, Consumer<Children> consumer) {
-        return doIt(condition, consumer, AND_LEFT_BRACKET, AND_RIGHT_BRACKET);
+        return addNested(condition, AND_MUST, consumer);
+    }
+
+    private Children addNested(boolean condition, EsQueryTypeEnum queryTypeEnum, Consumer<Children> consumer) {
+        if (condition) {
+            Param param = new Param();
+            param.setId(UUID.randomUUID().toString());
+            Optional.ofNullable(parentId).ifPresent(param::setParentId);
+            param.setQueryTypeEnum(queryTypeEnum);
+            level++;
+            paramList.add(param);
+            this.parentId = param.getId();
+            queue.push(parentId);
+            consumer.accept(instance());
+            // 深度优先在consumer条件消费完后会来执行这里 此时parentId需要重置 至于为什么 可断点打在consumer前后观察一波 整个框架最难的地方就在此
+            level--;
+            if (!queue.isEmpty()) {
+                this.parentId = queue.pollLast();
+            }
+            if (level == 0) {
+                // 根节点 没爹了
+                this.parentId = null;
+            }
+        }
+        return typedThis;
     }
 
     @Override
     public Children or(boolean condition, Consumer<Children> consumer) {
-        return doIt(condition, consumer, OR_LEFT_BRACKET, OR_RIGHT_BRACKET);
+        return addNested(condition, OR_SHOULD, consumer);
     }
 
     @Override
     public Children match(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, MATCH_QUERY, MUST, column, val, boost);
+        return addParam(condition, MATCH_QUERY, column, val, boost);
     }
 
     @Override
@@ -189,7 +243,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children matchPhrase(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, MATCH_PHRASE, MUST, column, val, boost);
+        return addParam(condition, MATCH_PHRASE, column, val, boost);
     }
 
     @Override
@@ -227,32 +281,28 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         if (StringUtils.isBlank(prefix)) {
             throw ExceptionUtils.eee("prefix can't be blank");
         }
-        return doIt(condition, PREFIX_QUERY, MUST, column, prefix, boost);
+        return addParam(condition, PREFIX_QUERY, column, prefix, boost);
     }
 
-    @Override
-    public Children notMatch(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, MATCH_QUERY, MUST_NOT, column, val, boost);
-    }
 
     @Override
     public Children gt(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, RANGE_QUERY, EsAttachTypeEnum.GT, column, val, boost);
+        return addParam(condition, RANGE_GT, column, val, boost);
     }
 
     @Override
     public Children ge(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, RANGE_QUERY, EsAttachTypeEnum.GE, column, val, boost);
+        return addParam(condition, RANGE_GE, column, val, boost);
     }
 
     @Override
     public Children lt(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, RANGE_QUERY, EsAttachTypeEnum.LT, column, val, boost);
+        return addParam(condition, RANGE_LT, column, val, boost);
     }
 
     @Override
     public Children le(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, RANGE_QUERY, EsAttachTypeEnum.LE, column, val, boost);
+        return addParam(condition, RANGE_LE, column, val, boost);
     }
 
     @Override
@@ -266,33 +316,18 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
-    public Children or(boolean condition) {
-        if (condition) {
-            BaseEsParam baseEsParam = new BaseEsParam();
-            baseEsParam.setType(BaseEsParamTypeEnum.OR_ALL.getType());
-            baseEsParamList.add(baseEsParam);
-        }
-        return typedThis;
-    }
-
-    @Override
     public Children like(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, WILDCARD_QUERY, MUST, column, val, boost);
-    }
-
-    @Override
-    public Children notLike(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, WILDCARD_QUERY, MUST_NOT, column, val, boost);
+        return addParam(condition, WILDCARD_QUERY, column, val, boost);
     }
 
     @Override
     public Children likeLeft(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, WILDCARD_QUERY, LIKE_LEFT, column, val, boost);
+        return addParam(condition, WILDCARD_LEFT_QUERY, column, val, boost);
     }
 
     @Override
     public Children likeRight(boolean condition, String column, Object val, Float boost) {
-        return doIt(condition, WILDCARD_QUERY, LIKE_RIGHT, column, val, boost);
+        return addParam(condition, WILDCARD_RIGHT_QUERY, column, val, boost);
     }
 
     @Override
@@ -607,7 +642,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                             .field(field)
                             .values(values)
                             .boost(boost)
-                            .esQueryType(TERMS_QUERY.getType())
+//                            .esQueryType(TERMS_QUERY.getType())
                             .originalAttachType(attachTypeEnum.getType())
                             .build();
 
@@ -653,7 +688,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                             .field(field)
                             .value(val)
                             .boost(boost)
-                            .esQueryType(queryTypeEnum.getType())
+//                            .esQueryType(queryTypeEnum.getType())
                             .originalAttachType(attachTypeEnum.getType())
                             .ext(ext)
                             .build();
@@ -681,7 +716,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                             .builder()
                             .field(field)
                             .boost(boost)
-                            .esQueryType(EXISTS_QUERY.getType())
+//                            .esQueryType(EXISTS_QUERY.getType())
                             .originalAttachType(attachTypeEnum.getType())
                             .build();
 
@@ -712,7 +747,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                             .leftValue(left)
                             .rightValue(right)
                             .boost(boost)
-                            .esQueryType(INTERVAL_QUERY.getType())
+//                            .esQueryType(INTERVAL_QUERY.getType())
                             .originalAttachType(attachTypeEnum.getType())
                             .build();
 
@@ -746,7 +781,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                             .ext(operator)
                             .minimumShouldMatch(minimumShouldMatch)
                             .boost(boost)
-                            .esQueryType(queryTypeEnum.getType())
+//                            .esQueryType(queryTypeEnum.getType())
                             .originalAttachType(attachTypeEnum.getType())
                             .build();
             setModel(baseEsParam, model, attachTypeEnum);
@@ -768,7 +803,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                             .value(val)
                             .boost(boost)
                             .ext(joinTypeEnum)
-                            .esQueryType(queryTypeEnum.getType())
+//                            .esQueryType(queryTypeEnum.getType())
                             .originalAttachType(attachTypeEnum.getType())
                             .build();
 

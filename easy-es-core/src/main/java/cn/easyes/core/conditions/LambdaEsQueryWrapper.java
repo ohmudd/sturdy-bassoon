@@ -3,13 +3,18 @@ package cn.easyes.core.conditions;
 import cn.easyes.common.params.SFunction;
 import cn.easyes.common.utils.ArrayUtils;
 import cn.easyes.common.utils.ExceptionUtils;
-import cn.easyes.core.biz.*;
+import cn.easyes.core.Param;
+import cn.easyes.core.biz.AggregationParam;
+import cn.easyes.core.biz.BaseSortParam;
+import cn.easyes.core.biz.EntityFieldInfo;
 import cn.easyes.core.conditions.interfaces.Query;
 import cn.easyes.core.toolkit.EntityInfoHelper;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.Predicate;
 
 /**
@@ -61,19 +66,22 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
         exclude = new String[]{};
     }
 
-    LambdaEsQueryWrapper(T entity, List<BaseEsParam> baseEsParamList, List<BaseSortParam> baseSortParams,
+    LambdaEsQueryWrapper(T entity, List<Param> paramList, LinkedList<String> queue, Integer level, String parentId, List<BaseSortParam> baseSortParams,
                          List<AggregationParam> aggregationParamList) {
         super.setEntity(entity);
         include = new String[]{};
         exclude = new String[]{};
-        this.baseEsParamList = baseEsParamList;
+        this.queue = queue;
+        this.level = level;
+        this.parentId = parentId;
+        this.paramList = paramList;
         this.baseSortParams = baseSortParams;
         this.aggregationParamList = aggregationParamList;
     }
 
     @Override
     protected LambdaEsQueryWrapper<T> instance() {
-        return new LambdaEsQueryWrapper<>(entity, baseEsParamList, baseSortParams, aggregationParamList);
+        return new LambdaEsQueryWrapper<>(entity, paramList, queue, level, parentId, baseSortParams, aggregationParamList);
     }
 
     @Override

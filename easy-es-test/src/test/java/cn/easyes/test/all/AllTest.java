@@ -223,15 +223,6 @@ public class AllTest {
 
     @Test
     @Order(6)
-    public void testConditionNe() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.ne(Document::getTitle, "测试文档10");
-        List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals(21, documents.size());
-    }
-
-    @Test
-    @Order(6)
     public void testConditionGt() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.gt(Document::getStarNum, 20);
@@ -291,15 +282,6 @@ public class AllTest {
         wrapper.like(Document::getTitle, "试文档");
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(22, documents.size());
-    }
-
-    @Test
-    @Order(6)
-    public void testConditionNotLike() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.notLike(Document::getTitle, "试文档");
-        List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals(0, documents.size());
     }
 
     @Test
@@ -501,28 +483,6 @@ public class AllTest {
 
     @Test
     @Order(6)
-    public void testConditionOrInner() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.in(Document::getStarNum, 1, 2, 3, 4, 10, 11)
-                .and(w -> w.eq(Document::getTitle, "测试文档10").or().eq(Document::getTitle, "测试文档3"));
-        List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals(2, documents.size());
-    }
-
-    @Test
-    @Order(6)
-    public void testConditionOrOuter() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.eq(Document::getTitle, "测试文档10")
-                .or()
-                .in(Document::getEsId, 1, 2, 3);
-        List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals(4, documents.size());
-    }
-
-
-    @Test
-    @Order(6)
     public void testPageQuery() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.match(Document::getCreator, "老汉");
@@ -675,16 +635,6 @@ public class AllTest {
 
     @Test
     @Order(6)
-    public void testNotMatch() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.notMatch(Document::getCreator, "老汉");
-        wrapper.orderByAsc(Document::getStarNum);
-        List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals(0, documents.size());
-    }
-
-    @Test
-    @Order(6)
     public void testMatchPhrase() {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.matchPhrase(Document::getContent, "测试");
@@ -745,18 +695,6 @@ public class AllTest {
         wrapper.prefixQuery(Document::getContent, "测试");
         List<Document> documents = documentMapper.selectList(wrapper);
         Assertions.assertEquals(22, documents.size());
-    }
-
-    @Test
-    @Order(6)
-    public void testWeight() {
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.match(Document::getContent, "更新", 2.0f)
-                .or()
-                .match(Document::getCreator, "老汉");
-        wrapper.sortByScore();
-        List<Document> documents = documentMapper.selectList(wrapper);
-        Assertions.assertEquals("2", documents.get(0).getEsId());
     }
 
     @Test
@@ -864,6 +802,27 @@ public class AllTest {
         boolean lockDeleted = documentMapper.deleteIndex(BaseEsConstants.LOCK_INDEX);
         Assertions.assertTrue(deleted);
         Assertions.assertTrue(lockDeleted);
+    }
+
+
+    @Test
+    @Order(11)
+    public void testAND() {
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.eq(Document::getCreator, "老汉")
+                .and(a -> a.eq(Document::getContent, "推车")
+                        .and(c -> c.eq(Document::getContent, "电车").eq(Document::getContent, "坏了"))
+                        .eq(Document::getCreator, "痴汉")
+                        .or(b -> b.eq(Document::getStarNum, 888).eq(Document::getCustomField, "不推车")
+                                .and(bb -> bb.eq(Document::getStarNum, 888).eq(Document::getCustomField, "不推车")
+                                        .and(bbb -> bbb.eq(Document::getStarNum, 888).eq(Document::getCustomField, "不推车"))
+                                )
+                        )
+                )
+                .and(d -> d.eq(Document::getEsId, 666).eq(Document::getGmtCreate, "2023"))
+        ;
+        List<Document> documents = documentMapper.selectList(wrapper);
+        System.out.println(documents);
     }
 
 }

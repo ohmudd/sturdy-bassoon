@@ -1,16 +1,15 @@
 package cn.easyes.core.conditions;
 
 import cn.easyes.common.enums.AggregationTypeEnum;
-import cn.easyes.common.utils.ArrayUtils;
-import cn.easyes.common.utils.CollectionUtils;
-import cn.easyes.common.utils.MyOptional;
-import cn.easyes.common.utils.StringUtils;
+import cn.easyes.common.utils.*;
+import cn.easyes.core.Param;
 import cn.easyes.core.biz.*;
 import cn.easyes.core.cache.GlobalConfigCache;
 import cn.easyes.core.config.GlobalConfig;
 import cn.easyes.core.toolkit.EntityInfoHelper;
 import cn.easyes.core.toolkit.EsQueryTypeUtil;
 import cn.easyes.core.toolkit.FieldUtils;
+import cn.easyes.core.toolkit.TreeBuilder;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.elasticsearch.index.query.*;
@@ -26,6 +25,7 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static cn.easyes.common.constants.BaseEsConstants.DEFAULT_SIZE;
 import static cn.easyes.common.constants.BaseEsConstants.REPEAT_NUM_KEY;
@@ -50,7 +50,8 @@ public class WrapperProcessor {
      */
     public static SearchSourceBuilder buildSearchSourceBuilder(LambdaEsQueryWrapper<?> wrapper, Class<?> entityClass) {
         // 初始化boolQueryBuilder 参数
-        BoolQueryBuilder boolQueryBuilder = initBoolQueryBuilder(wrapper.baseEsParamList, wrapper.enableMust2Filter, entityClass);
+        BoolQueryBuilder boolQueryBuilder = initBoolQueryBuilder(wrapper.paramList, entityClass);
+        System.out.println(boolQueryBuilder);
 
         // 初始化全表扫描查询参数
         Optional.ofNullable(wrapper.matchAllQuery).ifPresent(p -> boolQueryBuilder.must(QueryBuilders.matchAllQuery()));
@@ -65,6 +66,63 @@ public class WrapperProcessor {
         searchSourceBuilder.query(boolQueryBuilder);
         return searchSourceBuilder;
     }
+
+    /**
+     * 初始化将树参数转换为BoolQueryBuilder
+     *
+     * @param paramList   参数列表
+     * @param entityClass 实体类
+     */
+    private static BoolQueryBuilder initBoolQueryBuilder(List<Param> paramList, Class<?> entityClass) {
+        // 建树
+        List<Param> rootList = paramList.stream().filter(p -> Objects.isNull(p.getParentId())).collect(Collectors.toList());
+        TreeBuilder treeBuilder = new TreeBuilder(rootList, paramList);
+        List<Param> tree = (List<Param>) treeBuilder.build();
+        BoolQueryBuilder rootBool = QueryBuilders.boolQuery();
+
+        // 遍历,对森林的每个根节点递归封装
+        tree.forEach(root -> setBool(rootBool, root));
+        return rootBool;
+    }
+
+    private static void setBool(BoolQueryBuilder bool, Param param) {
+        List<Param> children = (List<Param>) param.getChildren();
+        switch (param.getQueryTypeEnum()) {
+            case TERM_QUERY:
+                bool.must(QueryBuilders.termQuery(param.getColumn(), param.getVal()).boost(param.getBoost()));
+                break;
+            case AND_MUST:
+                bool.must(getChildrenBool(children, QueryBuilders.boolQuery()));
+                break;
+            case FILTER:
+                bool.filter(getChildrenBool(children, QueryBuilders.boolQuery()));
+                break;
+            case MUST_NOT:
+                bool.mustNot(getChildrenBool(children, QueryBuilders.boolQuery()));
+                break;
+            case OR_SHOULD:
+                bool.should(getChildrenBool(children, QueryBuilders.boolQuery()));
+                break;
+            default:
+                throw ExceptionUtils.eee("非法参数类型");
+        }
+    }
+
+    /**
+     * 递归获取子节点的bool
+     *
+     * @param paramList 子节点参数列表
+     * @param builder   新的根bool
+     * @return 子节点bool合集, 统一封装至入参builder中
+     */
+    private static BoolQueryBuilder getChildrenBool(List<Param> paramList, BoolQueryBuilder builder) {
+        if (CollectionUtils.isEmpty(paramList)) {
+            return builder;
+        }
+        paramList.forEach(param -> setBool(builder, param));
+        return builder;
+    }
+
 
     /**
      * 初始化BoolQueryBuilder 整个框架的核心
@@ -226,7 +284,7 @@ public class WrapperProcessor {
         if (GlobalConfigCache.getGlobalConfig().getDbConfig().isEnableTrackTotalHits()) {
             searchSourceBuilder.trackTotalHits(Boolean.TRUE);
         }
-        
+
         return searchSourceBuilder;
     }
 
