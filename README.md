@@ -21,9 +21,9 @@
 # 简介 | Intro
 ---
 
-Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动索引托管,简化`CRUD`
+Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动智能索引托管.
 
-及其它高阶操作,可以更好的帮助开发者减轻开发负担
+简化`CRUD`及其它高阶操作,可以更好的帮助开发者减轻开发负担
 
 底层采用Es官方提供的RestHighLevelClient,保证其原生性能及拓展性.
 
