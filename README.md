@@ -155,10 +155,9 @@ compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Vers
 
 > 如果您想支持我们,奈何囊中羞涩,没事,您可以借花献佛,点击下方链接进入注册,则该赞助商会代您捐赠一笔小钱给我们社区的秃头猛男们买包辣条.
 
-<a href="http://apifox.cn/a103easyse">
-  <img alt="ad" src="https://iknow.hs.net/26b955ca-c481-43a9-8494-e9cadae9889d.png”>
+<a href="https://easy-es.cn/">
+  <img alt="ad" src="https://iknow.hs.net/26b955ca-c481-43a9-8494-e9cadae9889d.png">
 </a>
-
 
 # 关注我 | About Me
 ---
