@@ -20,7 +20,6 @@
   	- [Conditional Constructor](/en/condition.md)
   	  - [eq](/en/eq.md)
   	  - [ne](/en/ne.md)
-  	  - [match](/en/match.md)
   	  - [gt](/en/gt.md)
   	  - [ge](/en/ge.md)
   	  - [lt](/en/lt.md)
@@ -48,6 +47,7 @@
   	  - [QueryWrapper](/en/QueryWrapper.md)
   	  - [UpdateWrapper](/en/UpdateWrapper.md)
   - Expand Fucntion
+    - [match](/en/match.md)
     - [Hybrid query](/en/hybrid-query.md)
     - [Es Native query](/en/origin-query.md)
     - [Print DSL](/en/source.md)
