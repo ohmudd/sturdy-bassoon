@@ -46,13 +46,21 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      */
     protected String parentId;
     /**
+     * 上一节点类型
+     */
+    protected EsQueryTypeEnum prevQueryType;
+    /**
      * 参数列表
      */
     protected List<Param> paramList;
     /**
      * 队列 存放父id
      */
-    protected LinkedList<String> queue;
+    protected LinkedList<String> parentIdQueue;
+    /**
+     * 队列 存放上一节点类型
+     */
+    protected LinkedList<EsQueryTypeEnum> prevQueryTypeQueue;
     /**
      * 基础排序参数列表
      */
@@ -111,11 +119,13 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         aggregationParamList = new ArrayList<>();
         paramList = new ArrayList<>();
         level = 0;
-        queue = new LinkedList<>();
+        prevQueryType = AND_MUST;
+        parentIdQueue = new LinkedList<>();
+        prevQueryTypeQueue = new LinkedList<>();
     }
 
     @Override
-    public <V> Children allEq(boolean condition, Map<String, V> params, boolean null2IsNull) {
+    public <V> Children allEq(boolean condition, Map<String, V> params) {
         if (condition && CollectionUtils.isNotEmpty(params)) {
             params.forEach(this::eq);
         }
@@ -123,7 +133,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
-    public <V> Children allEq(boolean condition, BiPredicate<String, V> filter, Map<String, V> params, boolean null2IsNull) {
+    public <V> Children allEq(boolean condition, BiPredicate<String, V> filter, Map<String, V> params) {
         if (condition && CollectionUtils.isNotEmpty(params)) {
             params.forEach((k, v) -> {
                 if (filter.test(k, v)) {
@@ -520,10 +530,20 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     private void addBaseParam(Param param, EsQueryTypeEnum queryTypeEnum, String column, Object val, Float boost) {
         param.setId(UUID.randomUUID().toString());
         Optional.ofNullable(parentId).ifPresent(param::setParentId);
+        param.setPrevQueryType(prevQueryType);
         param.setQueryTypeEnum(queryTypeEnum);
         param.setVal(val);
         param.setColumn(column);
         param.setBoost(boost);
+
+        // 入队之前需要先对MP中的拼接or()特殊处理,嵌套or则不需要处理 之所以在此处处理,是因为可以少遍历一遍树 节省OLog(N) 时间复杂度
+        if (CollectionUtils.isNotEmpty(paramList)) {
+            Param prev = paramList.get(paramList.size() - 1);
+            if (OR.equals(prev.getQueryTypeEnum())) {
+                // 上一节点是拼接or() 则修改当前节点的prevQueryType为OR_SHOULD 让其走should查询
+                param.setPrevQueryType(OR_SHOULD);
+            }
+        }
         paramList.add(param);
     }
 
@@ -608,16 +628,21 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
             level++;
             paramList.add(param);
             this.parentId = param.getId();
-            queue.push(parentId);
+            parentIdQueue.push(parentId);
+            prevQueryTypeQueue.push(queryTypeEnum);
             consumer.accept(instance());
             // 深度优先在consumer条件消费完后会来执行这里 此时parentId需要重置 至于为什么 可断点打在consumer前后观察一波 整个框架最难的地方就在此
             level--;
-            if (!queue.isEmpty()) {
-                this.parentId = queue.pollLast();
+            if (!parentIdQueue.isEmpty()) {
+                this.parentId = parentIdQueue.pollLast();
+            }
+            if (!prevQueryTypeQueue.isEmpty()) {
+                this.prevQueryType = prevQueryTypeQueue.pollLast();
             }
             if (level == 0) {
                 // 仙人板板
                 this.parentId = null;
+                this.prevQueryType = AND_MUST;
             }
         }
         return typedThis;

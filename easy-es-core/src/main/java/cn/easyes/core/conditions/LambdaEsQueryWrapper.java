@@ -1,5 +1,6 @@
 package cn.easyes.core.conditions;
 
+import cn.easyes.common.enums.EsQueryTypeEnum;
 import cn.easyes.common.params.SFunction;
 import cn.easyes.common.utils.ArrayUtils;
 import cn.easyes.common.utils.ExceptionUtils;
@@ -58,12 +59,15 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
         exclude = new String[]{};
     }
 
-    LambdaEsQueryWrapper(T entity, List<Param> paramList, LinkedList<String> queue, Integer level, String parentId, List<BaseSortParam> baseSortParams,
-                         List<AggregationParam> aggregationParamList) {
+    LambdaEsQueryWrapper(T entity, List<Param> paramList, LinkedList<String> parentIdQueue,
+                         LinkedList<EsQueryTypeEnum> prevQueryTypeQueue, Integer level, String parentId,
+                         EsQueryTypeEnum pervQueryType, List<BaseSortParam> baseSortParams, List<AggregationParam> aggregationParamList) {
         super.setEntity(entity);
-        this.queue = queue;
+        this.parentIdQueue = parentIdQueue;
+        this.prevQueryTypeQueue = prevQueryTypeQueue;
         this.level = level;
         this.parentId = parentId;
+        this.prevQueryType = pervQueryType;
         this.paramList = paramList;
         this.baseSortParams = baseSortParams;
         this.aggregationParamList = aggregationParamList;
@@ -71,7 +75,7 @@ public class LambdaEsQueryWrapper<T> extends AbstractLambdaQueryWrapper<T, Lambd
 
     @Override
     protected LambdaEsQueryWrapper<T> instance() {
-        return new LambdaEsQueryWrapper<>(entity, paramList, queue, level, parentId, baseSortParams, aggregationParamList);
+        return new LambdaEsQueryWrapper<>(entity, paramList, parentIdQueue, prevQueryTypeQueue, level, parentId, prevQueryType, baseSortParams, aggregationParamList);
     }
 
     @Override

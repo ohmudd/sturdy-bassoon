@@ -19,44 +19,34 @@ import static cn.easyes.common.constants.BaseEsConstants.*;
 public interface Compare<Children, R> extends Serializable {
 
     default <V> Children allEq(Map<String, V> params) {
-        return allEq(params, true);
-    }
-
-
-    default <V> Children allEq(Map<String, V> params, boolean null2IsNull) {
-        return allEq(true, params, null2IsNull);
+        return allEq(true, params);
     }
 
     /**
      * map 所有非空属性等于 =
      *
-     * @param condition   执行条件
-     * @param params      map 类型的参数, key 是字段名, value 是字段值
-     * @param null2IsNull 是否参数为 null 自动执行 isNull 方法, false 则忽略这个字段
-     * @param <V>         ignore
+     * @param condition 执行条件
+     * @param params    map 类型的参数, key 是字段名, value 是字段值
+     * @param <V>       ignore
      * @return children
      */
-    <V> Children allEq(boolean condition, Map<String, V> params, boolean null2IsNull);
+    <V> Children allEq(boolean condition, Map<String, V> params);
+
 
     default <V> Children allEq(BiPredicate<String, V> filter, Map<String, V> params) {
-        return allEq(filter, params, true);
-    }
-
-    default <V> Children allEq(BiPredicate<String, V> filter, Map<String, V> params, boolean null2IsNull) {
-        return allEq(true, filter, params, null2IsNull);
+        return allEq(true, filter, params);
     }
 
     /**
      * 字段过滤接口，传入多参数时允许对参数进行过滤
      *
-     * @param condition   执行条件
-     * @param filter      返回 true 来允许字段传入比对条件中
-     * @param params      map 类型的参数, key 是字段名, value 是字段值
-     * @param null2IsNull 是否参数为 null 自动执行 isNull 方法, false 则忽略这个字段
-     * @param <V>         ignore
+     * @param condition 执行条件
+     * @param filter    返回 true 来允许字段传入比对条件中
+     * @param params    map 类型的参数, key 是字段名, value 是字段值
+     * @param <V>       ignore
      * @return 泛型
      */
-    <V> Children allEq(boolean condition, BiPredicate<String, V> filter, Map<String, V> params, boolean null2IsNull);
+    <V> Children allEq(boolean condition, BiPredicate<String, V> filter, Map<String, V> params);
 
     default Children eq(R column, Object val) {
         return eq(true, column, val);

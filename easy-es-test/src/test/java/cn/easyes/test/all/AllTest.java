@@ -800,24 +800,23 @@ public class AllTest {
     @Test
     @Order(21)
     public void testDSL(){
-        // 设置检索条件
+        // SQL写法
+        // where business_type = 1 and (state = 9 or (state = 8 and bidding_sign = 1)) or business_type = 2 and state in (2,3)
+
+        // RestHighLevelClient写法
         List<Integer> values = Arrays.asList(2,3);
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.must(QueryBuilders.termQuery("business_type",1));
         boolQueryBuilder.must(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("state",9))
                 .should(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("state",8)).must(QueryBuilders.termQuery("bidding_sign",1))));
         boolQueryBuilder.should(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("business_type",2)).must(QueryBuilders.termsQuery("state",values)));
-        System.out.println(boolQueryBuilder);
-        System.out.println();
 
-
+        // MP及EE写法
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.eq("business_type",1)
                 .and(a->a.eq("state",9).or(b->b.eq("state",8).eq("bidding_sign",1))
                 )
                 .or(i->i.eq("business_type",2).in("state",2,3));
-
-
         documentMapper.selectList(wrapper);
 
     }

@@ -41,7 +41,7 @@ import static cn.easyes.common.constants.BaseEsConstants.*;
 import static cn.easyes.common.enums.EsQueryTypeEnum.*;
 
 /**
- * 核心 wrpeer处理类
+ * 核心 wrapper处理类
  * <p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
@@ -76,9 +76,27 @@ public class WrapperProcessor {
      */
     public static BoolQueryBuilder initBoolQueryBuilder(List<Param> paramList, Class<?> entityClass) {
         // 数据预处理
+        List<Param> rootList = new ArrayList<>();
+        preProcessData(paramList, rootList, entityClass);
+
+        // 建立参数森林（无根树）
+        TreeBuilder treeBuilder = new TreeBuilder(rootList, paramList);
+        List<Param> tree = (List<Param>) treeBuilder.build();
+        BoolQueryBuilder rootBool = QueryBuilders.boolQuery();
+
+        // 对森林的每个根节点递归封装 这里看似简单实则很绕很烧脑 整个框架的核心 主要依托树的递归 深度优先遍历 森林
+        return getBool(tree, rootBool);
+    }
+
+    /***
+     * 数据预处理 原始数据转换为目标数据
+     * @param paramList 参数列表
+     * @param rootList 子树根
+     * @param entityClass 实体类
+     */
+    private static void preProcessData(List<Param> paramList, List<Param> rootList, Class<?> entityClass) {
         EntityInfo entityInfo = EntityInfoHelper.getEntityInfo(entityClass);
         GlobalConfig.DbConfig dbConfig = GlobalConfigCache.getGlobalConfig().getDbConfig();
-        List<Param> rootList = new ArrayList<>();
         paramList.forEach(param -> {
             // 驼峰及自定义字段转换
             String realField = FieldUtils.getRealField(param.getColumn(), entityInfo.getMappingColumnMap(), dbConfig);
@@ -98,41 +116,16 @@ public class WrapperProcessor {
                 rootList.add(param);
             }
         });
-
-        // 建树
-        TreeBuilder treeBuilder = new TreeBuilder(rootList, paramList);
-        List<Param> tree = (List<Param>) treeBuilder.build();
-        BoolQueryBuilder rootBool = QueryBuilders.boolQuery();
-
-        // 遍历,对森林的每个根节点递归封装
-        EsQueryTypeEnum parentQueryType = getParentQueryType(dbConfig.isEnableMust2Filter());
-        tree.forEach(root -> setBool(rootBool, root, parentQueryType));
-        return rootBool;
-    }
-
-    /**
-     * 根据配置获取根节点查询类型
-     *
-     * @param enableMust2Filter 是否开启must转filter配置 true开启 false 否
-     * @return 根节点查询类型
-     */
-    private static EsQueryTypeEnum getParentQueryType(boolean enableMust2Filter) {
-        if (enableMust2Filter) {
-            return EsQueryTypeEnum.FILTER;
-        } else {
-            return EsQueryTypeEnum.AND_MUST;
-        }
     }
 
     /**
      * 递归封装bool查询条件
      *
-     * @param bool       BoolQueryBuilder
-     * @param param      查询参数
-     * @param parentType 父查询类型
+     * @param bool  BoolQueryBuilder
+     * @param param 查询参数
      */
     @SneakyThrows
-    private static void setBool(BoolQueryBuilder bool, Param param, EsQueryTypeEnum parentType) {
+    private static void initBool(BoolQueryBuilder bool, Param param) {
         List<Param> children = (List<Param>) param.getChildren();
         QueryBuilder queryBuilder;
         switch (param.getQueryTypeEnum()) {
@@ -141,121 +134,122 @@ public class WrapperProcessor {
                 break;
             case TERM:
                 queryBuilder = QueryBuilders.termQuery(param.getColumn(), param.getVal()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MATCH:
                 queryBuilder = QueryBuilders.matchQuery(param.getColumn(), param.getVal()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MATCH_PHRASE:
                 queryBuilder = QueryBuilders.matchPhraseQuery(param.getColumn(), param.getVal()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MATCH_PHRASE_PREFIX:
                 queryBuilder = QueryBuilders.matchPhrasePrefixQuery(param.getColumn(), param.getVal()).boost(param.getBoost()).maxExpansions((int) param.getExt1());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MULTI_MATCH:
                 queryBuilder = QueryBuilders.multiMatchQuery(param.getVal(), param.getColumns()).operator((Operator) param.getExt1()).minimumShouldMatch(String.valueOf(param.getExt2()));
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case MATCH_ALL:
                 queryBuilder = QueryBuilders.matchAllQuery().boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case QUERY_STRING:
                 queryBuilder = QueryBuilders.queryStringQuery(param.getColumn()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case PREFIX:
                 queryBuilder = QueryBuilders.prefixQuery(param.getColumn(), (String) param.getVal()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GT:
                 queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).gt(param.getVal()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GE:
                 queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).gte(param.getVal()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case LT:
                 queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).lt(param.getVal()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case LE:
                 queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).lte(param.getVal()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case BETWEEN:
                 queryBuilder = QueryBuilders.rangeQuery(param.getColumn()).gte(param.getExt1()).lte(param.getExt2()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case WILDCARD:
                 queryBuilder = QueryBuilders.wildcardQuery(param.getColumn(), param.getVal().toString());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case TERMS:
                 queryBuilder = QueryBuilders.termsQuery(param.getColumn(), (Collection<?>) param.getVal());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case EXISTS:
                 queryBuilder = QueryBuilders.existsQuery(param.getColumn()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GEO_BOUNDING_BOX:
                 queryBuilder = QueryBuilders.geoBoundingBoxQuery(param.getColumn()).setCorners((GeoPoint) param.getExt1(), (GeoPoint) param.getExt2()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GEO_DISTANCE:
                 GeoDistanceQueryBuilder geoDistanceBuilder = QueryBuilders.geoDistanceQuery(param.getColumn()).point((GeoPoint) param.getExt2()).boost(param.getBoost());
                 MyOptional.ofNullable(param.getExt1()).ifPresent(ext1 -> geoDistanceBuilder.distance((double) param.getVal(), (DistanceUnit) ext1), () -> geoDistanceBuilder.distance((String) param.getVal()));
                 queryBuilder = geoDistanceBuilder;
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GEO_POLYGON:
                 queryBuilder = QueryBuilders.geoPolygonQuery(param.getColumn(), (List<GeoPoint>) param.getVal());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GEO_SHAPE_ID:
                 queryBuilder = QueryBuilders.geoShapeQuery(param.getColumn(), param.getVal().toString()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case GEO_SHAPE:
                 queryBuilder = QueryBuilders.geoShapeQuery(param.getColumn(), (Geometry) param.getVal()).relation((ShapeRelation) param.getExt1()).boost(param.getBoost());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case NESTED_MATCH:
                 queryBuilder = QueryBuilders.nestedQuery(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + param.getColumn(), param.getVal()).boost(param.getBoost()), (ScoreMode) param.getExt2());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case HAS_CHILD:
                 queryBuilder = new HasChildQueryBuilder(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + param.getColumn(), param.getVal()).boost(param.getBoost()), (ScoreMode) param.getExt2());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case HAS_PARENT:
                 queryBuilder = new HasParentQueryBuilder(param.getExt1().toString(), QueryBuilders.matchQuery(param.getExt1().toString() + PATH_FIELD_JOIN + param.getColumn(), param.getVal()).boost(param.getBoost()), (boolean) param.getExt2());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
             case PARENT_ID:
                 queryBuilder = new ParentIdQueryBuilder(param.getColumn(), param.getVal().toString());
-                setChildrenBool(bool, queryBuilder, parentType);
+                setBool(bool, queryBuilder, param.getPrevQueryType());
                 break;
+            // 下面四种嵌套类型 需要对孩子节点递归处理
             case AND_MUST:
-                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), parentType);
-                setChildrenBool(bool, queryBuilder, AND_MUST);
+                queryBuilder = getBool(children, QueryBuilders.boolQuery());
+                setBool(bool, queryBuilder, AND_MUST);
                 break;
             case FILTER:
-                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), parentType);
-                setChildrenBool(bool, queryBuilder, FILTER);
+                queryBuilder = getBool(children, QueryBuilders.boolQuery());
+                setBool(bool, queryBuilder, FILTER);
                 break;
             case MUST_NOT:
-                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), parentType);
-                setChildrenBool(bool, queryBuilder, MUST_NOT);
+                queryBuilder = getBool(children, QueryBuilders.boolQuery());
+                setBool(bool, queryBuilder, MUST_NOT);
                 break;
             case OR_SHOULD:
-                queryBuilder = getChildrenBool(children, QueryBuilders.boolQuery(), parentType);
-                setChildrenBool(bool, queryBuilder, OR_SHOULD);
+                queryBuilder = getBool(children, QueryBuilders.boolQuery());
+                setBool(bool, queryBuilder, OR_SHOULD);
                 break;
             default:
                 throw ExceptionUtils.eee("非法参数类型");
@@ -263,13 +257,13 @@ public class WrapperProcessor {
     }
 
     /**
-     * 设置孩子节点的bool
+     * 设置节点的bool
      *
-     * @param bool         父节点BoolQueryBuilder
-     * @param queryBuilder 孩子节点BoolQueryBuilder
+     * @param bool         根节点BoolQueryBuilder
+     * @param queryBuilder 非根节点BoolQueryBuilder
      * @param parentType   查询类型
      */
-    private static void setChildrenBool(BoolQueryBuilder bool, QueryBuilder queryBuilder, EsQueryTypeEnum parentType) {
+    private static void setBool(BoolQueryBuilder bool, QueryBuilder queryBuilder, EsQueryTypeEnum parentType) {
         if (EsQueryTypeEnum.AND_MUST.equals(parentType)) {
             bool.must(queryBuilder);
         } else if (EsQueryTypeEnum.OR_SHOULD.equals(parentType)) {
@@ -288,11 +282,11 @@ public class WrapperProcessor {
      * @param builder   新的根bool
      * @return 子节点bool合集, 统一封装至入参builder中
      */
-    private static BoolQueryBuilder getChildrenBool(List<Param> paramList, BoolQueryBuilder builder, EsQueryTypeEnum parentType) {
+    private static BoolQueryBuilder getBool(List<Param> paramList, BoolQueryBuilder builder) {
         if (CollectionUtils.isEmpty(paramList)) {
             return builder;
         }
-        paramList.forEach(param -> setBool(builder, param, parentType));
+        paramList.forEach(param -> initBool(builder, param));
         return builder;
     }
 

@@ -44,14 +44,14 @@ public abstract class AbstractChainWrapper<T, R, Children extends AbstractChainW
     }
 
     @Override
-    public <V> Children allEq(boolean condition, Map<String, V> params, boolean null2IsNull) {
-        getWrapper().allEq(condition, params, null2IsNull);
+    public <V> Children allEq(boolean condition, Map<String, V> params) {
+        getWrapper().allEq(condition, params);
         return typedThis;
     }
 
     @Override
-    public <V> Children allEq(boolean condition, BiPredicate<String, V> filter, Map<String, V> params, boolean null2IsNull) {
-        getWrapper().allEq(condition, filter, params, null2IsNull);
+    public <V> Children allEq(boolean condition, BiPredicate<String, V> filter, Map<String, V> params) {
+        getWrapper().allEq(condition, filter, params);
         return typedThis;
     }
 

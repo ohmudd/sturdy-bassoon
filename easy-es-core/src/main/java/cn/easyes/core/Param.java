@@ -12,6 +12,10 @@ import lombok.Data;
 @Data
 public class Param extends Tree {
     /**
+     * 上一节点类型
+     */
+    private EsQueryTypeEnum prevQueryType;
+    /**
      * 节点类型
      */
     private EsQueryTypeEnum queryTypeEnum;
