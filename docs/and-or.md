@@ -62,7 +62,9 @@ ES中的keyword类型,和MySQL中的字段基本上差不多,当我们需要对�
 
 ![image3](https://iknow.hs.net/87335e55-1fe3-44ed-920b-61354383e85a.png)
 
-queryStringQuery API:
+---
+
+啰嗦完了,正式进入主题,queryStringQuery API:
 
 ```java
 queryStringQuery(String queryString);
