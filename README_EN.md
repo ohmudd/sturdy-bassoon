@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://github.com/xpc1024/easy-es">
-   <img alt="East-Es-Logo" src="https://iknow.hs.net/6361ec1d-edca-4358-98c1-e7a309e15a39.png">
+  <a href="https://en.easy-es.cn/">
+   <img alt="East-Es-Logo" src="https://iknow.hs.net/9fa0407f-30ff-4d8b-82da-a4990e41a04b.png">
   </a>
 </p>
 
@@ -12,7 +12,7 @@
   <a href="https://search.maven.org/search?q=g:io.github.xpc1024%20a:easy-*">
     <img alt="maven" src="https://img.shields.io/github/v/release/xpc1024/easy-es?include_prereleases&logo=xpc&style=plastic">
   </a>
-
+  <a href="https://www.murphysec.com/dr/1hRHmuH0DE3RYL9uE0" alt="OSCS Status"><img src="https://www.oscs1024.com/platform/badge/dromara/easy-es.git.svg?size=small"/></a>
   <a href="https://www.apache.org/licenses/LICENSE-2.0">
     <img alt="code style" src="https://img.shields.io/badge/license-Apache%202-4EB1BA.svg?style=flat-square">
   </a>
@@ -26,14 +26,13 @@ Easy-Es is a powerfully enhanced toolkit of RestHighLevelClient for simplify dev
 ## Official website
 ---
 
-https://easy-es.cn/#/en/
+https://en.easy-es.cn/
 
 ## Links
 ---
 - [中文版](https://github.com/xpc1024/easy-es/blob/main/README-ZH.md)
-- [Documentation](https://www.yuque.com/laohan-14b9d/tald79/qf7ns2)
 - [Samples](https://github.com/xpc1024/easy-es/tree/main/easy-es-sample)
-- [Demo in Springboot](https://github.com/xpc1024/easy-es-springboot-demo-en)
+- [Demo in Springboot](https://en.easy-es.cn/pages/658abb/#_2-pom)
 
 ## Features
 ---
@@ -90,14 +89,14 @@ String indexName = "document";
     - Maven:
       ```xml
       <dependency>
-        <groupId>io.github.xpc1024</groupId>
+        <groupId>cn.easy-es</groupId>
         <artifactId>easy-es-boot-starter</artifactId>
         <version>Latest Version</version>
       </dependency>
       ```
     - Gradle
       ```groovy
-      compile group: 'io.github.xpc1024', name: 'easy-es-boot-starter', version: 'Latest Version'
+      compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Version'
       ```
 -   Add mapper file extends BaseEsMapper interface
 
@@ -125,6 +124,10 @@ String indexName = "document";
   ```
 
 > This showcase is just a small part of Easy-Es features. If you want to learn more, please refer to the [documentation](https://easy-es.cn/#/en/).
+
+## Architecture
+---
+![Architecture](https://iknow.hs.net/27fb40b8-22d4-45c2-92e0-1471112d5102.jpg)
 
 ## Syntax comparison with MySQL
 ---
@@ -165,7 +168,7 @@ String indexName = "document";
 
 ## Donate
 ---
-[Donate Easy-Es](https://easy-es.cn/#/en/donate)
+[Donate Easy-Es](https://en.easy-es.cn/pages/fb291d/)
 
 
 ## License

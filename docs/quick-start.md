@@ -9,7 +9,7 @@
 - 熟悉MySQL
 - 熟悉 Spring Boot (推荐版本2.5.x +)
 - 熟悉 Maven
-- 了解Es基本概念
+- 了解Es基本概念或已读[避坑指南](avoid-pit.md) (强烈推荐)
 - 已安装Es **推荐7.x+版本**(没有安装的可自行百度教程,建议再装一个es-head插件,便于可视化验证),低版本可能存在API不兼容或其它未知情况,因为底层采用RestHighLevelClient而非RestLowLevelClient,本Demo采用Es版本为7.10.0
 
 > **TIP**
@@ -31,14 +31,14 @@
 **Maven:**
 ```xml
         <dependency>
-            <groupId>io.github.xpc1024</groupId>
+            <groupId>cn.easy-es</groupId>
             <artifactId>easy-es-boot-starter</artifactId>
             <version>Latest Version</version>
         </dependency>
 ```
 **Gradle:**
 ```groovy
-compile group: 'io.github.xpc1024', name: 'easy-es-boot-starter', version: 'Latest Version'
+compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Version'
 ```
 > **Tips:** Latest Version: [点此获取](https://img.shields.io/github/v/release/xpc1024/easy-es?include_prereleases&logo=xpc&style=plastic)
 

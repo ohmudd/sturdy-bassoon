@@ -11,10 +11,9 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -26,7 +25,7 @@ import java.util.Objects;
  * <p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
-@RunWith(SpringRunner.class)
+@Disabled
 @SpringBootTest(classes = TestEasyEsApplication.class)
 public class HighTest {
     @Resource

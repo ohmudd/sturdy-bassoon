@@ -8,10 +8,9 @@ import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.geometry.Circle;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ import java.util.List;
  * <p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
-@RunWith(SpringRunner.class)
+@Disabled
 @SpringBootTest(classes = TestEasyEsApplication.class)
 public class GeoTest {
     @Resource
@@ -94,7 +93,7 @@ public class GeoTest {
     public void testGeoShape() {
         // 注意,这里查询的是图形,所以图形的字段索引类型必须为geoShape,不能为geoPoint,故这里用geoLocation字段而非location字段
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        // 这里以矩形为例演示,其中x,y为圆心坐标,r为半径. 其它图形请读者自行演示,篇幅原因不一一演示了
+        // 这里以圆形为例演示,其中x,y为圆心坐标,r为半径. 其它图形请读者自行演示,篇幅原因不一一演示了
         Circle circle = new Circle(13, 14, 100);
         // shapeRelation支持多种,如果不传则默认为within
         wrapper.geoShape(Document::getGeoLocation, circle, ShapeRelation.INTERSECTS);

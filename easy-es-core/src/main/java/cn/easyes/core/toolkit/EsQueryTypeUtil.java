@@ -18,6 +18,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import static cn.easyes.common.constants.BaseEsConstants.PATH_FIELD_JOIN;
+
 /**
  * 核心 查询参数封装工具类
  * <p>
@@ -61,7 +63,7 @@ public class EsQueryTypeUtil {
             Collection<?> values = Objects.isNull(value) ? model.getValues() : (Collection<?>) value;
             TermsQueryBuilder termsQueryBuilder = QueryBuilders.termsQuery(field, values).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, termsQueryBuilder);
-        } else if (Objects.equals(queryType, EsQueryTypeEnum.MATCH_PHASE.getType())) {
+        } else if (Objects.equals(queryType, EsQueryTypeEnum.MATCH_PHRASE.getType())) {
             // 封装模糊分词查询参数(分词必须按原关键词顺序)
             MatchPhraseQueryBuilder matchPhraseQueryBuilder = QueryBuilders.matchPhraseQuery(field, value).boost(boost);
             setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, matchPhraseQueryBuilder);
@@ -82,9 +84,10 @@ public class EsQueryTypeUtil {
                 setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, matchQueryBuilder);
             } else {
                 // 嵌套类型及父子类型处理
+                path = FieldUtils.getRealField(path, entityInfo.getMappingColumnMap(), dbConfig);
                 if (JoinTypeEnum.NESTED.equals(model.getExt())) {
-                    matchQueryBuilder = QueryBuilders.matchQuery(path + BaseEsConstants.PATH_FIELD_JOIN + field, value).boost(boost);
-                    NestedQueryBuilder nestedQueryBuilder = QueryBuilders.nestedQuery(model.getPath(), matchQueryBuilder, (ScoreMode) model.getScoreMode());
+                    matchQueryBuilder = QueryBuilders.matchQuery(path + PATH_FIELD_JOIN + field, value).boost(boost);
+                    NestedQueryBuilder nestedQueryBuilder = QueryBuilders.nestedQuery(path, matchQueryBuilder, (ScoreMode) model.getScoreMode());
                     setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, nestedQueryBuilder);
                 } else if (JoinTypeEnum.HAS_CHILD.equals(model.getExt())) {
                     HasChildQueryBuilder hasChildQueryBuilder = new HasChildQueryBuilder(path, matchQueryBuilder, (ScoreMode) model.getScoreMode()).boost(boost);
@@ -93,7 +96,7 @@ public class EsQueryTypeUtil {
                     HasParentQueryBuilder hasParentQueryBuilder = new HasParentQueryBuilder(path, matchQueryBuilder, (Boolean) model.getScoreMode()).boost(boost);
                     setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, hasParentQueryBuilder);
                 } else if (JoinTypeEnum.PARENT_ID.equals(model.getExt())) {
-                    ParentIdQueryBuilder parentIdQueryBuilder = new ParentIdQueryBuilder(path,model.getValue().toString()).boost(boost);
+                    ParentIdQueryBuilder parentIdQueryBuilder = new ParentIdQueryBuilder(path, model.getValue().toString()).boost(boost);
                     setQueryBuilder(boolQueryBuilder, attachType, enableMust2Filter, parentIdQueryBuilder);
                 }
             }

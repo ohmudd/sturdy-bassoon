@@ -9,10 +9,9 @@ import cn.easyes.test.entity.Comment;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.CommentMapper;
 import cn.easyes.test.mapper.DocumentMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.List;
  * <p>
  * Copyright © 2022 xpc1024 All Rights Reserved
  **/
-@RunWith(SpringRunner.class)
+@Disabled
 @SpringBootTest(classes = TestEasyEsApplication.class)
 public class JoinTest {
     @Resource

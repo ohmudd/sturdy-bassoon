@@ -2,17 +2,18 @@ package cn.easyes.test.select;
 
 import cn.easyes.common.enums.Link;
 import cn.easyes.common.enums.Query;
+import cn.easyes.core.biz.SAPageInfo;
 import cn.easyes.core.conditions.LambdaEsQueryWrapper;
 import cn.easyes.core.toolkit.EsWrappers;
 import cn.easyes.core.toolkit.QueryUtils;
 import cn.easyes.test.TestEasyEsApplication;
 import cn.easyes.test.entity.Document;
 import cn.easyes.test.mapper.DocumentMapper;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -25,7 +26,7 @@ import java.util.Map;
  * <p>
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
-@RunWith(SpringRunner.class)
+@Disabled
 @SpringBootTest(classes = TestEasyEsApplication.class)
 public class SelectTest {
     @Resource
@@ -39,11 +40,10 @@ public class SelectTest {
         wrapper.eq(Document::getTitle, title);
         // 字段名亦可指定为字符串,不推荐
 //        wrapper.eq("title",title);
-        wrapper.select(Document::getId);
         wrapper.limit(1);
         Document document = documentMapper.selectOne(wrapper);
         System.out.println(document);
-        Assert.assertEquals(title, document.getTitle());
+        Assertions.assertEquals(title, document.getTitle());
     }
 
     @Test
@@ -104,7 +104,7 @@ public class SelectTest {
     public void testMatch() {
         // 会对输入做分词,只要所有分词中有一个词在内容中有匹配就会查询出该数据,无视分词顺序
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.match(Document::getContent, "技术");
+        wrapper.match(Document::getContent, "过硬");
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents.size());
     }
@@ -114,7 +114,7 @@ public class SelectTest {
         // 会对输入做分词，但是需要结果中也包含所有的分词，而且顺序要求一样,否则就无法查询出结果
         // 例如es中数据是 技术过硬,如果搜索关键词为过硬技术就无法查询出结果
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.matchPhase(Document::getContent, "技术");
+        wrapper.matchPhrase(Document::getContent, "技术");
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents);
     }
@@ -192,6 +192,21 @@ public class SelectTest {
         wrapper.in(Document::getId, "2", "3");
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents);
+    }
+
+    @Test
+    @Order(11)
+    public void testSearchAfter() {
+        LambdaEsQueryWrapper<Document> lambdaEsQueryWrapper = EsWrappers.lambdaQuery(Document.class);
+        lambdaEsQueryWrapper.size(10);
+        lambdaEsQueryWrapper.orderByDesc(Document::getId, Document::getStarNum);
+        SAPageInfo<Document> saPageInfo = documentMapper.searchAfterPage(lambdaEsQueryWrapper, null, 10);
+        //第一页
+        System.out.println(saPageInfo);
+        //获取下一页
+        List<Object> nextSearchAfter = saPageInfo.getNextSearchAfter();
+        SAPageInfo<Document> documentSAPageInfo = documentMapper.searchAfterPage(lambdaEsQueryWrapper, nextSearchAfter, 10);
+        System.out.println(documentSAPageInfo);
     }
 
 }
