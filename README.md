@@ -23,6 +23,8 @@
 
 Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动智能索引托管.
 
+目前功能丰富度和易用度已全面领先SpringData-Elasticsearch.
+
 简化`CRUD`及其它高阶操作,可以更好的帮助开发者减轻开发负担
 
 底层采用Es官方提供的RestHighLevelClient,保证其原生性能及拓展性.
@@ -97,7 +99,6 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动�
 ---
 
 - [Switch To English](https://gitee.com/easy-es/easy-es/blob/master/README_EN.md)
-- [中文文档](https://www.yuque.com/books/share/52959a47-d9e5-404e-a750-7d139dfd3b24/naw1ie)
 - [功能示例](https://gitee.com/easy-es/easy-es-springboot-demo)
 - [Springboot集成Demo](https://easy-es.cn/#/demo)
 
