@@ -9,9 +9,7 @@
         // 支持分词查询,内容分词器可指定,查询分词器也可指定,,均可缺省或只指定其中之一,不指定则为ES默认分词器(standard)
         wrapper.mapping(Document::getTitle, FieldType.KEYWORD)
                 .mapping(Document::getContent, FieldType.TEXT,Analyzer.IK_MAX_WORD,Analyzer.IK_MAX_WORD);
-        // 0.9.8 + 版本支持直接传入字段名称字符串
-        wrapper.mapping("wu-la", FieldType.TEX);
-
+        
         // 如果上述简单的mapping不能满足你业务需求,可自定义mapping
         // wrapper.mapping(Map);
 
