@@ -8,9 +8,6 @@ import com.xpc.easyes.core.enums.FieldType;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 /**
  * es 数据模型
  * <p>
@@ -40,7 +37,8 @@ public class Document {
     /**
      * 创建时间
      */
-    private LocalDateTime gmtCreate;
+    @TableField(fieldType = FieldType.DATE, dateFormat = "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis")
+    private String gmtCreate;
     /**
      * es中实际不存在的字段,但模型中加了,为了不和es映射,可以在此类型字段上加上 注解@TableField,并指明exist=false
      */
@@ -55,7 +53,7 @@ public class Document {
      */
     private String geoLocation;
     /**
-     * 自定义字段
+     * 自定义字段名称
      */
     @TableField(value = "wu-la")
     private String customField;
@@ -63,6 +61,6 @@ public class Document {
     /**
      * 高亮返回值被映射的字段
      */
-    @HighLightMappingField("customField")
+    @HighLightMappingField("content")
     private String highlightContent;
 }

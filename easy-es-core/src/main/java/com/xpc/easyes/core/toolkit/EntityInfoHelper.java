@@ -222,6 +222,13 @@ public class EntityInfoHelper {
                 // 下划线驼峰
                 mappingColumn = initMappingColumnMapAndGet(dbConfig, entityInfo, field);
             }
+
+            // 日期格式化
+            if (StringUtils.isNotBlank(tableField.dateFormat())){
+                entityFieldInfo.setDateFormat(tableField.dateFormat());
+            }
+
+            // 其它
             entityFieldInfo.setMappingColumn(mappingColumn);
             entityFieldInfo.setAnalyzer(tableField.analyzer());
             entityFieldInfo.setSearchAnalyzer(tableField.searchAnalyzer());

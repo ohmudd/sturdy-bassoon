@@ -7,6 +7,10 @@ package com.xpc.easyes.core.constants;
  **/
 public interface BaseEsConstants {
     /**
+     * 配置前缀
+     */
+    String CONFIG_PREFIX = "easy-es-test";
+    /**
      * 数字0
      */
     Integer ZERO = 0;
@@ -78,6 +82,10 @@ public interface BaseEsConstants {
      * 字段类型
      */
     String TYPE = "type";
+    /**
+     * 日期格式化
+     */
+    String FORMAT = "format";
     /**
      * 分词器
      */

@@ -6,11 +6,11 @@ import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.serializer.SimplePropertyPreFilter;
 import com.xpc.easyes.core.cache.BaseCache;
+import com.xpc.easyes.core.cache.GlobalConfigCache;
 import com.xpc.easyes.core.common.EntityFieldInfo;
 import com.xpc.easyes.core.common.EntityInfo;
 import com.xpc.easyes.core.common.PageInfo;
 import com.xpc.easyes.core.conditions.interfaces.BaseEsMapper;
-import com.xpc.easyes.core.config.GlobalConfig;
 import com.xpc.easyes.core.constants.BaseEsConstants;
 import com.xpc.easyes.core.enums.FieldStrategy;
 import com.xpc.easyes.core.enums.IdType;
@@ -73,12 +73,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      */
     @Setter
     private Class<T> entityClass;
-
-    /**
-     * 全局配置
-     */
-    @Setter
-    private GlobalConfig globalConfig;
 
     @Override
     public Boolean existsIndex(String indexName) {
@@ -913,7 +907,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param wrapper
      */
     private void printDSL(LambdaEsQueryWrapper<T> wrapper) {
-        if (globalConfig.isPrintDsl()) {
+        if (GlobalConfigCache.getGlobalConfig().isPrintDsl()) {
             LogUtils.info(DSL_PREFIX + getSource(wrapper));
         }
 
@@ -925,7 +919,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param wrapper 查询参数包装类
      */
     private void printCountDSL(LambdaEsQueryWrapper<T> wrapper) {
-        if (globalConfig.isPrintDsl()) {
+        if (GlobalConfigCache.getGlobalConfig().isPrintDsl()) {
             LogUtils.info(COUNT_DSL_PREFIX + getSource(wrapper));
         }
     }
@@ -936,7 +930,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param searchRequest es查询请求参数
      */
     private void printDSL(SearchRequest searchRequest) {
-        if (globalConfig.isPrintDsl() && Objects.nonNull(searchRequest)) {
+        if (GlobalConfigCache.getGlobalConfig().isPrintDsl() && Objects.nonNull(searchRequest)) {
             Optional.ofNullable(searchRequest.source())
                     .ifPresent(source -> LogUtils.info(DSL_PREFIX + source));
         }

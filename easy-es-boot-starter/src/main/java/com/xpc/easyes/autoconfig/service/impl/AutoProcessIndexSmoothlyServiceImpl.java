@@ -32,6 +32,7 @@ public class AutoProcessIndexSmoothlyServiceImpl implements AutoProcessIndexServ
 
     @Override
     public void processIndexAsync(Class<?> entityClass, RestHighLevelClient client) {
+        LogUtils.info("===> Smoothly process index mode activated");
         IndexUtils.supplyAsync(this::process, entityClass, client);
     }
 
@@ -63,6 +64,7 @@ public class AutoProcessIndexSmoothlyServiceImpl implements AutoProcessIndexServ
         // 索引是否有变化 若有则创建新索引并无感迁移, 若无则直接返回托管成功
         boolean isIndexNeedChange = IndexUtils.isIndexNeedChange(esIndexInfo, entityInfo);
         if (!isIndexNeedChange) {
+            LogUtils.info("===> index has nothing changed");
             return Boolean.TRUE;
         }
 
