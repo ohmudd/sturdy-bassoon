@@ -9,6 +9,6 @@ eq(boolean condition, String indexName)
 ````java
      Document document = new Document();
      // Omit the code that assigns value to document
-     String indexName = "laohan";
+     String indexName = "man";
      insert(document, indexName);
 ````
