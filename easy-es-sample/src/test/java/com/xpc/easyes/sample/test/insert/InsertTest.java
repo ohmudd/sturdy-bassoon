@@ -53,8 +53,8 @@ public class InsertTest {
         Set<Faq> faqs1 = new HashSet<>();
         faqs1.add(new Faq("问题3","回答3"));
         faqs1.add(new Faq("问题4","回答4"));
-        users.add(new User("用户1", 18, faqs));
-        users.add(new User("用户2", 19, faqs1));
+//        users.add(new User("用户1", 18, faqs));
+//        users.add(new User("用户2", 19, faqs1));
         document.setUsers(users);
         int successCount = documentMapper.insert(document);
         Assert.assertEquals(successCount, 1);

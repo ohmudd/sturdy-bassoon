@@ -1,6 +1,7 @@
 package com.xpc.easyes.sample.entity;
 
 import com.xpc.easyes.core.anno.TableField;
+import com.xpc.easyes.core.anno.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ import lombok.experimental.Accessors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("faq")
 public class Faq {
     @TableField("faq_name")
     private String faqName;

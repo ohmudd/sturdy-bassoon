@@ -21,9 +21,9 @@ public class User {
     private String username;
     @TableField(exist = false)
     private Integer age;
-    /**
-     * 多级嵌套
-     */
-    @TableField(fieldType = FieldType.NESTED, nestedClass = Faq.class)
-    private Set<Faq> faqs;
+//    /**
+//     * 多级嵌套
+//     */
+//    @TableField(fieldType = FieldType.NESTED, nestedClass = Faq.class)
+//    private Set<Faq> faqs;
 }

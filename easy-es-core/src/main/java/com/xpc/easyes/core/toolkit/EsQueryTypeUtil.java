@@ -2,8 +2,12 @@ package com.xpc.easyes.core.toolkit;
 
 import com.xpc.easyes.core.common.EntityInfo;
 import com.xpc.easyes.core.config.GlobalConfig;
+import com.xpc.easyes.core.enums.JoinTypeEnum;
 import com.xpc.easyes.core.params.BaseEsParam;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.join.query.HasChildQueryBuilder;
+import org.elasticsearch.join.query.HasParentQueryBuilder;
 
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +44,7 @@ public class EsQueryTypeUtil {
         if (StringUtils.isBlank(path)) {
             field = FieldUtils.getRealField(field, entityInfo.getMappingColumnMap(), dbConfig);
         } else {
-            // 嵌套
+            // 嵌套或父子类型
             field = FieldUtils.getRealField(field, entityInfo.getNestedMappingColumnMapByPath(path), dbConfig);
         }
 
@@ -69,14 +73,22 @@ public class EsQueryTypeUtil {
             setQueryBuilder(boolQueryBuilder, attachType, queryStringQueryBuilder);
         } else if (Objects.equals(queryType, MATCH_QUERY.getType())) {
             // 封装模糊分词查询参数(可无序)
+            MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery(field, value).boost(boost);
             if (StringUtils.isBlank(path)) {
-                MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery(field, value).boost(boost);
                 setQueryBuilder(boolQueryBuilder, attachType, matchQueryBuilder);
             } else {
                 // 嵌套类型
-                MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery(path + PATH_FIELD_JOIN + field, value).boost(boost);
-                NestedQueryBuilder nestedQueryBuilder = QueryBuilders.nestedQuery(model.getPath(), matchQueryBuilder, model.getScoreMode());
-                setQueryBuilder(boolQueryBuilder, attachType, nestedQueryBuilder);
+                if (JoinTypeEnum.NESTED.equals(model.getExt())) {
+                    matchQueryBuilder = QueryBuilders.matchQuery(path + PATH_FIELD_JOIN + field, value).boost(boost);
+                    NestedQueryBuilder nestedQueryBuilder = QueryBuilders.nestedQuery(model.getPath(), matchQueryBuilder, (ScoreMode) model.getScoreMode());
+                    setQueryBuilder(boolQueryBuilder, attachType, nestedQueryBuilder);
+                } else if (JoinTypeEnum.HAS_CHILD.equals(model.getExt())) {
+                    HasChildQueryBuilder hasChildQueryBuilder = new HasChildQueryBuilder(path, matchQueryBuilder, (ScoreMode) model.getScoreMode());
+                    setQueryBuilder(boolQueryBuilder, attachType, hasChildQueryBuilder);
+                } else if (JoinTypeEnum.HAS_PARENT.equals(model.getExt())) {
+                    HasParentQueryBuilder hasParentQueryBuilder = new HasParentQueryBuilder(path, matchQueryBuilder, (Boolean) model.getScoreMode());
+                    setQueryBuilder(boolQueryBuilder, attachType, hasParentQueryBuilder);
+                }
             }
         } else if (Objects.equals(queryType, RANGE_QUERY.getType())) {
             // 封装范围查询参数

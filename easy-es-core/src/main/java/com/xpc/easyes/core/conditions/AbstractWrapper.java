@@ -2,10 +2,7 @@ package com.xpc.easyes.core.conditions;
 
 import com.xpc.easyes.core.common.OrderByParam;
 import com.xpc.easyes.core.conditions.interfaces.*;
-import com.xpc.easyes.core.enums.AggregationTypeEnum;
-import com.xpc.easyes.core.enums.BaseEsParamTypeEnum;
-import com.xpc.easyes.core.enums.EsAttachTypeEnum;
-import com.xpc.easyes.core.enums.EsQueryTypeEnum;
+import com.xpc.easyes.core.enums.*;
 import com.xpc.easyes.core.params.*;
 import com.xpc.easyes.core.toolkit.*;
 import org.apache.lucene.search.join.ScoreMode;
@@ -26,6 +23,7 @@ import java.util.function.Function;
 import static com.xpc.easyes.core.enums.BaseEsParamTypeEnum.*;
 import static com.xpc.easyes.core.enums.EsAttachTypeEnum.*;
 import static com.xpc.easyes.core.enums.EsQueryTypeEnum.*;
+import static com.xpc.easyes.core.enums.JoinTypeEnum.*;
 
 /**
  * 抽象Lambda表达式父类
@@ -140,7 +138,17 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     @Override
     public Children nestedMatch(boolean condition, String path, String column, Object val, ScoreMode scoreMode, Float boost) {
-        return doIt(condition, MATCH_QUERY, MUST, path, column, val, scoreMode, boost);
+        return doIt(condition, MATCH_QUERY, MUST, NESTED, path, column, val, scoreMode, boost);
+    }
+
+    @Override
+    public Children childMatch(boolean condition, String type, String column, Object val, ScoreMode scoreMode, Float boost) {
+        return doIt(condition, MATCH_QUERY, MUST, HAS_CHILD, type, column, val, scoreMode, boost);
+    }
+
+    @Override
+    public Children parentMatch(boolean condition, String type, String column, Object val, boolean score, Float boost) {
+        return doIt(condition, MATCH_QUERY, MUST, HAS_PARENT, type, column, val, score, boost);
     }
 
     @Override
@@ -657,8 +665,8 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         return typedThis;
     }
 
-    private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum, String path,
-                          String column, Object val, ScoreMode scoreMode, Float boost) {
+    private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum,
+                          JoinTypeEnum joinTypeEnum, String path, String column, Object val, Object scoreMode, Float boost) {
         if (condition) {
             BaseEsParam baseEsParam = new BaseEsParam();
             BaseEsParam.FieldValueModel model =
@@ -669,6 +677,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
                             .scoreMode(scoreMode)
                             .value(val)
                             .boost(boost)
+                            .ext(joinTypeEnum)
                             .esQueryType(queryTypeEnum.getType())
                             .originalAttachType(attachTypeEnum.getType())
                             .build();

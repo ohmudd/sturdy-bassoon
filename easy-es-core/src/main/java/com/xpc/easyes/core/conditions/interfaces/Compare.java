@@ -207,6 +207,90 @@ public interface Compare<Children, R> extends Serializable {
      */
     Children nestedMatch(boolean condition, String path, String column, Object val, ScoreMode scoreMode, Float boost);
 
+
+    default Children childMatch(String type, String column, Object val) {
+        return childMatch(true, type, column, val, ScoreMode.Avg, DEFAULT_BOOST);
+    }
+
+    default Children childMatch(String type, String column, Object val, ScoreMode scoreMode) {
+        return childMatch(true, type, column, val, scoreMode, DEFAULT_BOOST);
+    }
+
+    default Children childMatch(boolean condition, String type, String column, Object val) {
+        return childMatch(condition, type, column, val, ScoreMode.Avg, DEFAULT_BOOST);
+    }
+
+    default Children childMatch(boolean condition, String type, String column, Object val, Float boost) {
+        return childMatch(condition, type, column, val, ScoreMode.Avg, boost);
+    }
+
+    default Children childMatch(String type, String column, Object val, Float boost) {
+        return childMatch(true, type, column, val, ScoreMode.Avg, boost);
+    }
+
+    default Children childMatch(boolean condition, String type, String column, Object val, ScoreMode scoreMode) {
+        return childMatch(condition, type, column, val, scoreMode, DEFAULT_BOOST);
+    }
+
+    default Children childMatch(String type, String column, Object val, ScoreMode scoreMode, Float boost) {
+        return childMatch(true, type, column, val, scoreMode, boost);
+    }
+
+    /**
+     * 父子类型-根据父查子匹配
+     *
+     * @param condition 条件
+     * @param type      子索引名
+     * @param column    列名
+     * @param val       值
+     * @param scoreMode 得分模式
+     * @param boost     权重
+     * @return 泛型
+     */
+    Children childMatch(boolean condition, String type, String column, Object val, ScoreMode scoreMode, Float boost);
+
+
+    default Children parentMatch(String type, String column, Object val) {
+        return parentMatch(true, type, column, val, true, DEFAULT_BOOST);
+    }
+
+    default Children parentMatch(String type, String column, Object val, boolean score) {
+        return parentMatch(true, type, column, val, score, DEFAULT_BOOST);
+    }
+
+    default Children parentMatch(boolean condition, String type, String column, Object val) {
+        return parentMatch(condition, type, column, val, true, DEFAULT_BOOST);
+    }
+
+    default Children parentMatch(boolean condition, String type, String column, Object val, Float boost) {
+        return parentMatch(condition, type, column, val, true, boost);
+    }
+
+    default Children parentMatch(String type, String column, Object val, Float boost) {
+        return parentMatch(true, type, column, val, true, boost);
+    }
+
+    default Children parentMatch(boolean condition, String type, String column, Object val, boolean score) {
+        return parentMatch(condition, type, column, val, score, DEFAULT_BOOST);
+    }
+
+    default Children parentMatch(String type, String column, Object val, boolean score, Float boost) {
+        return parentMatch(true, type, column, val, score, boost);
+    }
+
+    /**
+     * 父子类型-根据子查父匹配
+     *
+     * @param condition 条件
+     * @param type      父索引名
+     * @param column    列名
+     * @param val       值
+     * @param score     是否计算评分
+     * @param boost     权重
+     * @return 泛型
+     */
+    Children parentMatch(boolean condition, String type, String column, Object val, boolean score, Float boost);
+
     default Children matchPhase(R column, Object val) {
         return matchPhase(true, column, val, DEFAULT_BOOST);
     }

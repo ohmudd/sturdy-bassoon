@@ -3,6 +3,7 @@ package com.xpc.easyes.sample.controller;
 import com.xpc.easyes.core.conditions.LambdaEsQueryWrapper;
 import com.xpc.easyes.sample.entity.Document;
 import com.xpc.easyes.sample.mapper.DocumentMapper;
+import com.xpc.easyes.sample.mapper.FaqMapper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,6 +28,9 @@ public class TestController {
 
     @Resource
     private DocumentMapper documentMapper;
+
+    @Resource
+    private FaqMapper faqMapper;
 
     /**
      * 演示根据标题精确查询文章

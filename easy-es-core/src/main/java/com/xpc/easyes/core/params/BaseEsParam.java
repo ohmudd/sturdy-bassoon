@@ -2,7 +2,6 @@ package com.xpc.easyes.core.params;
 
 import lombok.Builder;
 import lombok.Data;
-import org.apache.lucene.search.join.ScoreMode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -148,9 +147,9 @@ public class BaseEsParam {
          */
         private String path;
         /**
-         * 得分模式
+         * 得分模式or是否计算得分
          */
-        private ScoreMode scoreMode;
+        private Object scoreMode;
     }
 
     /**
