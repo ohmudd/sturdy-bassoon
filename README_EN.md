@@ -26,12 +26,11 @@ Easy-Es is a powerfully enhanced toolkit of RestHighLevelClient for simplify dev
 ## Official website
 ---
 
-https://easy-es.cn/#/en/
+https://en.easy-es.cn/
 
 ## Links
 ---
 - [中文版](https://github.com/xpc1024/easy-es/blob/main/README-ZH.md)
-- [Documentation](https://www.yuque.com/laohan-14b9d/tald79/qf7ns2)
 - [Samples](https://github.com/xpc1024/easy-es/tree/main/easy-es-sample)
 - [Demo in Springboot](https://github.com/xpc1024/easy-es-springboot-demo-en)
 
