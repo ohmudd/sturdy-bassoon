@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://easy-es.cn/">
-   <img alt="East-Es-Logo" src="https://iknow.hs.net/e2ccba53-812e-4927-9cac-d6ca61327752.png">
+   <img alt="East-Es-Logo" src="https://iknow.hs.net/042dd639-5bfa-410f-968f-8bbceb8d8ca7.png">
   </a>
 </p>
 
@@ -17,6 +17,21 @@
     <img alt="code style" src="https://img.shields.io/badge/license-Apache%202-4EB1BA.svg?style=flat-square">
   </a>
 </p>
+
+# 官方地址 | Official website
+---
+
+**easy-es官网** https://easy-es.cn/
+
+**easy-es官方gitee** https://gitee.com/dromara/easy-es
+
+**easy-es官方github** https://github.com/dromara/easy-es
+
+**开源社区dromara** https://dromara.org/
+
+**开源社区码云首页** https://gitee.com/dromara/
+
+> **Tip:** 官网是vue单页面应用，首次访问加载可能比较慢🐢，主公们请耐心等待一下，后续会很快🏹，如偶遇打不开可刷新多尝试几次.
 
 # 简介 | Intro
 ---
@@ -86,17 +101,6 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动�
 > * 以上只是简单查询演示,实际使用场景越复杂,效果就越好,平均可节省至少3-8倍代码量
 > * 传统功夫,点到为止! 上述功能仅供演示,仅为Easy-Es支持功能的冰山一角,Easy-Es就是这么Easy到不讲武德💪,不用的请耗子尾汁.
 
-# 官网地址 | Official website
----
-
-**easy-es官网** https://easy-es.cn/
-
-**开源社区dromara** https://dromara.org/
-
-**开源社区码云首页** https://gitee.com/dromara/
-
-> **Tip:** 官网是vue单页面应用，首次访问加载可能比较慢🐢，主公们请耐心等待一下，后续会很快🏹，如偶遇打不开可刷新多尝试几次.
-
 # 架构 | Architecture
 ---
 
@@ -155,3 +159,7 @@ compile group: 'cn.easy-es', name: 'easy-es-boot-starter', version: 'Latest Vers
 [CSDN博客](https://blog.csdn.net/lovexiaotaozi?spm=3001.5343)
 
 QQ | 微信:252645816
+
+# 知识星球 | Planet Of Knowledge
+---
+<img alt="zsxq" src="https://iknow.hs.net/9038b7ab-c0d9-4a87-9492-e839907a8978.png">
