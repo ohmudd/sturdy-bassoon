@@ -74,7 +74,7 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,全自动�
          List<Document> documents = Optional.ofNullable(searchResponse)
                 .map(SearchResponse::getHits)
                 .map(SearchHits::getHits)
-                .map(hit->Document document = JSON.parseObject(searchHit.getSourceAsString(),Document.class))
+                .map(hit->Document document = JSON.parseObject(hit.getSourceAsString(),Document.class))
                 .collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
