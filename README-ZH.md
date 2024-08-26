@@ -41,34 +41,35 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,简化`CRUD
 ```java
 // 使用Easy-Es仅需3行代码即可完成查询
 LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-wrapper.eq(Document::getTitle, "中国功夫").eq(Document::getCreator, "老汉");
-List<Document> documents = documentMapper.selectList(wrapper);
+        wrapper.eq(Document::getTitle, "中国功夫").eq(Document::getCreator, "老汉");
+        List<Document> documents = documentMapper.selectList(wrapper);
 ```
 
 ```java
 // 传统方式, 直接用RestHighLevelClient进行查询 需要11行代码,还不包含解析JSON代码
 String indexName = "document";
-SearchRequest searchRequest = new SearchRequest(indexName);
-BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-TermQueryBuilder titleTerm = QueryBuilders.termQuery("title", "中国功夫");
-TermsQueryBuilder creatorTerm = QueryBuilders.termsQuery("creator", "老汉");
-boolQueryBuilder.must(titleTerm);
-boolQueryBuilder.must(creatorTerm);
-SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-searchSourceBuilder.query(boolQueryBuilder);
-searchRequest.source(searchSourceBuilder);
-try {
-    SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-    // 然后从searchResponse中通过各种方式解析出DocumentList 省略这些代码...
-    } catch (IOException e) {
-            e.printStackTrace();
-    }
+        SearchRequest searchRequest = new SearchRequest(indexName);
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        TermQueryBuilder titleTerm = QueryBuilders.termQuery("title", "中国功夫");
+        TermsQueryBuilder creatorTerm = QueryBuilders.termsQuery("creator", "老汉");
+        boolQueryBuilder.must(titleTerm);
+        boolQueryBuilder.must(creatorTerm);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(boolQueryBuilder);
+        searchRequest.source(searchSourceBuilder);
+        try {
+        SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        // 然后从searchResponse中通过各种方式解析出DocumentList 省略这些代码...
+        } catch (IOException e) {
+        e.printStackTrace();
+        }
 ```
 > * 以上只是简单查询演示,实际使用场景越复杂,效果就越好,平均可节省3-5倍代码量
 > * 上述功能仅供演示,仅为Easy-Es支持功能的冰山一角
 
 ## 相关链接 | Links
 
+- [Switch To English](https://github.com/xpc1024/easy-es/blob/main/README.md)
 - [文档](https://www.yuque.com/laohan-14b9d/foyrfa/naw1ie)
 - [功能示例](https://github.com/xpc1024/easy-es/tree/main/easy-es-sample)
 - [Springboot集成Demo](https://www.yuque.com/laohan-14b9d/foyrfa/pbo22k)

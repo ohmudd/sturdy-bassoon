@@ -48,28 +48,28 @@ Easy-Es is a powerfully enhanced toolkit of RestHighLevelClient for simplify dev
 ```java
 // Use Easy-Es to complete the query with only 3 lines of code
 LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-wrapper.eq(Document::getTitle, "Hi").eq(Document::getCreator, "Guy");
-List<Document> documents = documentMapper.selectList(wrapper);
+        wrapper.eq(Document::getTitle, "Hi").eq(Document::getCreator, "Guy");
+        List<Document> documents = documentMapper.selectList(wrapper);
 ```
 
 ```java
-// Query directly with RestHighLevelClient requires 11 lines of code, not including parsing JSON code
+// Query with RestHighLevelClient requires 11 lines of code, not including parsing JSON code
 String indexName = "document";
-SearchRequest searchRequest = new SearchRequest(indexName);
-BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-TermQueryBuilder titleTerm = QueryBuilders.termQuery("title", "Hi");
-TermsQueryBuilder creatorTerm = QueryBuilders.termsQuery("creator", "Guy");
-boolQueryBuilder.must(titleTerm);
-boolQueryBuilder.must(creatorTerm);
-SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-searchSourceBuilder.query(boolQueryBuilder);
-searchRequest.source(searchSourceBuilder);
-try {
-    SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-    // Then parse the DocumentList from searchResponse in various ways, omitting these codes...
-    } catch (IOException e) {
-            e.printStackTrace();
-    }
+        SearchRequest searchRequest = new SearchRequest(indexName);
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        TermQueryBuilder titleTerm = QueryBuilders.termQuery("title", "Hi");
+        TermsQueryBuilder creatorTerm = QueryBuilders.termsQuery("creator", "Guy");
+        boolQueryBuilder.must(titleTerm);
+        boolQueryBuilder.must(creatorTerm);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(boolQueryBuilder);
+        searchRequest.source(searchSourceBuilder);
+        try {
+        SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        // Then parse the DocumentList from searchResponse in various ways, omitting these codes...
+        } catch (IOException e) {
+        e.printStackTrace();
+        }
 ```
 
 > The above is just a simple query demonstration. The more complex the actual query scene, the better the effect, which can save 3-5 times the amount of code on average.
@@ -104,16 +104,16 @@ try {
   List<Document> documentList = documentMapper.selectList();
   
   ```
-    Easy-Es will execute the following Query:
+  Easy-Es will execute the following Query:
     ```json
     {"query":{"bool":{"must":[{"term":{"title":{"value":"Hello World","boost":1.0}}},{"term":{"creator":{"value":"Guy","boost":1.0}}}],"adjust_pure_negative":true,"boost":1.0}}}
     ```
-  
+
   The syntax of this query in MySQL is:
   ```sql
    SELECT * FROM document WHERE title = 'Hello World' AND creator = 'Guy'
   ```
-  
+
 > This showcase is just a small part of Easy-Es features. If you want to learn more, please refer to the [documentation](https://www.yuque.com/laohan-14b9d/tald79/qf7ns2).
 
 ## Syntax comparison with MySQL
@@ -149,6 +149,11 @@ try {
 | - | match |
 |- |highLight |
 | ... | ... |
+
+---
+
+## Donate
+[Donate Easy-Es](https://www.yuque.com/laohan-14b9d/tald79/oqpgto)
 
 
 ## License
