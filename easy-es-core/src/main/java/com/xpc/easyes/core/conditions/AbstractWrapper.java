@@ -1,21 +1,19 @@
 package com.xpc.easyes.core.conditions;
 
-import com.xpc.easyes.core.conditions.interfaces.Compare;
-import com.xpc.easyes.core.conditions.interfaces.Func;
-import com.xpc.easyes.core.conditions.interfaces.Join;
-import com.xpc.easyes.core.conditions.interfaces.Nested;
+import com.xpc.easyes.core.conditions.interfaces.*;
 import com.xpc.easyes.core.enums.AggregationTypeEnum;
 import com.xpc.easyes.core.enums.BaseEsParamTypeEnum;
 import com.xpc.easyes.core.enums.EsAttachTypeEnum;
 import com.xpc.easyes.core.enums.EsQueryTypeEnum;
-import com.xpc.easyes.core.params.AggregationParam;
-import com.xpc.easyes.core.params.BaseEsParam;
-import com.xpc.easyes.core.params.HighLightParam;
-import com.xpc.easyes.core.params.SortParam;
+import com.xpc.easyes.core.params.*;
 import com.xpc.easyes.core.toolkit.ArrayUtils;
 import com.xpc.easyes.core.toolkit.Assert;
 import com.xpc.easyes.core.toolkit.CollectionUtils;
 import com.xpc.easyes.core.toolkit.FieldUtils;
+import org.elasticsearch.common.geo.GeoPoint;
+import org.elasticsearch.common.geo.ShapeRelation;
+import org.elasticsearch.common.unit.DistanceUnit;
+import org.elasticsearch.geometry.Geometry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +33,7 @@ import static com.xpc.easyes.core.enums.EsQueryTypeEnum.*;
  * Copyright © 2021 xpc1024 All Rights Reserved
  **/
 public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, R, Children>> extends Wrapper<T>
-        implements Compare<Children, R>, Nested<Children, Children>, Join<Children>, Func<Children, R> {
+        implements Compare<Children, R>, Nested<Children, Children>, Join<Children>, Func<Children, R>, Geo<Children, R> {
 
     protected final Children typedThis = (Children) this;
 
@@ -55,7 +53,10 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
      * 聚合查询参数列表
      */
     protected List<AggregationParam> aggregationParamList;
-
+    /**
+     * geo相关参数
+     */
+    protected GeoParam geoParam;
     /**
      * 实体对象
      */
@@ -278,6 +279,36 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
         return doIt(condition, AggregationTypeEnum.SUM, returnName, column);
     }
 
+    @Override
+    public Children geoBoundingBox(boolean condition, R column, GeoPoint topLeft, GeoPoint bottomRight, Float boost) {
+        return doIt(condition, FieldUtils.getFieldName(column), topLeft, bottomRight, boost);
+    }
+
+    @Override
+    public Children geoDistance(boolean condition, R column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint, Float boost) {
+        return doIt(condition, FieldUtils.getFieldName(column), distance, distanceUnit, centralGeoPoint, boost);
+    }
+
+    @Override
+    public Children geoDistance(boolean condition, R column, String distance, GeoPoint centralGeoPoint, Float boost) {
+        return doIt(condition, FieldUtils.getFieldName(column), distance, centralGeoPoint, boost);
+    }
+
+    @Override
+    public Children geoPolygon(boolean condition, R column, List<GeoPoint> geoPoints, Float boost) {
+        return doIt(condition, FieldUtils.getFieldName(column), geoPoints, boost);
+    }
+
+    @Override
+    public Children geoShape(boolean condition, R column, String indexedShapeId, Float boost) {
+        return doIt(condition, FieldUtils.getFieldName(column), indexedShapeId, boost);
+    }
+
+    @Override
+    public Children geoShape(boolean condition, R column, Geometry geometry, ShapeRelation shapeRelation, Float boost) {
+        return doIt(condition, FieldUtils.getFieldName(column), geometry, shapeRelation, boost);
+    }
+
     /**
      * 子类返回一个自己的新对象
      *
@@ -307,10 +338,11 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     /**
      * 封装查询参数(含AND,OR这种连接操作)
+     *
      * @param condition 条件
-     * @param func 函数
-     * @param open 左括号
-     * @param close 右括号
+     * @param func      函数
+     * @param open      左括号
+     * @param close     右括号
      * @return 泛型
      */
     private Children doIt(boolean condition, Function<Children, Children> func, BaseEsParamTypeEnum open, BaseEsParamTypeEnum close) {
@@ -328,11 +360,12 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     /**
      * 封装查询参数(普通情况,不带括号)
-     * @param condition 条件
+     *
+     * @param condition      条件
      * @param attachTypeEnum 连接类型
-     * @param field 字段
-     * @param values 值列表
-     * @param boost  权重
+     * @param field          字段
+     * @param values         值列表
+     * @param boost          权重
      * @return 泛型
      */
     private Children doIt(boolean condition, EsAttachTypeEnum attachTypeEnum, String field, List<Object> values, Float boost) {
@@ -356,12 +389,13 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     /**
      * 封装查询参数(普通情况,不带括号)
-     * @param condition 条件
-     * @param queryTypeEnum 查询类型
+     *
+     * @param condition      条件
+     * @param queryTypeEnum  查询类型
      * @param attachTypeEnum 连接类型
-     * @param field 字段
-     * @param val 值
-     * @param boost 权重
+     * @param field          字段
+     * @param val            值
+     * @param boost          权重
      * @return 泛型
      */
     private Children doIt(boolean condition, EsQueryTypeEnum queryTypeEnum, EsAttachTypeEnum attachTypeEnum, String field, Object val, Float boost) {
@@ -385,10 +419,11 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     /**
      * 封装查询参数针对is Null / not null 这类无值操作
-     * @param condition 条件
+     *
+     * @param condition      条件
      * @param attachTypeEnum 连接类型
-     * @param field 字段
-     * @param boost 权重
+     * @param field          字段
+     * @param boost          权重
      * @return 泛型
      */
     private Children doIt(boolean condition, EsAttachTypeEnum attachTypeEnum, String field, Float boost) {
@@ -411,12 +446,13 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
 
     /**
      * 仅针对between的情况
-     * @param condition 条件
+     *
+     * @param condition      条件
      * @param attachTypeEnum 连接类型
-     * @param field 字段
-     * @param left 左区间
-     * @param right 右区间
-     * @param boost 权重
+     * @param field          字段
+     * @param left           左区间
+     * @param right          右区间
+     * @param boost          权重
      * @return 泛型
      */
     private Children doIt(boolean condition, EsAttachTypeEnum attachTypeEnum, String field, Object left, Object right, Float boost) {
@@ -440,9 +476,139 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     /**
+     * geoBoundingBox
+     *
+     * @param condition   条件
+     * @param field       字段名
+     * @param topLeft     左上点坐标
+     * @param bottomRight 右下点坐标
+     * @param boost       权重值
+     * @return 泛型
+     */
+    private Children doIt(boolean condition, String field, GeoPoint topLeft, GeoPoint bottomRight, Float boost) {
+        if (condition) {
+            this.geoParam = GeoParam.builder()
+                    .field(field)
+                    .topLeft(topLeft)
+                    .bottomRight(bottomRight)
+                    .boost(boost)
+                    .build();
+        }
+        return typedThis;
+    }
+
+    /**
+     * geoDistance 双精度距离类型
+     *
+     * @param condition       条件
+     * @param fieldName       字段名
+     * @param distance        距离
+     * @param distanceUnit    距离单位
+     * @param centralGeoPoint 中心点
+     * @param boost           权重
+     * @return 泛型
+     */
+    private Children doIt(boolean condition, String fieldName, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint, Float boost) {
+        if (condition) {
+            this.geoParam = GeoParam.builder()
+                    .field(fieldName)
+                    .boost(boost)
+                    .distance(distance)
+                    .distanceUnit(distanceUnit)
+                    .centralGeoPoint(centralGeoPoint)
+                    .build();
+        }
+        return typedThis;
+    }
+
+    /**
+     * geoDistance 字符串距离类型
+     *
+     * @param condition       条件
+     * @param fieldName       字段名
+     * @param distance        距离 字符串
+     * @param centralGeoPoint 中心点
+     * @param boost           权重值
+     * @return 泛型
+     */
+    private Children doIt(boolean condition, String fieldName, String distance, GeoPoint centralGeoPoint, Float boost) {
+        if (condition) {
+            this.geoParam = GeoParam.builder()
+                    .field(fieldName)
+                    .boost(boost)
+                    .distanceStr(distance)
+                    .centralGeoPoint(centralGeoPoint)
+                    .build();
+        }
+        return typedThis;
+    }
+
+    /**
+     * geoPolygon
+     *
+     * @param condition 条件
+     * @param fieldName 字段名
+     * @param geoPoints 多边形点坐标列表
+     * @param boost     权重值
+     * @return 泛型
+     */
+    private Children doIt(boolean condition, String fieldName, List<GeoPoint> geoPoints, Float boost) {
+        if (condition) {
+            this.geoParam = GeoParam.builder()
+                    .field(fieldName)
+                    .boost(boost)
+                    .geoPoints(geoPoints)
+                    .build();
+        }
+        return typedThis;
+    }
+
+    /**
+     * 图形 已知图形已被索引的情况
+     *
+     * @param condition      条件
+     * @param fieldName      字段名
+     * @param indexedShapeId 已被索引的图形索引id
+     * @param boost          权重值
+     * @return 泛型
+     */
+    private Children doIt(boolean condition, String fieldName, String indexedShapeId, Float boost) {
+        if (condition) {
+            this.geoParam = GeoParam.builder()
+                    .field(fieldName)
+                    .boost(boost)
+                    .indexedShapeId(indexedShapeId)
+                    .build();
+        }
+        return typedThis;
+    }
+
+    /**
+     * 图形 GeoShape
+     *
+     * @param condition 条件
+     * @param fieldName 字段名
+     * @param geometry  图形
+     * @param boost     权重值
+     * @return 泛型
+     */
+    private Children doIt(boolean condition, String fieldName, Geometry geometry, ShapeRelation shapeRelation, Float boost) {
+        if (condition) {
+            this.geoParam = GeoParam.builder()
+                    .field(fieldName)
+                    .boost(boost)
+                    .geometry(geometry)
+                    .shapeRelation(shapeRelation)
+                    .build();
+        }
+        return typedThis;
+    }
+
+    /**
      * 设置查询模型类型
-     * @param baseEsParam 基础参数
-     * @param model 字段&值模型
+     *
+     * @param baseEsParam    基础参数
+     * @param model          字段&值模型
      * @param attachTypeEnum 连接类型
      */
     private void setModel(BaseEsParam baseEsParam, BaseEsParam.FieldValueModel model, EsAttachTypeEnum attachTypeEnum) {
