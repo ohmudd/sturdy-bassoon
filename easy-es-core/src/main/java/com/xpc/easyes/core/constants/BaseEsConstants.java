@@ -79,6 +79,14 @@ public interface BaseEsConstants {
      */
     String TYPE = "type";
     /**
+     * 分词器
+     */
+    String ANALYZER = "analyzer";
+    /**
+     * 查询分词器
+     */
+    String SEARCH_ANALYZER = "search_analyzer";
+    /**
      * 通配符
      */
     String WILDCARD_SIGN = "*";
@@ -86,4 +94,8 @@ public interface BaseEsConstants {
      * es默认schema
      */
     String DEFAULT_SCHEMA = "http";
+    /**
+     * 默认返回数
+     */
+    Integer DEFAULT_SIZE = 10000;
 }
