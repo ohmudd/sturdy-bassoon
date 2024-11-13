@@ -11,6 +11,7 @@ import com.xpc.easyes.core.common.PageInfo;
 import com.xpc.easyes.core.conditions.interfaces.BaseEsMapper;
 import com.xpc.easyes.core.constants.BaseEsConstants;
 import com.xpc.easyes.core.enums.FieldStrategy;
+import com.xpc.easyes.core.enums.FieldType;
 import com.xpc.easyes.core.enums.IdType;
 import com.xpc.easyes.core.params.EsIndexParam;
 import com.xpc.easyes.core.params.EsUpdateParam;
@@ -89,15 +90,26 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     @Override
     public Boolean createIndex(LambdaEsIndexWrapper<T> wrapper) {
         CreateIndexRequest createIndexRequest = new CreateIndexRequest(wrapper.indexName);
+
+        // 分片个副本信息
         Settings.Builder settings = Settings.builder();
         Optional.ofNullable(wrapper.shardsNum).ifPresent(shards -> settings.put(BaseEsConstants.SHARDS_FIELD, shards));
         Optional.ofNullable(wrapper.replicasNum).ifPresent(replicas -> settings.put(BaseEsConstants.REPLICAS_FIELD, replicas));
         createIndexRequest.settings(settings);
-        List<EsIndexParam> indexParamList = wrapper.esIndexParamList;
-        if (!CollectionUtils.isEmpty(indexParamList)) {
-            Map<String, Object> mapping = initMapping(indexParamList);
-            createIndexRequest.mapping(mapping);
+
+        // mapping信息
+        if (Objects.isNull(wrapper.mapping)) {
+            List<EsIndexParam> indexParamList = wrapper.esIndexParamList;
+            if (!CollectionUtils.isEmpty(indexParamList)) {
+                Map<String, Object> mapping = initMapping(indexParamList);
+                createIndexRequest.mapping(mapping);
+            }
+        } else {
+            // 用户手动指定的mapping
+            createIndexRequest.mapping(wrapper.mapping);
         }
+
+        // 别名信息
         Optional.ofNullable(wrapper.aliasName).ifPresent(aliasName -> {
             Alias alias = new Alias(aliasName);
             createIndexRequest.alias(alias);
@@ -111,6 +123,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         }
     }
 
+
     @Override
     public Boolean updateIndex(LambdaEsIndexWrapper<T> wrapper) {
         boolean existsIndex = this.existsIndex(wrapper.indexName);
@@ -119,12 +132,19 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         }
 
         // 更新mapping
-        if (CollectionUtils.isEmpty(wrapper.esIndexParamList)) {
-            return Boolean.FALSE;
-        }
         PutMappingRequest putMappingRequest = new PutMappingRequest(wrapper.indexName);
-        Map<String, Object> mapping = initMapping(wrapper.esIndexParamList);
-        putMappingRequest.source(mapping);
+        if (Objects.isNull(wrapper.mapping)) {
+            if (CollectionUtils.isEmpty(wrapper.esIndexParamList)) {
+                // 空参数列表,则不更新
+                return Boolean.FALSE;
+            }
+            Map<String, Object> mapping = initMapping(wrapper.esIndexParamList);
+            putMappingRequest.source(mapping);
+        } else {
+            // 用户自行指定的mapping信息
+            putMappingRequest.source(wrapper.mapping);
+        }
+
         try {
             AcknowledgedResponse acknowledgedResponse = client.indices().putMapping(putMappingRequest, RequestOptions.DEFAULT);
             return acknowledgedResponse.isAcknowledged();
@@ -564,16 +584,8 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         } catch (IOException e) {
             throw ExceptionUtils.eee("page select exception:%s", e);
         }
-        List<T> list = Arrays.stream(searchHits)
-                .map(hit -> {
-                    T entity = JSON.parseObject(hit.getSourceAsString(), entityClass);
-                    boolean includeId = WrapperProcessor.includeId(getRealIdFieldName(), wrapper);
-                    if (includeId) {
-                        setId(entity, hit.getId());
-                    }
-                    return entity;
-                }).collect(Collectors.toList());
 
+        List<T> list = hitsToArray(searchHits, wrapper);
         pageInfo.setList(list);
         pageInfo.setSize(list.size());
         pageInfo.setTotal(total);
@@ -736,9 +748,18 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         Map<String, Object> mapping = new HashMap<>(1);
         Map<String, Object> properties = new HashMap<>(indexParamList.size());
         indexParamList.forEach(indexParam -> {
-            Map<String, Object> type = new HashMap<>();
-            type.put(BaseEsConstants.TYPE, indexParam.getFieldType());
-            properties.put(indexParam.getFieldName(), type);
+            Map<String, Object> info = new HashMap<>();
+            info.put(BaseEsConstants.TYPE, indexParam.getFieldType());
+            // 设置分词器
+            if (FieldType.TEXT.getType().equals(indexParam.getFieldType())) {
+                Optional.ofNullable(indexParam.getAnalyzer())
+                        .ifPresent(analyzer ->
+                                info.put(BaseEsConstants.ANALYZER, indexParam.getAnalyzer().toString().toLowerCase()));
+                Optional.ofNullable(indexParam.getSearchAnalyzer())
+                        .ifPresent(searchAnalyzer ->
+                                info.put(BaseEsConstants.SEARCH_ANALYZER, indexParam.getSearchAnalyzer().toString().toLowerCase()));
+            }
+            properties.put(indexParam.getFieldName(), info);
         });
         mapping.put(BaseEsConstants.PROPERTIES, properties);
         return mapping;
@@ -775,12 +796,23 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         if (ArrayUtils.isEmpty(searchHits)) {
             return new ArrayList<>(0);
         }
+        return hitsToArray(searchHits, wrapper);
+    }
+
+    /**
+     * 将es返回结果集解析为数组
+     *
+     * @param searchHits es返回结果集
+     * @param wrapper    条件
+     * @return
+     */
+    private List<T> hitsToArray(SearchHit[] searchHits, LambdaEsQueryWrapper<T> wrapper) {
         return Arrays.stream(searchHits)
                 .map(hit -> {
                     T entity = JSON.parseObject(hit.getSourceAsString(), entityClass);
                     boolean includeId = WrapperProcessor.includeId(getRealIdFieldName(), wrapper);
                     if (includeId) {
-                        setId(entity, searchHits[0].getId());
+                        setId(entity, hit.getId());
                     }
                     return entity;
                 }).collect(Collectors.toList());
