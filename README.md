@@ -24,8 +24,6 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,简化`CRUD
 
 底层采用Es官方提供的RestHighLevelClient,保证其原生性能及拓展性.
 
-技术讨论 QQ 群 ：247637156
-
 # 优点 | Advantages
 
 - **屏蔽语言差异:** 开发者只需要会MySQL语法即可使用Es
@@ -113,3 +111,12 @@ compile group: 'com.github.xpc1024', name: 'easy-es-boot-starter', version: 'Lat
 [CSDN博客](https://blog.csdn.net/lovexiaotaozi?spm=3001.5343)
 
 QQ | 微信:252645816
+
+## 技术讨论 
+### QQ 群  
+
+群号:247637156
+
+### 微信群
+
+微信群二维码为动态且无群号,可先添加作者微信,由作者拉入
