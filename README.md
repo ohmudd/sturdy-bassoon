@@ -98,7 +98,7 @@ compile group: 'com.github.xpc1024', name: 'easy-es-boot-starter', version: 'Lat
 
 # 其他开源项目 | Other Project
 
-- [健身计划一键生成系统](https://github.com/xpc1024/plan-all)
+- [健身计划一键生成系统](https://gitee.com/easy-es/fit-plan)
 
 # 期望 | Futures
 
