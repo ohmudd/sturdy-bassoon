@@ -86,7 +86,7 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,简化`CRUD
 - [Springboot集成Demo](https://www.yuque.com/laohan-14b9d/foyrfa/pbo22k)
 
 # Latest Version: [![Maven Central](https://img.shields.io/github/v/release/xpc1024/easy-es?include_prereleases&logo=xpc&style=plastic)](https://search.maven.org/search?q=g:io.github.xpc1024%20a:easy-*)
-
+---
 **Maven:**
 ``` xml
 <dependency>
