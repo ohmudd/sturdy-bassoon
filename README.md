@@ -1,11 +1,11 @@
 <p align="center">
-  <a href="https://github.com/xpc1024/easy-es">
+  <a href="https://www.yuque.com/laohan-14b9d/foyrfa/naw1ie">
    <img alt="East-Es-Logo" src="https://iknow.hs.net/6361ec1d-edca-4358-98c1-e7a309e15a39.png">
   </a>
 </p>
 
 <p align="center">
-  Born To Simplify Development
+  为简化开发工作、提高生产效率而生
 </p>
 
 <p align="center">
@@ -18,144 +18,113 @@
   </a>
 </p>
 
-## What is Easy-Es?
-
-Easy-Es is a powerfully enhanced toolkit of RestHighLevelClient for simplify development. This toolkit provides some efficient, useful, out-of-the-box features for ElasticSearch. By using Easy-Es, you can use MySQL syntax to complete Es queries. Use it can effectively save your development time.
-
-
-## Links
-- [中文版](https://github.com/xpc1024/easy-es/blob/main/README-ZH.md)
-- [Documentation](https://www.yuque.com/laohan-14b9d/tald79/qf7ns2)
-- [Samples](https://github.com/xpc1024/easy-es/tree/main/easy-es-sample)
-- [Demo in Springboot](https://github.com/xpc1024/easy-es-springboot-demo-en)
-
-## Features
-
--   Auto configuration on startup
--   Out-of-the-box interfaces for operate es
--   Powerful and flexible where condition wrapper
--   Lambda-style API
--   Automatic paging operation
--   Support high-level syntax such as highlighting and weighting
--   ...
-
-## Compare
-
-> Demand: Query all documents with title equals "Hi" and author equals "Guy"
-
-
-
-```java
-// Use Easy-Es to complete the query with only 3 lines of code
-LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.eq(Document::getTitle, "Hi").eq(Document::getCreator, "Guy");
-        List<Document> documents = documentMapper.selectList(wrapper);
-```
-
-```java
-// Query with RestHighLevelClient requires 11 lines of code, not including parsing JSON code
-String indexName = "document";
-        SearchRequest searchRequest = new SearchRequest(indexName);
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        TermQueryBuilder titleTerm = QueryBuilders.termQuery("title", "Hi");
-        TermsQueryBuilder creatorTerm = QueryBuilders.termsQuery("creator", "Guy");
-        boolQueryBuilder.must(titleTerm);
-        boolQueryBuilder.must(creatorTerm);
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(boolQueryBuilder);
-        searchRequest.source(searchSourceBuilder);
-        try {
-        SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-        // Then parse the DocumentList from searchResponse in various ways, omitting these codes...
-        } catch (IOException e) {
-        e.printStackTrace();
-        }
-```
-
-> The above is just a simple query demonstration. The more complex the actual query scene, the better the effect, which can save 3-5 times the amount of code on average.
-## Getting started
-
--   Add Easy-Es dependency
-    - Latest Version: [![Maven Central](https://img.shields.io/github/v/release/xpc1024/easy-es?include_prereleases&logo=xpc&style=plastic)](https://search.maven.org/search?q=g:io.github.xpc1024%20a:easy-*)
-    - Maven:
-      ```xml
-      <dependency>
-        <groupId>com.github.xpc1024</groupId>
-        <artifactId>easy-es-boot-starter</artifactId>
-        <version>Latest Version</version>
-      </dependency>
-      ```
-    - Gradle
-      ```groovy
-      compile group: 'com.github.xpc1024', name: 'easy-es-boot-starter', version: 'Latest Version'
-      ```
--   Add mapper file extends BaseEsMapper interface
-
-    ```java
-    public interface DocumentMapper extends BaseMapper<User> {
-    }
-    ```
-
-- Use it
-  ``` java
-  LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-  wrapper.eq(Document::getTitle,"Hello World")
-         .eq(Document::getCreator,"Guy");
-  List<Document> documentList = documentMapper.selectList();
-  
-  ```
-  Easy-Es will execute the following Query:
-    ```json
-    {"query":{"bool":{"must":[{"term":{"title":{"value":"Hello World","boost":1.0}}},{"term":{"creator":{"value":"Guy","boost":1.0}}}],"adjust_pure_negative":true,"boost":1.0}}}
-    ```
-
-  The syntax of this query in MySQL is:
-  ```sql
-   SELECT * FROM document WHERE title = 'Hello World' AND creator = 'Guy'
-  ```
-
-> This showcase is just a small part of Easy-Es features. If you want to learn more, please refer to the [documentation](https://www.yuque.com/laohan-14b9d/tald79/qf7ns2).
-
-## Syntax comparison with MySQL
-|  MySQL   | Easy-Es  |
-|  ----  | ----  |
-| and  | and |
-| or | or |
-| = | eq |
-| != | ne|
-| &gt; | gt |
-| >= | ge |
-| &lt; | lt |
-| <= | le |
-| like '%field%' | like |
-| not like '%field%' |notLike|
-| like '%field' | likeLeft|
-| like 'field%' | likeRight |
-| between | between |
-| notBetween | notBetween |
-| is null | isNull |
-| is notNull | isNotNull |
-| in | in |
-| not in | notIn |
-| group by | groupBy |
-| order by | orderBy |
-|min |min |
-|max |max |
-|avg |avg |
-|sum |sum |
-|sum |sum |
-| - | orderByAsc |
-| - | orderByDesc |
-| - | match |
-|- |highLight |
-| ... | ... |
-
+# 简介 | Intro
 ---
 
-## Donate
-[Donate Easy-Es](https://www.yuque.com/laohan-14b9d/tald79/oqpgto)
+Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,简化`CRUD`操作,可以更好的帮助开发者减轻开发负担
 
+底层采用Es官方提供的RestHighLevelClient,保证其原生性能及拓展性.
 
-## License
+技术讨论 QQ 群 ：247637156 
 
-Easy-Es is under the Apache 2.0 license. See the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0) file for details.
+微信群请先添加作者微信,由作者拉入 (亦可咨询健身问题,作者是健身教练)
+
+项目推广初期,还望大家能够不吝点点三连:⭐Star,👀Watch,fork📌
+
+支持一下国产开源,让更多人看到和使用本项目,非常感谢!
+
+# 优点 | Advantages
+---
+
+- **屏蔽语言差异:** 开发者只需要会MySQL语法即可使用Es
+
+- **代码量极少:** 与直接使用RestHighLevelClient相比,相同的查询平均可以节3-5倍左右的代码量
+- **零魔法值:** 字段名称直接从实体中获取,无需输入字段名称字符串这种魔法值
+- **零额外学习成本:** 开发者只要会国内最受欢迎的Mybatis-Plus语法,即可无缝迁移至Easy-Es
+- **降低开发者门槛:** 即便是只了解ES基础的初学者也可以轻松驾驭ES完成绝大多数需求的开发
+- **完善的中英文文档:** 提供了中英文双语操作文档,文档全面可靠,帮助您节省更多时间
+- **...**
+
+# 对比 | Compare
+---
+> 需求:查询出文档标题为 "中国功夫"且作者为"老汉"的所有文档
+```java
+    // 使用Easy-Es仅需3行代码即可完成查询
+    LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+    wrapper.eq(Document::getTitle, "中国功夫").eq(Document::getCreator, "老汉");
+    List<Document> documents = documentMapper.selectList(wrapper);
+```
+
+```java
+    // 传统方式, 直接用RestHighLevelClient进行查询 需要11行代码,还不包含解析JSON代码
+    String indexName = "document";
+    SearchRequest searchRequest = new SearchRequest(indexName);
+    BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+    TermQueryBuilder titleTerm = QueryBuilders.termQuery("title", "中国功夫");
+    TermsQueryBuilder creatorTerm = QueryBuilders.termsQuery("creator", "老汉");
+    boolQueryBuilder.must(titleTerm);
+    boolQueryBuilder.must(creatorTerm);
+    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+    searchSourceBuilder.query(boolQueryBuilder);
+    searchRequest.source(searchSourceBuilder);
+    try {
+         SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+         // 然后从searchResponse中通过各种方式解析出DocumentList 省略这些代码...
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+```
+> * 以上只是简单查询演示,实际使用场景越复杂,效果就越好,平均可节省3-5倍代码量
+> * 传统功夫,点到为止! 上述功能仅供演示,仅为Easy-Es支持功能的冰山一角
+
+# 相关链接 | Links
+---
+
+- [Switch To English](https://gitee.com/easy-es/easy-es/blob/master/README_EN.md)
+- [中文文档](https://www.yuque.com/laohan-14b9d/foyrfa/naw1ie)
+- [功能示例](https://gitee.com/easy-es/easy-es-springboot-demo)
+- [Springboot集成Demo](https://www.yuque.com/laohan-14b9d/foyrfa/pbo22k)
+
+# Latest Version: [![Maven Central](https://img.shields.io/github/v/release/xpc1024/easy-es?include_prereleases&logo=xpc&style=plastic)](https://search.maven.org/search?q=g:io.github.xpc1024%20a:easy-*)
+---
+**Maven:**
+``` xml
+<dependency>
+    <groupId>com.github.xpc1024</groupId>
+    <artifactId>easy-es-boot-starter</artifactId>
+    <version>Latest Version</version>
+</dependency>
+```
+**Gradle:**
+```groovy
+compile group: 'com.github.xpc1024', name: 'easy-es-boot-starter', version: 'Latest Version'
+```
+
+# 其他开源项目 | Other Project
+---
+
+- [健身计划一键生成系统](https://gitee.com/easy-es/fit-plan)
+
+# 期望 | Futures
+---
+
+> 欢迎提出更好的意见，帮助完善 Easy-Es
+
+# 版权 | License
+---
+
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+# 捐赠 | Donate
+---
+
+[捐赠记录,感谢你们的支持！](https://www.yuque.com/laohan-14b9d/foyrfa/ipxxr2)
+
+[捐赠 Easy-Es](https://www.yuque.com/laohan-14b9d/foyrfa/wn1iha)
+
+# 关注我 | About Me
+---
+
+[CSDN博客](https://blog.csdn.net/lovexiaotaozi?spm=3001.5343)
+
+QQ | 微信:252645816
