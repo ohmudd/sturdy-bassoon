@@ -9,11 +9,7 @@
     <parent>
         <artifactId>easy-es</artifactId>
         <groupId>io.github.xpc1024</groupId>
-<<<<<<< HEAD
         <version>0.9.6</version>
-=======
-        <version>0.9.5</version>
->>>>>>> 4e29790a442bc09d50d777b720a7a2ff9f7c6d28
     </parent>
 
     <properties>
@@ -25,11 +21,7 @@
         <dependency>
             <groupId>io.github.xpc1024</groupId>
             <artifactId>easy-es-boot-starter</artifactId>
-<<<<<<< HEAD
             <version>0.9.6</version>
-=======
-            <version>0.9.5</version>
->>>>>>> 4e29790a442bc09d50d777b720a7a2ff9f7c6d28
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

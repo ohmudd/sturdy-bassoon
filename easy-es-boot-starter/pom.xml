@@ -5,11 +5,7 @@
     <parent>
         <artifactId>easy-es-parent</artifactId>
         <groupId>io.github.xpc1024</groupId>
-<<<<<<< HEAD
         <version>0.9.6</version>
-=======
-        <version>0.9.5</version>
->>>>>>> 4e29790a442bc09d50d777b720a7a2ff9f7c6d28
         <relativePath>../easy-es-parent</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -25,11 +21,7 @@
         <dependency>
             <groupId>io.github.xpc1024</groupId>
             <artifactId>easy-es-core</artifactId>
-<<<<<<< HEAD
             <version>0.9.6</version>
-=======
-            <version>0.9.5</version>
->>>>>>> 4e29790a442bc09d50d777b720a7a2ff9f7c6d28
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
