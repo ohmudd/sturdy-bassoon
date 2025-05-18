@@ -7,21 +7,13 @@
     <parent>
         <groupId>io.github.xpc1024</groupId>
         <artifactId>easy-es-parent</artifactId>
-<<<<<<< HEAD
         <version>0.9.6</version>
-=======
-        <version>0.9.5</version>
->>>>>>> 4e29790a442bc09d50d777b720a7a2ff9f7c6d28
         <relativePath>../easy-es-parent</relativePath>
     </parent>
 
     <groupId>io.github.xpc1024</groupId>
     <artifactId>easy-es-core</artifactId>
-<<<<<<< HEAD
     <version>0.9.6</version>
-=======
-    <version>0.9.5</version>
->>>>>>> 4e29790a442bc09d50d777b720a7a2ff9f7c6d28
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
