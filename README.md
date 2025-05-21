@@ -90,7 +90,7 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,简化`CRUD
 **Maven:**
 ``` xml
 <dependency>
-    <groupId>com.github.xpc1024</groupId>
+    <groupId>io.github.xpc1024</groupId>
     <artifactId>easy-es-boot-starter</artifactId>
     <version>Latest Version</version>
 </dependency>
