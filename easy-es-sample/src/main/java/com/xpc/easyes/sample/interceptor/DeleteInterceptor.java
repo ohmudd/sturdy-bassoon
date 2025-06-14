@@ -1,0 +1,36 @@
+package com.xpc.easyes.sample.interceptor;
+
+import com.xpc.easyes.core.conditions.LambdaEsQueryWrapper;
+import com.xpc.easyes.core.conditions.interfaces.BaseEsMapper;
+import com.xpc.easyes.core.plugin.interceptor.Interceptor;
+import com.xpc.easyes.core.plugin.interceptor.Intercepts;
+import com.xpc.easyes.core.plugin.interceptor.Invocation;
+import com.xpc.easyes.core.plugin.interceptor.Signature;
+import com.xpc.easyes.sample.entity.GeneralBean;
+import org.springframework.stereotype.Component;
+
+/**
+ * <p>
+ * 统一逻辑删除拦截器 demo
+ * </p>
+ *
+ * @author lilu
+ * @since 2022/3/4
+ */
+@Intercepts(
+        {
+                @Signature(type = BaseEsMapper.class, method = "delete", args = {LambdaEsQueryWrapper.class}),//只是个例子 如果要实现这个功能还需要拦截更多的方法
+        }
+)
+@Component
+public class DeleteInterceptor implements Interceptor {
+
+        @Override
+        public Object intercept(Invocation invocation) throws Throwable {
+                //统一逻辑删除拦截
+                System.out.println("啊啊啊，我拦截到了删除，禁止删除");
+                //TODO 直接改为update
+                return 0;
+        }
+
+}

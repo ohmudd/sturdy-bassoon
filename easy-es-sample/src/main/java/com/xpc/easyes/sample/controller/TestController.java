@@ -17,6 +17,7 @@ import java.util.List;
  **/
 @RestController
 public class TestController {
+
     @Resource
     private DocumentMapper documentMapper;
 
@@ -34,6 +35,23 @@ public class TestController {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.eq(Document::getTitle, title);
         return documentMapper.selectList(wrapper);
+    }
+
+    @GetMapping("/t2")
+    public List<Document> t2(@RequestParam String title) {
+        // 实际开发中会把这些逻辑写进service层 这里为了演示方便就不创建service层了
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.eq(Document::getTitle, title);
+        return documentMapper.selectList(wrapper);
+    }
+
+
+    @GetMapping("/t3")
+    public Integer t3(@RequestParam String title) {
+        // 实际开发中会把这些逻辑写进service层 这里为了演示方便就不创建service层了
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.eq(Document::getTitle, title);
+        return documentMapper.delete(wrapper);
     }
 
 }
