@@ -61,8 +61,9 @@ public class MapperFactoryBean<T> implements FactoryBean<T> {
         InterceptorChain interceptorChain = esConfigProperties.getInterceptorChain();
         if(interceptorChain == null){
             synchronized (this){
+                esConfigProperties.initInterceptorChain();
                 Map<String, Object> beansWithAnnotation = this.applicationContext.getBeansWithAnnotation(Intercepts.class);
-                if(beansWithAnnotation!=null){
+                if(beansWithAnnotation != null){
                     beansWithAnnotation.forEach((key, val) ->{
                         if(val instanceof Interceptor){
                             Interceptor interceptor = (Interceptor) val;

@@ -58,14 +58,17 @@ public class EsConfigProperties {
      */
     protected InterceptorChain interceptorChain;
 
+    public void initInterceptorChain(){
+        if(interceptorChain == null){
+            interceptorChain = new  InterceptorChain();
+        }
+    }
+
     /**
      * 添加拦截器
      * @param interceptor
      */
     public void addInterceptor(Interceptor interceptor) {
-        if(interceptorChain == null){
-            interceptorChain = new  InterceptorChain();
-        }
         interceptorChain.addInterceptor(interceptor);
     }
 }
