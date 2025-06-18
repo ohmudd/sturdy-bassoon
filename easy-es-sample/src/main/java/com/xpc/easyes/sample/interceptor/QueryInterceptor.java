@@ -25,14 +25,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class QueryInterceptor implements Interceptor {
 
-        @Override
-        public Object intercept(Invocation invocation) throws Throwable {
-                System.out.println("啊啊啊，我拦截到了查询，统一增加查询条件");
-                //统一逻辑删除拦截
-                Object[] args = invocation.getArgs();
-                LambdaEsQueryWrapper<GeneralBean> arg = (LambdaEsQueryWrapper) args[0];
-                arg.eq(GeneralBean::getExistStatus,true);
-                return invocation.proceed();
-        }
+    @Override
+    public Object intercept(Invocation invocation) throws Throwable {
+        System.out.println("啊啊啊，我拦截到了查询，统一增加查询条件");
+        // 统一逻辑删除拦截
+        Object[] args = invocation.getArgs();
+        LambdaEsQueryWrapper<GeneralBean> arg = (LambdaEsQueryWrapper) args[0];
+        arg.eq(GeneralBean::getExistStatus, true);
+        return invocation.proceed();
+    }
 
 }

@@ -37,17 +37,15 @@ public class TestController {
         return documentMapper.selectList(wrapper);
     }
 
-    @GetMapping("/t2")
-    public List<Document> t2(@RequestParam String title) {
-        // 实际开发中会把这些逻辑写进service层 这里为了演示方便就不创建service层了
-        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
-        wrapper.eq(Document::getTitle, title);
-        return documentMapper.selectList(wrapper);
-    }
 
-
-    @GetMapping("/t3")
-    public Integer t3(@RequestParam String title) {
+    /**
+     * 演示根据title删除文章，同时会被 DeleteInterceptor 拦截，执行逻辑删除
+     *
+     * @param title
+     * @return
+     */
+    @GetMapping("/deleteDocumentByTitle")
+    public Integer deleteDocumentByTitle(@RequestParam String title) {
         // 实际开发中会把这些逻辑写进service层 这里为了演示方便就不创建service层了
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.eq(Document::getTitle, title);

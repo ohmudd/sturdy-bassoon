@@ -34,6 +34,7 @@ public @interface Signature {
 
     /**
      * Returns java types for method argument.
+     *
      * @return java types for method argument
      */
     Class<?>[] args();

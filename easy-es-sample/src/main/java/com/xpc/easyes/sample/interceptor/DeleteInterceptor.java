@@ -19,7 +19,8 @@ import org.springframework.stereotype.Component;
  */
 @Intercepts(
         {
-                @Signature(type = BaseEsMapper.class, method = "delete", args = {LambdaEsQueryWrapper.class}),//只是个例子 如果要实现这个功能还需要拦截更多的方法
+                // 只是个例子，如果要实现这个功能还需要拦截更多的方法
+                @Signature(type = BaseEsMapper.class, method = "delete", args = {LambdaEsQueryWrapper.class}),
         }
 )
 @Component
@@ -27,9 +28,9 @@ public class DeleteInterceptor implements Interceptor {
 
         @Override
         public Object intercept(Invocation invocation) throws Throwable {
-                //统一逻辑删除拦截
+                // 统一逻辑删除拦截
                 System.out.println("啊啊啊，我拦截到了删除，禁止删除");
-                //TODO 直接改为update
+                // 这里直接改为update
                 return 0;
         }
 

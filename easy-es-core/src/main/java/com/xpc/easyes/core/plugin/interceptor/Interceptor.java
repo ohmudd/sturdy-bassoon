@@ -1,7 +1,5 @@
 package com.xpc.easyes.core.plugin.interceptor;
 
-import java.util.Properties;
-
 /**
  * <p>
  * Interceptor
@@ -16,16 +14,12 @@ public interface Interceptor {
 
     /**
      * 代理
-     * @param t
-     * @return
+     *
+     * @param t 泛型
+     * @return 泛型
      */
     default <T> T plugin(T t) {
         return Plugin.wrap(t, this);
     }
-
-    default void setProperties(Properties properties) {
-        // NOP
-    }
-
 
 }

@@ -21,8 +21,9 @@ public class InterceptorChain {
 
     /**
      * 装载拦截器
-     * @param t
-     * @return
+     *
+     * @param t 泛型
+     * @return 泛型
      */
     public <T> T pluginAll(T t) {
         for (Interceptor interceptor : interceptors) {
@@ -33,15 +34,18 @@ public class InterceptorChain {
 
     /**
      * 添加拦截器
+     *
      * @param interceptor
      */
     public void addInterceptor(Interceptor interceptor) {
         interceptors.add(interceptor);
     }
 
+
     /**
      * 获取所有拦截器
-     * @return
+     *
+     * @return 拦截器集合
      */
     public List<Interceptor> getInterceptors() {
         return Collections.unmodifiableList(interceptors);

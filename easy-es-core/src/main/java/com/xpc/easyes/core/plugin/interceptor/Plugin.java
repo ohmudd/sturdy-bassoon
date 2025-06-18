@@ -4,7 +4,6 @@ package com.xpc.easyes.core.plugin.interceptor;
 import com.xpc.easyes.core.exception.EasyEsException;
 import com.xpc.easyes.core.utils.ExceptionUtil;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -35,24 +34,17 @@ public class Plugin implements InvocationHandler {
 
     /**
      * 包装代理
-     * @param t
-     * @param interceptor
-     * @return
+     *
+     * @param t 泛型
+     * @param interceptor 拦截器
+     * @return 泛型
      */
     public static <T> T wrap(T t, Interceptor interceptor) {
         Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);
-        return (T)Proxy.newProxyInstance(
+        return (T) Proxy.newProxyInstance(
                 t.getClass().getClassLoader(),
                 t.getClass().getInterfaces(),
                 new Plugin(t, interceptor, signatureMap));
-//        Class<?>[] interfaces = getAllInterfaces(type, signatureMap);
-//        if (interfaces.length > 0) {
-//            return (T)Proxy.newProxyInstance(
-//                    type.getClassLoader(),
-//                    interfaces,
-//                    new Plugin(t, interceptor, signatureMap));
-//        }
-//        return t;
     }
 
     @Override
@@ -70,12 +62,14 @@ public class Plugin implements InvocationHandler {
 
     private static Map<Class<?>, Set<Method>> getSignatureMap(Interceptor interceptor) {
         Intercepts interceptsAnnotation = interceptor.getClass().getAnnotation(Intercepts.class);
-        if (interceptsAnnotation == null) {//检查1
+        // 检查类是否被@Intercepts标记
+        if (interceptsAnnotation == null) {
             throw new EasyEsException("No @Intercepts annotation was found in interceptor " + interceptor.getClass().getName());
         }
         Signature[] sigs = interceptsAnnotation.value();
         Map<Class<?>, Set<Method>> signatureMap = new HashMap<>();
-        for (Signature sig : sigs) {//检查2
+        // 检查被@Signature标记的方法是否存在
+        for (Signature sig : sigs) {
             Set<Method> methods = signatureMap.computeIfAbsent(sig.type(), k -> new HashSet<>());
             try {
                 Method method = sig.type().getMethod(sig.method(), sig.args());
@@ -86,19 +80,5 @@ public class Plugin implements InvocationHandler {
         }
         return signatureMap;
     }
-
-    private static Class<?>[] getAllInterfaces(Class<?> type, Map<Class<?>, Set<Method>> signatureMap) {
-        Set<Class<?>> interfaces = new HashSet<>();
-        while (type != null) {
-            for (Class<?> c : type.getInterfaces()) {
-                if (signatureMap.containsKey(c)) {
-                    interfaces.add(c);
-                }
-            }
-            type = type.getSuperclass();
-        }
-        return interfaces.toArray(new Class<?>[interfaces.size()]);
-    }
-
 
 }
