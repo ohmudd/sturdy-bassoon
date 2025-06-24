@@ -2,10 +2,10 @@ package com.xpc.easyes.autoconfig.register;
 
 import com.xpc.easyes.autoconfig.config.EsConfigProperties;
 import com.xpc.easyes.core.cache.BaseCache;
-import com.xpc.easyes.core.plugin.interceptor.Interceptor;
-import com.xpc.easyes.core.plugin.interceptor.InterceptorChain;
-import com.xpc.easyes.core.plugin.interceptor.Intercepts;
 import com.xpc.easyes.core.proxy.EsMapperProxy;
+import com.xpc.easyes.extension.anno.Intercepts;
+import com.xpc.easyes.extension.plugins.Interceptor;
+import com.xpc.easyes.extension.plugins.InterceptorChain;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,9 @@
-package com.xpc.easyes.core.plugin.interceptor;
+package com.xpc.easyes.extension.plugins;
 
 
-import com.xpc.easyes.core.exception.EasyEsException;
-import com.xpc.easyes.core.utils.ExceptionUtil;
+import com.xpc.easyes.extension.anno.Intercepts;
+import com.xpc.easyes.extension.anno.Signature;
+import com.xpc.easyes.extension.utils.ExceptionUtil;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -35,7 +36,7 @@ public class Plugin implements InvocationHandler {
     /**
      * 包装代理
      *
-     * @param t 泛型
+     * @param t           泛型
      * @param interceptor 拦截器
      * @return 泛型
      */
@@ -64,7 +65,7 @@ public class Plugin implements InvocationHandler {
         Intercepts interceptsAnnotation = interceptor.getClass().getAnnotation(Intercepts.class);
         // 检查类是否被@Intercepts标记
         if (interceptsAnnotation == null) {
-            throw new EasyEsException("No @Intercepts annotation was found in interceptor " + interceptor.getClass().getName());
+            throw new RuntimeException("No @Intercepts annotation was found in interceptor " + interceptor.getClass().getName());
         }
         Signature[] sigs = interceptsAnnotation.value();
         Map<Class<?>, Set<Method>> signatureMap = new HashMap<>();
@@ -75,7 +76,7 @@ public class Plugin implements InvocationHandler {
                 Method method = sig.type().getMethod(sig.method(), sig.args());
                 methods.add(method);
             } catch (NoSuchMethodException e) {
-                throw new EasyEsException("Could not find method on " + sig.type() + " named " + sig.method() + ". Cause: " + e, e);
+                throw new RuntimeException("Could not find method on " + sig.type() + " named " + sig.method() + ". Cause: " + e, e);
             }
         }
         return signatureMap;

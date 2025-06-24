@@ -1,4 +1,4 @@
-package com.xpc.easyes.core.utils;
+package com.xpc.easyes.extension.utils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;

@@ -14,7 +14,7 @@ import lombok.Data;
 public class GeneralBean {
 
     /**
-     * 删除状态
+     * 逻辑删除状态
      */
     private Boolean existStatus;
 

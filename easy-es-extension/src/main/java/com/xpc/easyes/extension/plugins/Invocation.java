@@ -1,4 +1,4 @@
-package com.xpc.easyes.core.plugin.interceptor;
+package com.xpc.easyes.extension.plugins;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

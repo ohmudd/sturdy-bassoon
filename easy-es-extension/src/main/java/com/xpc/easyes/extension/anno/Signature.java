@@ -1,4 +1,4 @@
-package com.xpc.easyes.core.plugin.interceptor;
+package com.xpc.easyes.extension.anno;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

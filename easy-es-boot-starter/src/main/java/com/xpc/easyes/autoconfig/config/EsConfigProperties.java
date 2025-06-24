@@ -1,7 +1,8 @@
 package com.xpc.easyes.autoconfig.config;
 
-import com.xpc.easyes.core.plugin.interceptor.Interceptor;
-import com.xpc.easyes.core.plugin.interceptor.InterceptorChain;
+
+import com.xpc.easyes.extension.plugins.Interceptor;
+import com.xpc.easyes.extension.plugins.InterceptorChain;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -58,14 +59,15 @@ public class EsConfigProperties {
      */
     protected InterceptorChain interceptorChain;
 
-    public void initInterceptorChain(){
-        if(interceptorChain == null){
-            interceptorChain = new  InterceptorChain();
+    public void initInterceptorChain() {
+        if (interceptorChain == null) {
+            interceptorChain = new InterceptorChain();
         }
     }
 
     /**
      * 添加拦截器
+     *
      * @param interceptor
      */
     public void addInterceptor(Interceptor interceptor) {

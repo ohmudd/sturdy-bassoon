@@ -2,11 +2,10 @@ package com.xpc.easyes.sample.interceptor;
 
 import com.xpc.easyes.core.conditions.LambdaEsQueryWrapper;
 import com.xpc.easyes.core.conditions.interfaces.BaseEsMapper;
-import com.xpc.easyes.core.plugin.interceptor.Interceptor;
-import com.xpc.easyes.core.plugin.interceptor.Intercepts;
-import com.xpc.easyes.core.plugin.interceptor.Invocation;
-import com.xpc.easyes.core.plugin.interceptor.Signature;
-import com.xpc.easyes.sample.entity.GeneralBean;
+import com.xpc.easyes.extension.anno.Intercepts;
+import com.xpc.easyes.extension.anno.Signature;
+import com.xpc.easyes.extension.plugins.Interceptor;
+import com.xpc.easyes.extension.plugins.Invocation;
 import org.springframework.stereotype.Component;
 
 /**
@@ -26,12 +25,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class DeleteInterceptor implements Interceptor {
 
-        @Override
-        public Object intercept(Invocation invocation) throws Throwable {
-                // 统一逻辑删除拦截
-                System.out.println("啊啊啊，我拦截到了删除，禁止删除");
-                // 这里直接改为update
-                return 0;
-        }
+    @Override
+    public Object intercept(Invocation invocation) throws Throwable {
+        // 统一逻辑删除拦截
+        System.out.println("啊啊啊，我拦截到了删除，禁止直接删除");
+        // 这里直接改为update逻辑删除...
+        return 0;
+    }
 
 }
