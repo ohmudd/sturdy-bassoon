@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -54,6 +55,10 @@ public class EntityInfo {
      */
     private Boolean hasIdAnnotation;
 
+    /**
+     * 表字段->高亮返回结果 键值对
+     */
+    private Map<String,String> highlightFieldMap;
 
     /**
      * 获取需要进行查询的字段列表

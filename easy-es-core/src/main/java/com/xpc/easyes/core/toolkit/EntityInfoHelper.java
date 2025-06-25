@@ -1,5 +1,6 @@
 package com.xpc.easyes.core.toolkit;
 
+import com.xpc.easyes.core.anno.HighLightMappingField;
 import com.xpc.easyes.core.anno.TableField;
 import com.xpc.easyes.core.anno.TableId;
 import com.xpc.easyes.core.anno.TableName;
@@ -117,6 +118,7 @@ public class EntityInfoHelper {
         boolean existTableId = isExistTableId(list);
 
         List<EntityFieldInfo> fieldList = new ArrayList<>();
+        Map<String,String> highlightFieldMap = new HashMap<>();
         for (Field field : list) {
             // 主键ID 初始化
             if (!isReadPK) {
@@ -130,17 +132,18 @@ public class EntityInfoHelper {
                 }
             }
 
-            // 有 @TableField 注解的字段初始化
-            if (initTableFieldWithAnnotation(dbConfig, fieldList, field)) {
+            // 有 @TableField 和 @HighLightMappingField 注解的字段初始化
+            if (initTableFieldWithAnnotation(dbConfig, fieldList, field, highlightFieldMap)) {
                 continue;
             }
 
-            // 无 @TableField 注解的字段初始化
+            // 无 @TableField 和 @HighLightMappingField 注解的字段初始化
             fieldList.add(new EntityFieldInfo(dbConfig, field));
         }
 
         // 字段列表
-        entityInfo.setFieldList(fieldList);
+        entityInfo.setFieldList(fieldList)
+                .setHighlightFieldMap(highlightFieldMap);
 
     }
 
@@ -154,7 +157,15 @@ public class EntityInfoHelper {
      * @return
      */
     private static boolean initTableFieldWithAnnotation(GlobalConfig.DbConfig dbConfig,
-                                                        List<EntityFieldInfo> fieldList, Field field) {
+                                                        List<EntityFieldInfo> fieldList, Field field, Map<String,String> highlightFieldMap) {
+
+        // 获取HighlightField 注解属性，自定义字段
+        HighLightMappingField highLightMappingField = field.getAnnotation(HighLightMappingField.class);
+        if (highLightMappingField != null) {
+            highlightFieldMap.put(highLightMappingField.value(),field.getName());
+            return true;
+        }
+
         // 获取注解属性，自定义字段
         TableField tableField = field.getAnnotation(TableField.class);
         if (null == tableField) {
