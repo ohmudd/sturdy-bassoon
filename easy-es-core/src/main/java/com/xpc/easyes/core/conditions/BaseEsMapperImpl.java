@@ -40,6 +40,7 @@ import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -58,6 +59,7 @@ import java.util.stream.Collectors;
 
 import static com.xpc.easyes.core.conditions.WrapperProcessor.buildSearchSourceBuilder;
 import static com.xpc.easyes.core.conditions.WrapperProcessor.initBoolQueryBuilder;
+import static com.xpc.easyes.core.constants.BaseEsConstants.EMPTY_STR;
 
 /**
  * 核心 所有支持方法接口实现类
@@ -267,7 +269,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
                 throw ExceptionUtils.eee("insert failed, result:%s entity:%s", indexResponse.getResult(), entity);
             }
         } catch (IOException e) {
-            throw ExceptionUtils.eee("insert exception:%s entity:%s", e, entity);
+            throw ExceptionUtils.eee("insert entity:%s exception", e, entity);
         }
     }
 
@@ -464,7 +466,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     public T selectOne(LambdaEsQueryWrapper<T> wrapper) {
         long count = this.selectCount(wrapper);
         if (count > BaseEsConstants.ONE) {
-            throw ExceptionUtils.eee("fond more than one result: %d", count);
+            throw ExceptionUtils.eee("fond more than one result: %d , please use limit function to limit 1", count);
         }
         SearchRequest searchRequest = new SearchRequest(getIndexName());
         SearchSourceBuilder searchSourceBuilder = buildSearchSourceBuilder(wrapper);
@@ -473,8 +475,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
             return parseResult(response, wrapper);
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException();
+            throw ExceptionUtils.eee("selectOne IOException", e);
         }
     }
 
@@ -803,8 +804,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
                     if (!CollectionUtils.isEmpty(wrapper.highLightParamList)) {
                         Map<String, String> highlightFieldMap = getHighlightFieldMap();
                         Map<String, HighlightField> highlightFields = hit.getHighlightFields();
-                        highlightFields.forEach((key,value)->{
-                            setHighlightValue(entity,highlightFieldMap.get(key),Arrays.stream(value.getFragments()).findFirst().get().string());
+                        highlightFields.forEach((key, value) -> {
+                            String highLightValue = Arrays.stream(value.getFragments()).findFirst().map(Text::string).orElse(EMPTY_STR);
+                            setHighlightValue(entity, highlightFieldMap.get(key), highLightValue);
                         });
                     }
                     boolean includeId = WrapperProcessor.includeId(getRealIdFieldName(), wrapper);
@@ -896,7 +898,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      *
      * @return 表字段->高亮返回结果 map
      */
-    private Map<String,String> getHighlightFieldMap() {
+    private Map<String, String> getHighlightFieldMap() {
         return EntityInfoHelper.getEntityInfo(entityClass).getHighlightFieldMap();
     }
 
@@ -906,7 +908,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param entity 实体
      * @param id     主键
      */
-    private void setId(T entity, String id) {
+    private void setId(T entity, Object id) {
         String setMethodName = FieldUtils.generateSetFunctionName(getRealIdFieldName());
         Method invokeMethod = BaseCache.getEsEntityInvokeMethod(entityClass, setMethodName);
         try {
@@ -919,11 +921,12 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
 
     /**
      * 设置高亮字段的值
-     * @param entity 实体类
+     *
+     * @param entity         实体类
      * @param highlightField 高亮返回字段
-     * @param value 高亮结果值
+     * @param value          高亮结果值
      */
-    private void setHighlightValue(T entity, String highlightField,String value) {
+    private void setHighlightValue(T entity, String highlightField, String value) {
         String setMethodName = FieldUtils.generateSetFunctionName(highlightField);
         Method invokeMethod = BaseCache.getEsEntityInvokeMethod(entityClass, setMethodName);
         try {

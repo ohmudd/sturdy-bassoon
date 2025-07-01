@@ -66,10 +66,8 @@ public class TestController {
         return Boolean.TRUE;
     }
 
-
-
     /**
-     * 高亮查询测试
+     * 自定义注解指定高亮返回字段,高亮查询测试
      * @param content
      * @return
      */
@@ -79,24 +77,6 @@ public class TestController {
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.match(Document::getContent, content).highLight(Document::getContent);
         return documentMapper.selectList(wrapper);
-    }
-
-
-    /**
-     * 测试数据
-     * @return
-     */
-    @GetMapping("batchSave")
-    public Boolean batchSave() {
-        List<Document> list = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            Document document = new Document();
-            document.setTitle("标题"+i)
-                    .setContent("这是一个内容  哈哈 "+i);
-            list.add(document);
-        }
-        documentMapper.insertBatch(list);
-        return true;
     }
 
 }

@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -58,7 +59,7 @@ public class EntityInfo {
     /**
      * 表字段->高亮返回结果 键值对
      */
-    private Map<String,String> highlightFieldMap;
+    private final Map<String, String> highlightFieldMap = new HashMap<>();
 
     /**
      * 获取需要进行查询的字段列表

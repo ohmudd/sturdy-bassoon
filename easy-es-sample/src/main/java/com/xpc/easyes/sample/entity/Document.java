@@ -51,7 +51,9 @@ public class Document {
      */
     private String geoLocation;
 
-
+    /**
+     * 高亮返回值被映射的字段
+     */
     @HighLightMappingField("content")
     private String highlightContent;
 }
