@@ -83,6 +83,8 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,简化`CRUD
 
 https://easy-es.cn/#/zh-cn/
 
+官网服务器在国外,如偶遇打不开可多次重试或间隔一段时间重新打开,亦可手机访问.
+
 # 相关链接 | Links
 ---
 
