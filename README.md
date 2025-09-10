@@ -92,7 +92,7 @@ https://easy-es.cn/#/zh-cn/ (中文版)
 - [Switch To English](https://gitee.com/easy-es/easy-es/blob/master/README_EN.md)
 - [中文文档](https://www.yuque.com/books/share/52959a47-d9e5-404e-a750-7d139dfd3b24/naw1ie)
 - [功能示例](https://gitee.com/easy-es/easy-es-springboot-demo)
-- [Springboot集成Demo](https://www.yuque.com/laohan-14b9d/foyrfa/pbo22k)
+- [Springboot集成Demo](https://easy-es.cn/#/zh-cn/demo)
 
 # Latest Version: [![Maven Central](https://img.shields.io/github/v/release/xpc1024/easy-es?include_prereleases&logo=xpc&style=plastic)](https://search.maven.org/search?q=g:io.github.xpc1024%20a:easy-*)
 ---
