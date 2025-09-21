@@ -127,9 +127,11 @@ compile group: 'io.github.xpc1024', name: 'easy-es-boot-starter', version: 'Late
 # 捐赠 | Donate
 ---
 
-[捐赠记录,感谢你们的支持！](https://www.yuque.com/laohan-14b9d/foyrfa/ipxxr2)
+[捐赠记录,感谢你们的支持！](https://easy-es.cn/#/zh-cn/donate-log)
 
-[捐赠 Easy-Es](https://www.yuque.com/laohan-14b9d/foyrfa/wn1iha)
+> 您的支持是鼓励我们前行的动力，无论金额多少都足够表达您这份心意。
+
+> 如果您愿意捐赠本项目,推荐直接在右下方通过Gitee直接捐赠.
 
 # 关注我 | About Me
 ---
