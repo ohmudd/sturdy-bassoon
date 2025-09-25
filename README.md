@@ -80,11 +80,9 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,简化`CRUD
 
 # 官网地址 | Official website
 ---
-https://easy-es.cn (English)
+https://easy-es.cn
 
-https://easy-es.cn/#/zh-cn/ (中文版)
-
-> **Tip:** 官网服务器在国外,如偶遇打不开可重试或间隔一段时间重新打开,亦可手机访问.
+> 感谢码云Gitee提供对本站主页的访问支持,推荐大家使用免费的GiteePages,国内访问速度超快!
 
 # 相关链接 | Links
 ---
