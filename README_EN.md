@@ -26,7 +26,7 @@ Easy-Es is a powerfully enhanced toolkit of RestHighLevelClient for simplify dev
 ## Official website
 ---
 
-https://easy-es.cn
+https://easy-es.cn/#/en/
 
 ## Links
 ---
