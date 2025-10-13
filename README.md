@@ -90,7 +90,7 @@ https://easy-es.cn
 - [Switch To English](https://gitee.com/easy-es/easy-es/blob/master/README_EN.md)
 - [中文文档](https://www.yuque.com/books/share/52959a47-d9e5-404e-a750-7d139dfd3b24/naw1ie)
 - [功能示例](https://gitee.com/easy-es/easy-es-springboot-demo)
-- [Springboot集成Demo](https://easy-es.cn/demo)
+- [Springboot集成Demo](https://easy-es.cn/#/demo)
 
 # Latest Version: [![Maven Central](https://img.shields.io/github/v/release/xpc1024/easy-es?include_prereleases&logo=xpc&style=plastic)](https://search.maven.org/search?q=g:io.github.xpc1024%20a:easy-*)
 ---
@@ -125,7 +125,7 @@ compile group: 'io.github.xpc1024', name: 'easy-es-boot-starter', version: 'Late
 # 捐赠 | Donate
 ---
 
-[捐赠记录,感谢你们的支持！](https://easy-es.cn/donate-log)
+[捐赠记录,感谢你们的支持！](https://easy-es.cn/#/donate-log)
 
 > 您的支持是鼓励我们前行的动力，无论金额多少都足够表达您这份心意。
 
