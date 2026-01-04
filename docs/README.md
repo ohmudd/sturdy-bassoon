@@ -42,7 +42,7 @@ Easy-Es（简称EE）是一款基于ElasticSearch(简称Es)官方提供的RestHi
 
 ---
 
-> [码云Gitee](https://gitee.com/easy-es/easy-es)✔ | [Github](https://github.com/xpc1024/easy-es)✔
+> [码云Gitee](https://gitee.com/dromara/easy-es)✔ | [Github](https://github.com/xpc1024/easy-es)✔
 
 ## English Documentation
 
