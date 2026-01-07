@@ -42,7 +42,7 @@ Easy-Es（简称EE）是一款基于ElasticSearch(简称Es)官方提供的RestHi
 
 ---
 
-> [码云Gitee](https://gitee.com/dromara/easy-es)✔ | [Github](https://github.com/xpc1024/easy-es)✔
+> [码云Gitee](https://gitee.com/dromara/easy-es)✔ | [Github](https://github.com/dromara/easy-es)✔
 
 ## English Documentation
 
@@ -56,6 +56,6 @@ Easy-Es（简称EE）是一款基于ElasticSearch(简称Es)官方提供的RestHi
 
 尽管目前Easy-Es还处于新生儿状态,但由于站在巨人的肩膀上(RestHighLevelClient和Mybatis-Plus),这是一款出道即巅峰的框架,这么说并不是说它写得有多好,而是它融合了两款目前非常优秀框架的优点,这决定了它起点的高度,未来可期,所以在此欢迎各路好汉一起来参与完善 Easy-Es，我们期待你的 PR！
 
-- 贡献代码：代码地址 [Easy-ES](https://github.com/xpc1024/easy-es)，欢迎提交 Issue 或者 Pull Requests
+- 贡献代码：代码地址 [Easy-ES](https://gitee.com/dromara/easy-es)，欢迎提交 Issue 或者 Pull Requests
 - 维护文档：文档地址 [Easy-ES](https://www.yuque.com/laohan-14b9d/tald79/qf7ns2)，欢迎参与翻译和修订
 
