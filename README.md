@@ -80,11 +80,12 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,简化`CRUD
 
 # 官网地址 | Official website
 ---
+
 **easy-es官网** https://easy-es.cn
 
-**开源组织dromara** https://dromara.org
+**开源社区dromara** https://dromara.org
 
-**开源组织码云首页** https://gitee.com/dromara
+**开源社区码云首页** https://gitee.com/dromara
 
 
 # 相关链接 | Links
