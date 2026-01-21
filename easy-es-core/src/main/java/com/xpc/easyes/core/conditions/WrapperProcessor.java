@@ -167,7 +167,10 @@ public class WrapperProcessor {
         if (!CollectionUtils.isEmpty(wrapper.aggregationParamList)) {
             initAggregations(wrapper.aggregationParamList, searchSourceBuilder);
         }
-
+        // 查询超过一万条
+        if (wrapper.size > 10000){
+            searchSourceBuilder.trackTotalHits(true);
+        }
         return searchSourceBuilder;
     }
 
