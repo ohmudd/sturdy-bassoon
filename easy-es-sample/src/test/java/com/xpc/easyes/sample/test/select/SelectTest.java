@@ -61,4 +61,14 @@ public class SelectTest {
         List<Document> documents = documentMapper.selectBatchIds(ids);
         System.out.println(documents);
     }
+
+    @Test
+    public void testtrackTotalHits(){
+        LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
+        wrapper.limit(20000);
+        List<Document> documents = documentMapper.selectList(wrapper);
+        System.out.println(documents.size());
+        //打印语句
+        System.out.println(documentMapper.getSearchSourceBuilder(wrapper));
+    }
 }
