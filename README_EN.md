@@ -23,6 +23,10 @@
 
 Easy-Es is a powerfully enhanced toolkit of RestHighLevelClient for simplify development. This toolkit provides some efficient, useful, out-of-the-box features for ElasticSearch. By using Easy-Es, you can use MySQL syntax to complete Es queries. Use it can effectively save your development time.
 
+## Official website
+---
+
+https://easy-es.cn/#/en/
 
 ## Links
 ---
@@ -39,7 +43,7 @@ Easy-Es is a powerfully enhanced toolkit of RestHighLevelClient for simplify dev
 -   Powerful and flexible where condition wrapper
 -   Lambda-style API
 -   Automatic paging operation
--   Support high-level syntax such as highlighting and weighting
+-   Support high-level syntax such as highlighting and weighting and Geo etc
 -   ...
 
 ## Compare

@@ -25,7 +25,7 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,简化`CRUD
 
 底层采用Es官方提供的RestHighLevelClient,保证其原生性能及拓展性.
 
-技术讨论 QQ 群 ：247637156 
+技术讨论 QQ 群 ：247637156 群内可免费领取 颈椎保护 | 增肌 | 减脂 等健身计划
 
 微信群请先添加作者微信,由作者拉入 (亦可咨询健身问题,作者是健身教练)
 
@@ -42,6 +42,7 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,简化`CRUD
 - **零魔法值:** 字段名称直接从实体中获取,无需输入字段名称字符串这种魔法值
 - **零额外学习成本:** 开发者只要会国内最受欢迎的Mybatis-Plus语法,即可无缝迁移至Easy-Es
 - **降低开发者门槛:** 即便是只了解ES基础的初学者也可以轻松驾驭ES完成绝大多数需求的开发
+- **功能强大:** 支持MySQL的几乎全部功能,且对ES特有的分词,权重,高亮,地理位置Geo等功能都支持
 - **完善的中英文文档:** 提供了中英文双语操作文档,文档全面可靠,帮助您节省更多时间
 - **...**
 
@@ -77,13 +78,23 @@ Easy-Es是一款简化ElasticSearch搜索引擎操作的开源框架,简化`CRUD
 > * 以上只是简单查询演示,实际使用场景越复杂,效果就越好,平均可节省3-5倍代码量
 > * 传统功夫,点到为止! 上述功能仅供演示,仅为Easy-Es支持功能的冰山一角
 
+# 官网地址 | Official website
+---
+
+**easy-es官网** https://easy-es.cn
+
+**开源社区dromara** https://dromara.org
+
+**开源社区码云首页** https://gitee.com/dromara
+
+
 # 相关链接 | Links
 ---
 
 - [Switch To English](https://gitee.com/easy-es/easy-es/blob/master/README_EN.md)
-- [中文文档](https://www.yuque.com/laohan-14b9d/foyrfa/naw1ie)
+- [中文文档](https://www.yuque.com/books/share/52959a47-d9e5-404e-a750-7d139dfd3b24/naw1ie)
 - [功能示例](https://gitee.com/easy-es/easy-es-springboot-demo)
-- [Springboot集成Demo](https://www.yuque.com/laohan-14b9d/foyrfa/pbo22k)
+- [Springboot集成Demo](https://easy-es.cn/#/demo)
 
 # Latest Version: [![Maven Central](https://img.shields.io/github/v/release/xpc1024/easy-es?include_prereleases&logo=xpc&style=plastic)](https://search.maven.org/search?q=g:io.github.xpc1024%20a:easy-*)
 ---
@@ -118,9 +129,11 @@ compile group: 'io.github.xpc1024', name: 'easy-es-boot-starter', version: 'Late
 # 捐赠 | Donate
 ---
 
-[捐赠记录,感谢你们的支持！](https://www.yuque.com/laohan-14b9d/foyrfa/ipxxr2)
+[捐赠记录,感谢你们的支持！](https://easy-es.cn/#/donate-log)
 
-[捐赠 Easy-Es](https://www.yuque.com/laohan-14b9d/foyrfa/wn1iha)
+> 您的支持是鼓励我们前行的动力，无论金额多少都足够表达您这份心意。
+
+> 如果您愿意捐赠本项目,推荐直接在右下方通过Gitee直接捐赠.
 
 # 关注我 | About Me
 ---
