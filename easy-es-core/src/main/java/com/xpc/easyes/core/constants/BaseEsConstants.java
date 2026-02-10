@@ -98,4 +98,8 @@ public interface BaseEsConstants {
      * 默认返回数
      */
     Integer DEFAULT_SIZE = 10000;
+    /**
+     * es默认得分字段
+     */
+    String SCORE_FIELD = "_score";
 }
