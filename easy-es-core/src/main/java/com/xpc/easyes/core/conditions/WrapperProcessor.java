@@ -55,7 +55,7 @@ public class WrapperProcessor {
         SearchSourceBuilder searchSourceBuilder = initSearchSourceBuilder(wrapper);
 
         // 初始化geo相关参数
-        setGeoQuery(wrapper.geoParam, boolQueryBuilder);
+        Optional.ofNullable(wrapper.geoParam).ifPresent(geoParam -> setGeoQuery(geoParam, boolQueryBuilder));
 
         // 设置boolQuery参数
         searchSourceBuilder.query(boolQueryBuilder);
@@ -155,7 +155,7 @@ public class WrapperProcessor {
         }
 
         // 查询超过一万条, trackTotalHists自动开启
-        if (wrapper.size > DEFAULT_SIZE) {
+        if (searchSourceBuilder.size() > DEFAULT_SIZE) {
             searchSourceBuilder.trackTotalHits(true);
         }
 
@@ -175,7 +175,7 @@ public class WrapperProcessor {
         }
 
         // 设置以String形式指定的排序字段及规则
-        if (!CollectionUtils.isNotEmpty(wrapper.orderByParams)) {
+        if (CollectionUtils.isNotEmpty(wrapper.orderByParams)) {
             wrapper.orderByParams.forEach(orderByParam -> {
                 FieldSortBuilder fieldSortBuilder = new FieldSortBuilder(orderByParam.getOrder());
                 if (SortOrder.ASC.toString().equalsIgnoreCase(orderByParam.getSort())) {

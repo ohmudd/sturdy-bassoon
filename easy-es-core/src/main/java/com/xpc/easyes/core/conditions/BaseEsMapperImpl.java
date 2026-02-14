@@ -9,6 +9,7 @@ import com.xpc.easyes.core.common.EntityFieldInfo;
 import com.xpc.easyes.core.common.EntityInfo;
 import com.xpc.easyes.core.common.PageInfo;
 import com.xpc.easyes.core.conditions.interfaces.BaseEsMapper;
+import com.xpc.easyes.core.config.GlobalConfig;
 import com.xpc.easyes.core.constants.BaseEsConstants;
 import com.xpc.easyes.core.enums.FieldStrategy;
 import com.xpc.easyes.core.enums.FieldType;
@@ -77,6 +78,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      */
     @Setter
     private Class<T> entityClass;
+
+    @Setter
+    private GlobalConfig globalConfig;
 
     @Override
     public Boolean existsIndex(String indexName) {
@@ -485,6 +489,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         SearchSourceBuilder searchSourceBuilder = buildSearchSourceBuilder(wrapper);
         searchRequest.source(searchSourceBuilder);
         try {
+            printDSL(wrapper);
             SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
             return parseResultList(response, wrapper);
         } catch (Exception e) {
@@ -954,6 +959,12 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
                     .orElseThrow(() -> ExceptionUtils.eee("the entity id must not be null"));
         } catch (IllegalAccessException e) {
             throw ExceptionUtils.eee("get id value exception", e);
+        }
+    }
+
+    private void printDSL(LambdaEsQueryWrapper<T> wrapper) {
+        if (globalConfig.isPrintDsl()) {
+            System.out.println(getSource(wrapper));
         }
     }
 }
