@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 
 import static com.xpc.easyes.core.conditions.WrapperProcessor.buildSearchSourceBuilder;
 import static com.xpc.easyes.core.conditions.WrapperProcessor.initBoolQueryBuilder;
+import static com.xpc.easyes.core.constants.BaseEsConstants.DSL_PREFIX;
 import static com.xpc.easyes.core.constants.BaseEsConstants.EMPTY_STR;
 
 /**
@@ -79,6 +80,9 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     @Setter
     private Class<T> entityClass;
 
+    /**
+     * 全局配置
+     */
     @Setter
     private GlobalConfig globalConfig;
 
@@ -181,12 +185,14 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         SearchRequest searchRequest = new SearchRequest(getIndexName());
         SearchSourceBuilder searchSourceBuilder = buildSearchSourceBuilder(wrapper);
         searchRequest.source(searchSourceBuilder);
+        printDSL(wrapper);
         // 执行查询
         return client.search(searchRequest, RequestOptions.DEFAULT);
     }
 
     @Override
     public SearchResponse search(SearchRequest searchRequest, RequestOptions requestOptions) throws IOException {
+        printDSL(searchRequest);
         return client.search(searchRequest, requestOptions);
     }
 
@@ -248,6 +254,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         countRequest.query(boolQueryBuilder);
         CountResponse count;
         try {
+            printDSL(wrapper);
             count = client.count(countRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw ExceptionUtils.eee("selectCount exception", e);
@@ -441,6 +448,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         searchSourceBuilder.query(QueryBuilders.termQuery(getIdFieldName(), id));
         searchRequest.source(searchSourceBuilder);
         try {
+            printDSL(searchRequest);
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
             return parseResult(searchResponse);
         } catch (Exception e) {
@@ -459,6 +467,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         sourceBuilder.query(QueryBuilders.termsQuery(getIdFieldName(), stringIdList));
         searchRequest.source(sourceBuilder);
         try {
+            printDSL(searchRequest);
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
             return parseResultList(searchResponse);
         } catch (IOException e) {
@@ -476,6 +485,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         SearchSourceBuilder searchSourceBuilder = buildSearchSourceBuilder(wrapper);
         searchRequest.source(searchSourceBuilder);
         try {
+            printDSL(wrapper);
             SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
             return parseResult(response, wrapper);
         } catch (IOException e) {
@@ -962,9 +972,6 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         }
     }
 
-    private void printDSL(LambdaEsQueryWrapper<T> wrapper) {
-        if (globalConfig.isPrintDsl()) {
-            System.out.println(getSource(wrapper));
-        }
-    }
+
+
 }

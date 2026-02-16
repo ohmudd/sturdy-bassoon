@@ -102,4 +102,8 @@ public interface BaseEsConstants {
      * es默认得分字段
      */
     String SCORE_FIELD = "_score";
+    /**
+     * DSL语句前缀
+     */
+    String DSL_PREFIX = "===> Execute By Easy-Es:";
 }
