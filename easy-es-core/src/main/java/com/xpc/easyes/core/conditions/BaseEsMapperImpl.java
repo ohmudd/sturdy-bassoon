@@ -972,6 +972,27 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         }
     }
 
+    /**
+     * 根据全局配置决定是否控制台打印DSL语句
+     *
+     * @param wrapper 查询参数包装类
+     */
+    private void printDSL(LambdaEsQueryWrapper<T> wrapper) {
+        if (globalConfig.isPrintDsl()) {
+            System.out.println(DSL_PREFIX + getSource(wrapper));
+        }
+    }
 
+    /**
+     * 根据全局配置决定是否控制台打印DSL语句
+     *
+     * @param searchRequest es查询请求参数
+     */
+    private void printDSL(SearchRequest searchRequest) {
+        if (globalConfig.isPrintDsl() && Objects.nonNull(searchRequest)) {
+            Optional.ofNullable(searchRequest.source())
+                    .ifPresent(source -> System.out.println(DSL_PREFIX + source));
+        }
+    }
 
 }
