@@ -923,11 +923,16 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
      * @param entity 实体
      * @param id     主键
      */
-    private void setId(T entity, Object id) {
+    private void setId(T entity, String id) {
         String setMethodName = FieldUtils.generateSetFunctionName(getRealIdFieldName());
         Method invokeMethod = BaseCache.getEsEntityInvokeMethod(entityClass, setMethodName);
+
+        // 将es返回的String类型id还原为字段实际的id类型,比如Long,否则反射会报错
+        Class<?> idClass = EntityInfoHelper.getEntityInfo(entityClass).getIdClass();
+        Object val = ReflectionKit.getVal(id, idClass);
+
         try {
-            invokeMethod.invoke(entity, id);
+            invokeMethod.invoke(entity, val);
         } catch (Exception e) {
             e.printStackTrace();
         }

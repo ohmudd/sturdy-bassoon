@@ -29,7 +29,7 @@ public class DeleteInterceptor implements Interceptor {
     public Object intercept(Invocation invocation) throws Throwable {
         // 统一逻辑删除拦截
         System.out.println("啊啊啊，我拦截到了删除，禁止直接删除");
-        // 这里直接改为update逻辑删除...
+        // 这里直接改为update逻辑删除,代码省略...
         return 0;
     }
 

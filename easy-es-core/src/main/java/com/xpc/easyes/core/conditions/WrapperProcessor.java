@@ -188,8 +188,10 @@ public class WrapperProcessor {
             });
         }
 
-        // 设置用户自定义的sort
-        Optional.ofNullable(wrapper.sortBuilder).ifPresent(searchSourceBuilder::sort);
+        // 设置用户自定义的sorts
+        if (CollectionUtils.isNotEmpty(wrapper.sortBuilders)) {
+            wrapper.sortBuilders.forEach(searchSourceBuilder::sort);
+        }
 
         // 设置得分排序规则
         Optional.ofNullable(wrapper.sortOrder)

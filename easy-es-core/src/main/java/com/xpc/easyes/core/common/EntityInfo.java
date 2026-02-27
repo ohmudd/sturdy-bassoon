@@ -24,6 +24,10 @@ public class EntityInfo {
      */
     private IdType idType = IdType.NONE;
     /**
+     * id数据类型 如Long.class String.class
+     */
+    private Class<?> idClass;
+    /**
      * 索引名称
      */
     private String indexName;

@@ -63,7 +63,7 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     /**
      * 用户自定义的排序规则
      */
-    protected SortBuilder<?> sortBuilder;
+    protected List<SortBuilder<?>> sortBuilders;
     /**
      * 得分排序规则
      */
@@ -364,9 +364,12 @@ public abstract class AbstractWrapper<T, R, Children extends AbstractWrapper<T, 
     }
 
     @Override
-    public Children sort(boolean condition, SortBuilder<?> sortBuilder) {
+    public Children sort(boolean condition, List<SortBuilder<?>> sortBuilders) {
+        if (CollectionUtils.isEmpty(sortBuilders)) {
+            return typedThis;
+        }
         if (condition) {
-            this.sortBuilder = sortBuilder;
+            this.sortBuilders = sortBuilders;
         }
         return typedThis;
     }

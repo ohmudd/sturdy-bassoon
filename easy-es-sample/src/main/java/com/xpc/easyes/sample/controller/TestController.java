@@ -1,8 +1,6 @@
 package com.xpc.easyes.sample.controller;
 
-import com.xpc.easyes.core.conditions.LambdaEsIndexWrapper;
 import com.xpc.easyes.core.conditions.LambdaEsQueryWrapper;
-import com.xpc.easyes.core.enums.FieldType;
 import com.xpc.easyes.sample.entity.Document;
 import com.xpc.easyes.sample.mapper.DocumentMapper;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -55,19 +52,9 @@ public class TestController {
         return documentMapper.delete(wrapper);
     }
 
-    @GetMapping("/index")
-    public Boolean index() {
-        // 初始化-> 创建索引,相当于MySQL建表 | 此接口须首先调用,只调用一次即可
-        LambdaEsIndexWrapper<Document> indexWrapper = new LambdaEsIndexWrapper<>();
-        indexWrapper.indexName(Document.class.getSimpleName().toLowerCase());
-        indexWrapper.mapping(Document::getTitle, FieldType.KEYWORD)
-                .mapping(Document::getContent, FieldType.TEXT);
-        documentMapper.createIndex(indexWrapper);
-        return Boolean.TRUE;
-    }
-
     /**
      * 自定义注解指定高亮返回字段,高亮查询测试
+     *
      * @param content
      * @return
      */
@@ -78,5 +65,4 @@ public class TestController {
         wrapper.match(Document::getContent, content).highLight(Document::getContent);
         return documentMapper.selectList(wrapper);
     }
-
 }

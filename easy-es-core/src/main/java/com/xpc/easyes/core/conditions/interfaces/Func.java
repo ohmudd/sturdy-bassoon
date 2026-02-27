@@ -316,14 +316,18 @@ public interface Func<Children, R> extends Serializable {
         return sort(true, sortBuilder);
     }
 
+    default Children sort(boolean condition, SortBuilder<?> sortBuilder){
+        return sort(condition, Collections.singletonList(sortBuilder));
+    }
+
     /**
      * 用户自定义排序
      *
      * @param condition   条件
-     * @param sortBuilder 排序规则
+     * @param sortBuilders 排序规则列表
      * @return 泛型
      */
-    Children sort(boolean condition, SortBuilder<?> sortBuilder);
+    Children sort(boolean condition, List<SortBuilder<?>> sortBuilders);
 
     /**
      * 根据得分_score排序 默认为降序 得分高得在前
@@ -342,6 +346,10 @@ public interface Func<Children, R> extends Serializable {
      */
     default Children sortByScore(boolean condition) {
         return sortByScore(condition, SortOrder.DESC);
+    }
+
+    default Children sortByScore(SortOrder sortOrder) {
+        return sortByScore(true, sortOrder);
     }
 
     /**

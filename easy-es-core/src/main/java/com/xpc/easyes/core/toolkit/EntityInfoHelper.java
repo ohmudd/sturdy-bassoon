@@ -198,13 +198,13 @@ public class EntityInfoHelper {
                 } else {
                     entityInfo.setIdType(tableId.type());
                 }
-
                 // 字段
                 String column = tableId.value();
                 field.setAccessible(Boolean.TRUE);
                 entityInfo.setClazz(field.getDeclaringClass())
                         .setKeyColumn(column)
                         .setKeyField(field)
+                        .setIdClass(field.getType())
                         .setKeyProperty(field.getName());
                 return true;
             } else {
@@ -236,6 +236,7 @@ public class EntityInfoHelper {
                         .setKeyColumn(DEFAULT_ES_ID_NAME)
                         .setKeyProperty(field.getName())
                         .setKeyField(field)
+                        .setIdClass(field.getType())
                         .setClazz(field.getDeclaringClass());
                 return true;
             } else {
