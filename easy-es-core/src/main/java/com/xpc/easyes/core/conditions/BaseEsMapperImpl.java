@@ -60,8 +60,7 @@ import java.util.stream.Collectors;
 
 import static com.xpc.easyes.core.conditions.WrapperProcessor.buildSearchSourceBuilder;
 import static com.xpc.easyes.core.conditions.WrapperProcessor.initBoolQueryBuilder;
-import static com.xpc.easyes.core.constants.BaseEsConstants.DSL_PREFIX;
-import static com.xpc.easyes.core.constants.BaseEsConstants.EMPTY_STR;
+import static com.xpc.easyes.core.constants.BaseEsConstants.*;
 
 /**
  * 核心 所有支持方法接口实现类
@@ -272,7 +271,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
             IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
             if (Objects.equals(indexResponse.status(), RestStatus.CREATED)) {
                 setId(entity, indexResponse.getId());
-                return BaseEsConstants.ONE;
+                return ONE;
             } else if (Objects.equals(indexResponse.status(), RestStatus.OK)) {
                 // 该id已存在,数据被更新的情况
                 return BaseEsConstants.ZERO;
@@ -311,7 +310,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         try {
             DeleteResponse deleteResponse = client.delete(deleteRequest, RequestOptions.DEFAULT);
             if (Objects.equals(deleteResponse.status(), RestStatus.OK)) {
-                return BaseEsConstants.ONE;
+                return ONE;
             }
         } catch (IOException e) {
             throw ExceptionUtils.eee("deleteById exception:%s, id:%s", e, id);
@@ -374,7 +373,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         try {
             UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
             if (Objects.equals(updateResponse.status(), RestStatus.OK)) {
-                return BaseEsConstants.ONE;
+                return ONE;
             }
         } catch (IOException e) {
             throw ExceptionUtils.eee("updateById exception,entity:%s", e, entity);
@@ -478,7 +477,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     @Override
     public T selectOne(LambdaEsQueryWrapper<T> wrapper) {
         long count = this.selectCount(wrapper);
-        if (count > BaseEsConstants.ONE) {
+        if (count > ONE && wrapper.size > ONE) {
             throw ExceptionUtils.eee("fond more than one result: %d , please use limit function to limit 1", count);
         }
         SearchRequest searchRequest = new SearchRequest(getIndexName());
