@@ -6,9 +6,17 @@ GeoShape:直译为地理图形,怎么理解?乍一看好像和GeoPolygon很像,�
 
 API:
 ```java
+// 查询符合已索引图形的图形
 geoShape(R column, String indexedShapeId);
 
+// 查询不符合已索引图形的图形 (0.9.7+ 版本支持)
+notInGeoShape(R column, String indexedShapeId);
+
+// 查询符合指定图形和图形关系的图形列表
 geoShape(R column, Geometry geometry, ShapeRelation shapeRelation);
+
+// 查询不符合指定图形和图形关系的图形列表
+notInGeoShape(R column, Geometry geometry, ShapeRelation shapeRelation);
 ```
 使用示例:
 
@@ -24,6 +32,10 @@ geoShape(R column, Geometry geometry, ShapeRelation shapeRelation);
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         // 这里的indexedShapeId为用户事先已经在Es中创建好的图形的id
         wrapper.geoShape(Document::getGeoLocation, "edu");
+
+        // 不符合的情况
+        // wrapper.notInGeoShape(Document::getGeoLocation, "edu");
+
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents);
     }
@@ -42,6 +54,10 @@ geoShape(R column, Geometry geometry, ShapeRelation shapeRelation);
         Circle circle = new Circle(13,14,100);
         // shapeRelation支持多种,如果不传则默认为within
         wrapper.geoShape(Document::getGeoLocation, circle, ShapeRelation.INTERSECTS);
+
+        // 不符合的情况
+        // wrapper.notInGeoShape(Document::getGeoLocation, circle, ShapeRelation.INTERSECTS);
+
         List<Document> documents = documentMapper.selectList(wrapper);
         System.out.println(documents);
     }
