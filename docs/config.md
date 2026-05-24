@@ -21,6 +21,7 @@ easy-es:
 ```yaml
 easy-es:
   global-config:
+    print-dsl: true # 开启控制台打印通过本框架生成的DSL语句,默认为开启,生产环境建议关闭(0.9.7+版本支持)
     db-config:
       table-prefix: daily_ # 索引前缀,可用于区分环境  默认为空
       id-type: auto # id生成策略 默认为auto
