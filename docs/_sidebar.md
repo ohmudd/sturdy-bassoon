@@ -49,7 +49,7 @@
   - 拓展功能
     - [混合查询](hybrid-query.md)
     - [原生查询](origin-query.md)
-    - [source](source.md)
+    - [打印DSL语句](source.md)
     - [分页](page.md)
   - 高阶语法
   	- [字段过滤](filter.md)
