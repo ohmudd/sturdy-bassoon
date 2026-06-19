@@ -54,7 +54,7 @@
   - High-level grammar
   	- [Field Filtering](/en/filter.md)
   	- [Sort](/en/sort.md)
-          -[Custom sort](/en/custom-sort.md)
+          - [Custom sort](/en/custom-sort.md)
   	- [Aggregate query](/en/aggregation.md)
   	- [Word segmentation query](/en/particple.md)
   	- [Weight](/en/weight.md)
@@ -70,7 +70,7 @@
     - [Primary key annotation](/en/id-anno.md)
   - [Configuration](/en/config.md)
   - [Custom plugin](/en/custom-plugin.md)
-    -[Interceptor plugin](interceptor-plugin.md)
+    - [Interceptor plugin](interceptor-plugin.md)
   - [FAQ](/en/faq.md)
   - [Difference between EE and MySQL syntax](/en/compare.md)
   - [Donate](/en/donate.md)
