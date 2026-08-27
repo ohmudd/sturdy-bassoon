@@ -4,6 +4,9 @@ GeoDistance: Literally translated as geographic distance, in fact, it takes a gi
 
 ```java
 geoDistance(R column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint)
+
+// Find all points not inside a circle (supported in version 0.9.7+)
+notInGeoDistance(R column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint);    
 ```
 ```java
     @Test
