@@ -5,6 +5,9 @@ GeoPolygon: Literally translated as geographic polygon, in fact, it takes the po
 API:
 ```java
 geoPolygon(R column, List<GeoPoint> geoPoints)
+
+// Query all points not inside a polygon (supported in version 0.9.7+)
+notInGeoPolygon(R column, List<GeoPoint> geoPoints);
 ```
 Example of use:
 ```java
