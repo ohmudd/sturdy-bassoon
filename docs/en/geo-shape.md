@@ -8,7 +8,13 @@ API:
 ```java
 geoShape(R column, String indexedShapeId);
 
+// Querying graphs that do not conform to indexed graphs (supported in version 0.9.7+)
+notInGeoShape(R column, String indexedShapeId);
+
 geoShape(R column, Geometry geometry, ShapeRelation shapeRelation);
+
+// Query a list of graphs that do not match the specified graph and graph relationship
+notInGeoShape(R column, Geometry geometry, ShapeRelation shapeRelation);
 ```
 Example of use:<br />This API is not commonly used, you can also skip directly to see the query by graph below.
 ```java
