@@ -49,8 +49,8 @@
   - Expand Fucntion
     - [Hybrid query](/en/hybrid-query.md)
     - [Es Native query](/en/origin-query.md)
-    - [source](/en/source.md)
-    - [pagination](/en/page.md)
+    - [Print DSL](/en/source.md)
+    - [Pagination](/en/page.md)
   - High-level grammar
   	- [Field Filtering](/en/filter.md)
   	- [Sort](/en/sort.md)
