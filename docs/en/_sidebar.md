@@ -70,7 +70,7 @@
     - [Primary key annotation](/en/id-anno.md)
   - [Configuration](/en/config.md)
   - [Custom plugin](/en/custom-plugin.md)
-    - [Interceptor plugin](interceptor-plugin.md)
+    - [Interceptor plugin](/en/interceptor-plugin.md)
   - [FAQ](/en/faq.md)
   - [Difference between EE and MySQL syntax](/en/compare.md)
   - [Donate](/en/donate.md)
