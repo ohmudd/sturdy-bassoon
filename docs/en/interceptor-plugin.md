@@ -7,7 +7,7 @@ Some methods require special preprocessing, such as:
 ● Need to add some special parameters before executing the query, such as logical deletion
 In short, it is the enhancement of AOP pre-interception for various APIs provided by EE.
 
-**Requirement background:**It is necessary to intercept the selectList method provided by this framework, and then append the logical deletion to the undeleted state as the query condition in the query parameters of this method
+**Requirement background:** It is necessary to intercept the selectList method provided by this framework, and then append the logical deletion to the undeleted state as the query condition in the query parameters of this method
 
 **Example of use:**
 Add an interceptor, specify the intercepted method list through the @Intercepts annotation, and specify the intercepted classes, methods, parameters and other information through the @Signature annotation.
