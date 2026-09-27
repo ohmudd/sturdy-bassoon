@@ -5,7 +5,11 @@ GeoDistance:直译为地理距离,实际上就是以给定的点为圆心,给定
 API:
 
 ```java
-geoDistance(R column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint)
+// 查圆形内的所有点
+geoDistance(R column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint);
+
+// 查不在圆形内的所有点 (0.9.7+ 版本支持)
+notInGeoDistance(R column, Double distance, DistanceUnit distanceUnit, GeoPoint centralGeoPoint);
 ```
 使用示例:
 ```java
@@ -15,6 +19,10 @@ geoDistance(R column, Double distance, DistanceUnit distanceUnit, GeoPoint centr
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         // 其中单位可以省略,默认为km
         wrapper.geoDistance(Document::getLocation, 168.8, DistanceUnit.KILOMETERS, new GeoPoint(41.0, 116.0));
+
+        //查询不在圆形内的所有点
+        // wrapper.notInGeoDistance(Document::getLocation, 168.8, DistanceUnit.KILOMETERS, new GeoPoint(41.0, 116.0));
+
         // 上面语法也可以写成下面这几种形式,效果是一样的,兼容不同用户习惯而已:
 //        wrapper.geoDistance(Document::getLocation,"1.5km",new GeoPoint(41.0,115.0));
 //        wrapper.geoDistance(Document::getLocation, "1.5km", "41.0,115.0");

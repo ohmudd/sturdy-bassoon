@@ -3,7 +3,11 @@ GeoBoundingBox: 直译为地理边界盒,由左上点和右下点构成的矩形
 API:
 
 ```java
-geoBoundingBox(R column, GeoPoint topLeft, GeoPoint bottomRight)
+// 在矩形内
+geoBoundingBox(R column, GeoPoint topLeft, GeoPoint bottomRight);
+
+// 不在矩形内 (0.9.7+版本支持)
+notInGeoBoundingBox(R column, GeoPoint topLeft, GeoPoint bottomRight);   
 ```
 使用示例:
 ```java
@@ -16,6 +20,10 @@ geoBoundingBox(R column, GeoPoint topLeft, GeoPoint bottomRight)
         // 假设右下点坐标
         GeoPoint bottomRight = new GeoPoint(39.084509D, 117.610461D);
         wrapper.geoBoundingBox(Document::getLocation, leftTop, bottomRight);
+
+        // 查不在此长方形内的所有点
+        // wrapper.notInGeoBoundingBox(Document::getLocation, leftTop, bottomRight);
+
         List<Document> documents = documentMapper.selectList(wrapper);
         documents.forEach(System.out::println);
     }

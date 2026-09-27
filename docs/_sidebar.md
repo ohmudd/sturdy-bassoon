@@ -49,11 +49,12 @@
   - 拓展功能
     - [混合查询](hybrid-query.md)
     - [原生查询](origin-query.md)
-    - [source](source.md)
+    - [打印DSL语句](source.md)
     - [分页](page.md)
   - 高阶语法
   	- [字段过滤](filter.md)
   	- [排序](sort.md)
+          - [自定义排序](custom-sort.md)
   	- [聚合查询](aggregation.md)
   	- [分词查询](particple.md)
   	- [权重](weight.md)
@@ -68,6 +69,8 @@
     - [字段注解](field-anno.md)
     - [主键注解](id-anno.md)
   - [配置](config.md)
+  - [自定义插件](plugin.md)
+    - [拦截器插件](interceptor-plugin.md)
   - [更新计划](update-plan.md)
   - [更新日志](update-log.md)
   - [FAQ](faq.md)

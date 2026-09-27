@@ -5,6 +5,9 @@ GeoBoundingBox: Literally translated as a geographic bounding box, a rectangular
 API:
 ```java
 geoBoundingBox(R column, GeoPoint topLeft, GeoPoint bottomRight)
+
+// not inside a rectangle (supported in version 0.9.7+)
+notInGeoBoundingBox(R column, GeoPoint topLeft, GeoPoint bottomRight); 
 ```
 Example of use:
 ```java
