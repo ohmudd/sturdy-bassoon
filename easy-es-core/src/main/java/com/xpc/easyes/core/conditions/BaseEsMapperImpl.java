@@ -253,7 +253,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
         countRequest.query(boolQueryBuilder);
         CountResponse count;
         try {
-            printDSL(wrapper);
+            printCountDSL(wrapper);
             count = client.count(countRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw ExceptionUtils.eee("selectCount exception", e);
@@ -579,7 +579,7 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     private PageInfo<T> initPageInfo(LambdaEsQueryWrapper<T> wrapper, Integer pageNum, Integer pageSize) {
         PageInfo<T> pageInfo = new PageInfo<>();
         long total = this.selectCount(wrapper);
-        if (total <= 0) {
+        if (total <= ZERO) {
             return pageInfo;
         }
 
@@ -979,11 +979,22 @@ public class BaseEsMapperImpl<T> implements BaseEsMapper<T> {
     /**
      * 根据全局配置决定是否控制台打印DSL语句
      *
-     * @param wrapper 查询参数包装类
+     * @param wrapper
      */
     private void printDSL(LambdaEsQueryWrapper<T> wrapper) {
         if (globalConfig.isPrintDsl()) {
             System.out.println(DSL_PREFIX + getSource(wrapper));
+        }
+    }
+
+    /**
+     * 根据全局配置决定是否控制台打印CountDSL语句
+     *
+     * @param wrapper 查询参数包装类
+     */
+    private void printCountDSL(LambdaEsQueryWrapper<T> wrapper) {
+        if (globalConfig.isPrintDsl()) {
+            System.out.println(COUNT_DSL_PREFIX + getSource(wrapper));
         }
     }
 

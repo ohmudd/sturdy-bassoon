@@ -31,6 +31,7 @@ public class SelectTest {
         String title = "老汉";
         LambdaEsQueryWrapper<Document> wrapper = new LambdaEsQueryWrapper<>();
         wrapper.eq(Document::getTitle, title);
+        wrapper.limit(1);
         Document document = documentMapper.selectOne(wrapper);
         System.out.println(document);
         Assert.assertEquals(title, document.getTitle());
