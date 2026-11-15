@@ -37,7 +37,7 @@ Easy-Es（简称EE）是一款基于ElasticSearch(简称Es)官方提供的RestHi
 
 ---
 
-![EasyEsJG.jpg](https://iknow.hs.net/e8153631-2f74-427f-82c4-4f009099c62a.jpg)
+![EasyEsJG.jpg](https://iknow.hs.net/a60bfe0b-7b15-4cf8-9c48-51b8be94a97c.jpg)
 ## 代码托管
 
 ---
