@@ -25,7 +25,7 @@ Easy-Es (EE for short) is a low-code development framework based on RestHighLeve
 ---
 
 
-![2](https://iknow.hs.net/e8153631-2f74-427f-82c4-4f009099c62a.jpg)
+![2](https://iknow.hs.net/a60bfe0b-7b15-4cf8-9c48-51b8be94a97c.jpg)
 ## Code hosting
 
 ---
